@@ -1,0 +1,783 @@
+---
+// src/pages/admin/index.astro — Engineering Workspace Dashboard & Operational Overview
+import Layout from '../../layouts/Layout.astro';
+import { authorizeAdmin } from '../../lib/admin-auth';
+import { createSupabaseServerClient } from '../../lib/supabase';
+
+const authorization = await authorizeAdmin(Astro);
+
+if (authorization.status === 'unauthenticated') {
+	return Astro.redirect('/admin/login');
+}
+
+if (authorization.status === 'forbidden') {
+	return new Response('Forbidden', { status: 403 });
+}
+
+const supabase = createSupabaseServerClient(Astro);
+
+// Fetch real project records
+const { data: projects, error: projectsError } = await supabase
+	.from('projects')
+	.select('id, slug, title, project_type, is_featured, is_published, sort_order, created_at')
+	.order('created_at', { ascending: false });
+
+// Fetch real contact message records
+const { data: messages, error: messagesError } = await supabase
+	.from('contact_messages')
+	.select('id, name, email, subject, created_at, is_read')
+	.order('created_at', { ascending: false });
+
+// Derive operational metrics
+const totalProjects = projects?.length ?? 0;
+const publishedProjects = projects?.filter((p) => p.is_published).length ?? 0;
+const draftProjects = totalProjects - publishedProjects;
+const featuredProjects = projects?.filter((p) => p.is_featured).length ?? 0;
+
+const totalMessages = messages?.length ?? 0;
+const unreadMessages = messages?.filter((m) => !m.is_read).length ?? 0;
+
+const recentProjects = projects?.slice(0, 4) ?? [];
+const recentMessages = messages?.slice(0, 4) ?? [];
+
+const operatorEmail = authorization.user.email ?? 'Verified Operator';
+---
+
+<Layout title="Control Panel — Admin — Jagan">
+	<main class="dashboard-shell" id="main-content">
+		<!-- Header & Operator Telemetry Bar -->
+		<header class="dashboard-header border-b border-white/[0.08] pb-6 mb-8 flex flex-wrap items-end justify-between gap-4">
+			<div class="header-identity">
+				<div class="identity-badge flex items-center gap-2 font-mono text-xs text-[#E2C974] mb-2">
+					<span class="inline-block w-2 h-2 rounded-full bg-[#10B981] animate-pulse" aria-hidden="true"></span>
+					<span class="bg-[#E2C974]/10 border border-[#E2C974]/30 px-2 py-0.5 rounded-xs">SYS_ADMIN // MISSION CONTROL</span>
+				</div>
+				<h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-[#F4F4F6] mb-1">Operational Workspace</h1>
+				<p class="operator-meta text-xs font-mono text-[#A1A1AA]">Active operator node: <code class="text-[#38BDF8] bg-[#38BDF8]/10 px-1.5 py-0.5 rounded-xs border border-[#38BDF8]/20">{operatorEmail}</code></p>
+			</div>
+
+			<div class="header-actions flex flex-wrap items-center gap-3">
+				<a class="button button-primary" href="/admin/projects/new">
+					<span>+ New System Record</span>
+				</a>
+				<a class="button button-secondary" href="/admin/messages">
+					<span>Inquiries ({unreadMessages})</span>
+				</a>
+				<a class="button button-secondary" href="/" target="_blank" rel="noopener noreferrer" title="View live portfolio">
+					<span>Live Site ↗</span>
+				</a>
+				<form method="post" action="/api/admin/logout" class="signout-form">
+					<button class="button button-muted" type="submit">Disconnect [OP]</button>
+				</form>
+			</div>
+		</header>
+
+		{projectsError && (
+			<div class="notice error" role="alert">
+				<span>Database notice: Could not refresh projects.</span>
+			</div>
+		)}
+
+		{messagesError && (
+			<div class="notice error" role="alert">
+				<span>Database notice: Could not refresh messages.</span>
+			</div>
+		)}
+
+		<!-- Primary Telemetry Metric Grid -->
+		<section class="telemetry-grid grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8" aria-label="Workspace metrics">
+			<article class="metric-card admin-panel p-5 rounded-sm flex flex-col justify-between">
+				<div class="flex items-center justify-between font-mono text-[11px] text-[#A1A1AA] mb-2">
+					<span>SYS.REGISTRY // TOTAL</span>
+					<span class="text-[#38BDF8]">01</span>
+				</div>
+				<div class="text-3xl font-mono font-bold text-[#F4F4F6] my-1">{totalProjects}</div>
+				<div class="text-xs font-mono text-[#71717A] mt-2 border-t border-white/[0.04] pt-2 flex justify-between">
+					<span>LIVE: <strong class="text-[#10B981]">{publishedProjects}</strong></span>
+					<span>DRAFTS: <strong class="text-[#F59E0B]">{draftProjects}</strong></span>
+				</div>
+			</article>
+
+			<article class="metric-card admin-panel p-5 rounded-sm flex flex-col justify-between">
+				<div class="flex items-center justify-between font-mono text-[11px] text-[#A1A1AA] mb-2">
+					<span>COMM.DISPATCH // INBOX</span>
+					<span class="text-[#E2C974]">02</span>
+				</div>
+				<div class="text-3xl font-mono font-bold text-[#F4F4F6] my-1">{totalMessages}</div>
+				<div class="text-xs font-mono text-[#71717A] mt-2 border-t border-white/[0.04] pt-2 flex justify-between">
+					<span>UNREAD: <strong class="text-[#38BDF8]">{unreadMessages}</strong></span>
+					<span>PROCESSED: <strong class="text-[#A1A1AA]">{totalMessages - unreadMessages}</strong></span>
+				</div>
+			</article>
+
+			<article class="metric-card admin-panel p-5 rounded-sm flex flex-col justify-between">
+				<div class="flex items-center justify-between font-mono text-[11px] text-[#A1A1AA] mb-2">
+					<span>PRESENTATION // FEATURED</span>
+					<span class="text-[#10B981]">03</span>
+				</div>
+				<div class="text-3xl font-mono font-bold text-[#F4F4F6] my-1">{featuredProjects}</div>
+				<div class="text-xs font-mono text-[#71717A] mt-2 border-t border-white/[0.04] pt-2">
+					<span>SPLIT LAYOUT HIGHLIGHTS</span>
+				</div>
+			</article>
+		</section>
+
+		<!-- Workflow Pipeline Visualizer -->
+		<section class="pipeline-section admin-panel p-6 rounded-sm mb-8" aria-label="Editorial workflow">
+			<div class="pipeline-header flex items-center justify-between mb-4 border-b border-white/[0.04] pb-2">
+				<span class="section-tag font-mono text-xs font-semibold text-[#E2C974]">PIPELINE // PUBLICATION MONITOR</span>
+				<span class="section-desc font-mono text-[11px] text-[#71717A]">Strict 2-stage database state tracking</span>
+			</div>
+			<div class="pipeline-flow grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+				<div class="pipeline-stage admin-well p-4 rounded-sm border border-white/[0.06] flex flex-col justify-between">
+					<div>
+						<div class="flex items-center justify-between gap-2 mb-2">
+							<span class="stage-badge font-mono text-xs text-[#F59E0B] font-semibold tracking-wider">STAGE 01 // DRAFT SPECIFICATION</span>
+							<span class="font-mono text-xs text-[#F59E0B] bg-[#F59E0B]/10 px-2 py-0.5 rounded-xs whitespace-nowrap shrink-0">{draftProjects} RECORD{draftProjects === 1 ? '' : 'S'}</span>
+						</div>
+						<p class="stage-caption text-xs text-[#A1A1AA] leading-relaxed">Authored in private workspace. Accessible only to authenticated administrators via preview token.</p>
+					</div>
+				</div>
+				<div class="pipeline-stage admin-well p-4 rounded-sm border border-white/[0.06] flex flex-col justify-between">
+					<div>
+						<div class="flex items-center justify-between gap-2 mb-2">
+							<span class="stage-badge font-mono text-xs text-[#10B981] font-semibold tracking-wider">STAGE 02 // PUBLISHED LIVE</span>
+							<span class="font-mono text-xs text-[#10B981] bg-[#10B981]/10 px-2 py-0.5 rounded-xs whitespace-nowrap shrink-0">{publishedProjects} RECORD{publishedProjects === 1 ? '' : 'S'}</span>
+						</div>
+						<p class="stage-caption text-xs text-[#A1A1AA] leading-relaxed">Verified and live on the public homepage feed with active monograph routing.</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Two-Column Operations Grid -->
+		<!-- Two-Column Operations Grid -->
+		<div class="operations-grid grid grid-cols-1 lg:grid-cols-2 gap-6">
+			<!-- Recent Projects Column -->
+			<section class="operations-panel admin-panel p-6 rounded-sm border border-white/[0.08]" aria-labelledby="recent-projects-title">
+				<div class="panel-header flex items-center justify-between border-b border-white/[0.08] pb-3 mb-4">
+					<div>
+						<h2 id="recent-projects-title" class="text-lg font-semibold text-[#F4F4F6] mb-0.5">Recent System Records</h2>
+						<p class="panel-sub text-xs font-mono text-[#71717A]">Latest systems authored in the workspace</p>
+					</div>
+					<a class="button button-secondary text-xs py-1 px-2.5" href="/admin/projects">All Records ({totalProjects}) →</a>
+				</div>
+
+				{recentProjects.length > 0 ? (
+					<div class="table-wrap">
+						<table class="dense-table w-full text-left text-xs">
+							<thead>
+								<tr class="border-b border-white/[0.06] text-[#71717A] font-mono text-[10px]">
+									<th class="py-2">Order</th>
+									<th class="py-2">System Title</th>
+									<th class="py-2">Type</th>
+									<th class="py-2">Status</th>
+									<th class="py-2 text-right">Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								{recentProjects.map((project) => (
+									<tr class="border-b border-white/[0.03] hover:bg-white/[0.02]">
+										<td class="mono-cell py-2.5 text-[#71717A] font-mono">#{project.sort_order}</td>
+										<td class="py-2.5">
+											<span class="table-title font-semibold text-[#F4F4F6] block">{project.title}</span>
+											<span class="table-slug font-mono text-[10px] text-[#71717A] block">/{project.slug}</span>
+										</td>
+										<td class="mono-cell uppercase py-2.5 text-[10px] font-mono text-[#E2C974]">{project.project_type}</td>
+										<td class="py-2.5">
+											<span class:list={['badge font-mono text-[10px] uppercase px-1.5 py-0.5 rounded-xs', project.is_published ? 'text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/30' : 'text-[#F59E0B] bg-[#F59E0B]/10 border border-[#F59E0B]/30']}>
+												{project.is_published ? '● Live' : '○ Draft'}
+											</span>
+										</td>
+										<td class="py-2.5 text-right">
+											<a class="table-link text-[#38BDF8] hover:underline font-mono text-xs" href={`/admin/projects/${project.id}`}>Edit →</a>
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				) : (
+					<div class="empty-notice admin-well p-8 rounded-sm text-center border border-dashed border-white/[0.08]">
+						<div class="font-mono text-xs text-[#E2C974] mb-1">REGISTRY // CLEAN STATE</div>
+						<p class="text-sm text-[#A1A1AA] mb-4">No system records currently exist in the database.</p>
+						<a class="button button-secondary text-xs" href="/admin/projects/new">+ Create First System Record</a>
+					</div>
+				)}
+			</section>
+
+			<!-- Recent Inquiries Column -->
+			<section class="operations-panel admin-panel p-6 rounded-sm border border-white/[0.08]" aria-labelledby="recent-messages-title">
+				<div class="panel-header flex items-center justify-between border-b border-white/[0.08] pb-3 mb-4">
+					<div>
+						<h2 id="recent-messages-title" class="text-lg font-semibold text-[#F4F4F6] mb-0.5">Inbound Inquiries</h2>
+						<p class="panel-sub text-xs font-mono text-[#71717A]">Transmissions submitted via contact form</p>
+					</div>
+					<a class="button button-secondary text-xs py-1 px-2.5" href="/admin/messages">Inbox ({unreadMessages} unread) →</a>
+				</div>
+
+				{recentMessages.length > 0 ? (
+					<div class="messages-stack space-y-3">
+						{recentMessages.map((msg) => (
+							<article class:list={['msg-preview-card admin-well p-3.5 rounded-sm border border-white/[0.06] transition-colors', !msg.is_read ? 'is-unread border-[#38BDF8]/40 bg-[#38BDF8]/[0.02]' : '']}>
+								<div class="msg-preview-top flex items-center justify-between gap-2 mb-2">
+									<div class="msg-sender-block flex items-center gap-2">
+										<span class:list={['unread-dot w-2 h-2 rounded-full', !msg.is_read ? 'bg-[#38BDF8] animate-pulse' : 'bg-[#71717A]']} aria-hidden="true"></span>
+										<span class="msg-sender-name font-semibold text-xs text-[#F4F4F6]">{msg.name}</span>
+										<span class="msg-sender-email font-mono text-[11px] text-[#A1A1AA]">({msg.email})</span>
+									</div>
+									<time class="msg-date font-mono text-[10px] text-[#71717A]" datetime={msg.created_at}>
+										{new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(msg.created_at))}
+									</time>
+								</div>
+								<div class="msg-subject-row flex items-center justify-between gap-3">
+									<span class="msg-subject text-xs text-[#D4D4D8] truncate">{msg.subject}</span>
+									<span class:list={['badge font-mono text-[10px] uppercase px-1.5 py-0.5 rounded-xs', !msg.is_read ? 'text-[#38BDF8] bg-[#38BDF8]/10 border border-[#38BDF8]/30 font-semibold' : 'text-[#71717A] bg-white/[0.03] border border-white/[0.06]']}>
+										{!msg.is_read ? '● UNREAD' : '○ READ'}
+									</span>
+								</div>
+							</article>
+						))}
+					</div>
+				) : (
+					<div class="empty-notice admin-well p-8 rounded-sm text-center border border-dashed border-white/[0.08]">
+						<div class="font-mono text-xs text-[#10B981] mb-1">INBOX // ZERO UNREAD</div>
+						<p class="text-sm text-[#A1A1AA] mb-2">No contact messages in the inbox.</p>
+						<span class="mono-meta text-[11px] font-mono text-[#71717A]">INBOX STATUS: CLEAN</span>
+					</div>
+				)}
+			</section>
+		</div>
+	</main>
+</Layout>
+
+<style>
+	.dashboard-shell {
+		width: min(1200px, calc(100% - 3rem));
+		margin-inline: auto;
+		padding-block: 3.5rem 6rem;
+		display: grid;
+		gap: 2.25rem;
+	}
+
+	.dashboard-header {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 2rem;
+		padding-bottom: 2rem;
+		border-bottom: 1px solid var(--line-subtle);
+	}
+
+	.identity-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-bottom: 0.65rem;
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		letter-spacing: 0.1em;
+	}
+
+	.status-indicator {
+		width: 0.42rem;
+		height: 0.42rem;
+		border-radius: 50%;
+		background: var(--text-primary);
+		box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+	}
+
+	h1 {
+		margin: 0 0 0.5rem;
+		font-size: clamp(2rem, 4vw, 3rem);
+		line-height: 1.1;
+		letter-spacing: -0.04em;
+	}
+
+	.operator-meta {
+		margin: 0;
+		color: var(--text-secondary);
+		font-size: 0.88rem;
+	}
+
+	.operator-meta code {
+		color: var(--text-primary);
+		font-family: var(--font-mono);
+		background: rgba(255, 255, 255, 0.05);
+		padding: 0.2rem 0.45rem;
+		border-radius: 0.35rem;
+		font-size: 0.82rem;
+	}
+
+	.header-actions {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+
+	.signout-form {
+		margin: 0;
+	}
+
+	.button-muted {
+		border-color: var(--line-strong);
+		background: transparent;
+		color: var(--text-muted);
+	}
+
+	.button-muted:hover {
+		border-color: var(--text-primary);
+		background: rgba(255, 255, 255, 0.06);
+		color: var(--text-primary);
+	}
+
+	.notice {
+		padding: 0.85rem 1.15rem;
+		border-radius: var(--radius-md);
+		font-size: 0.84rem;
+	}
+
+	.notice.error {
+		border: 1px solid rgba(229, 152, 155, 0.35);
+		background: rgba(229, 152, 155, 0.08);
+		color: #f0b0b4;
+	}
+
+	/* Telemetry Metrics Grid */
+	.telemetry-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 1.25rem;
+	}
+
+	.metric-card {
+		padding: 1.6rem 1.75rem;
+		border: 1px solid var(--line-subtle);
+		border-radius: var(--radius-lg);
+		background: linear-gradient(150deg, rgba(255, 255, 255, 0.035), rgba(12, 12, 14, 0.75));
+		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		min-height: 140px;
+	}
+
+	.metric-label {
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		letter-spacing: 0.1em;
+	}
+
+	.metric-val-row {
+		display: flex;
+		align-items: baseline;
+		gap: 0.85rem;
+		margin-block: 0.5rem 0.75rem;
+	}
+
+	.metric-value {
+		color: var(--text-primary);
+		font-size: 2.3rem;
+		font-weight: 600;
+		line-height: 1;
+		font-family: var(--font-mono);
+	}
+
+	.metric-sub {
+		color: var(--text-secondary);
+		font-size: 0.78rem;
+	}
+
+	.metric-progress-bar {
+		width: 100%;
+		height: 4px;
+		background: rgba(255, 255, 255, 0.06);
+		border-radius: 999px;
+		overflow: hidden;
+	}
+
+	.metric-progress-fill {
+		height: 100%;
+		background: var(--text-primary);
+		border-radius: 999px;
+	}
+
+	.metric-progress-fill.inbox {
+		background: #c8c8c8;
+	}
+
+	.metric-tag-row {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.tech-tag {
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		letter-spacing: 0.08em;
+		padding: 0.2rem 0.5rem;
+		border: 1px solid var(--line-subtle);
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.02);
+	}
+
+	/* Pipeline Workflow */
+	.pipeline-section {
+		padding: 1.75rem 2rem;
+		border: 1px solid var(--line-subtle);
+		border-radius: var(--radius-lg);
+		background: rgba(14, 14, 16, 0.6);
+	}
+
+	.pipeline-header {
+		display: flex;
+		align-items: baseline;
+		gap: 1.25rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.section-tag {
+		color: var(--text-primary);
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		letter-spacing: 0.12em;
+	}
+
+	.section-desc {
+		color: var(--text-muted);
+		font-size: 0.8rem;
+	}
+
+	.pipeline-flow {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-items: stretch;
+		gap: 1rem;
+	}
+
+	@media (max-width: 768px) {
+		.pipeline-flow {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.pipeline-stage {
+		padding: 1.25rem;
+		border: 1px solid var(--line-subtle);
+		border-radius: var(--radius-md);
+		background: rgba(255, 255, 255, 0.02);
+		transition: border-color 180ms ease;
+	}
+
+	.pipeline-stage.has-items {
+		border-color: var(--line-strong);
+		background: rgba(255, 255, 255, 0.035);
+	}
+
+	.stage-badge {
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		letter-spacing: 0.08em;
+		margin-bottom: 0.4rem;
+	}
+
+	.stage-metric {
+		color: var(--text-primary);
+		font-size: 1.15rem;
+		font-weight: 600;
+		margin-bottom: 0.35rem;
+	}
+
+	.stage-caption {
+		margin: 0;
+		color: var(--text-secondary);
+		font-size: 0.74rem;
+		line-height: 1.45;
+	}
+
+	.pipeline-connector {
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 1.2rem;
+	}
+
+	/* Operations Grid */
+	.operations-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1.5rem;
+	}
+
+	.operations-panel {
+		padding: 1.75rem 2rem;
+		border: 1px solid var(--line-subtle);
+		border-radius: var(--radius-lg);
+		background: linear-gradient(160deg, rgba(255, 255, 255, 0.025), rgba(10, 10, 12, 0.8));
+		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.panel-header {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-bottom: 1.5rem;
+		padding-bottom: 1rem;
+		border-bottom: 1px solid var(--line-subtle);
+	}
+
+	.panel-header h2 {
+		margin: 0 0 0.25rem;
+		font-size: 1.35rem;
+		letter-spacing: -0.03em;
+	}
+
+	.panel-sub {
+		margin: 0;
+		color: var(--text-muted);
+		font-size: 0.78rem;
+	}
+
+	.panel-action {
+		font-size: 0.62rem;
+		padding: 0.5rem 0.85rem;
+		min-height: 2.2rem;
+		white-space: nowrap;
+	}
+
+	/* Dense Table */
+	.table-wrap {
+		overflow-x: auto;
+	}
+
+	.dense-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.82rem;
+		text-align: left;
+	}
+
+	.dense-table th {
+		padding: 0.65rem 0.75rem;
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		border-bottom: 1px solid var(--line-subtle);
+	}
+
+	.dense-table td {
+		padding: 0.75rem;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+		vertical-align: middle;
+	}
+
+	.mono-cell {
+		font-family: var(--font-mono);
+		color: var(--text-muted);
+		font-size: 0.72rem;
+	}
+
+	.uppercase {
+		text-transform: uppercase;
+	}
+
+	.table-title {
+		display: block;
+		color: var(--text-primary);
+		font-weight: 550;
+		line-height: 1.3;
+	}
+
+	.table-slug {
+		display: block;
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+	}
+
+	.table-link {
+		color: var(--text-secondary);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		white-space: nowrap;
+		transition: color 180ms ease;
+	}
+
+	.table-link:hover {
+		color: var(--text-primary);
+	}
+
+	/* Badges */
+	.badge {
+		display: inline-block;
+		padding: 0.25rem 0.55rem;
+		border: 1px solid;
+		border-radius: 999px;
+		font-family: var(--font-mono);
+		font-size: 0.56rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+
+	.badge-published {
+		border-color: rgba(255, 255, 255, 0.35);
+		background: rgba(255, 255, 255, 0.08);
+		color: var(--text-primary);
+	}
+
+	.badge-draft, .badge-muted {
+		border-color: var(--line-subtle);
+		background: transparent;
+		color: var(--text-muted);
+	}
+
+	.badge-unread {
+		border-color: rgba(255, 255, 255, 0.4);
+		background: rgba(255, 255, 255, 0.1);
+		color: #ffffff;
+	}
+
+	/* Message Previews */
+	.messages-stack {
+		display: grid;
+		gap: 0.75rem;
+	}
+
+	.msg-preview-card {
+		padding: 1rem 1.15rem;
+		border: 1px solid var(--line-subtle);
+		border-radius: var(--radius-md);
+		background: rgba(255, 255, 255, 0.02);
+		transition: border-color 180ms ease, background 180ms ease;
+	}
+
+	.msg-preview-card.is-unread {
+		border-color: var(--line-strong);
+		background: rgba(255, 255, 255, 0.04);
+	}
+
+	.msg-preview-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin-bottom: 0.45rem;
+	}
+
+	.msg-sender-block {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.unread-dot {
+		width: 0.35rem;
+		height: 0.35rem;
+		border-radius: 50%;
+		background: var(--text-muted);
+	}
+
+	.unread-dot.active {
+		background: #ffffff;
+		box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+	}
+
+	.msg-sender-name {
+		font-weight: 550;
+		color: var(--text-primary);
+		font-size: 0.82rem;
+	}
+
+	.msg-sender-email {
+		color: var(--text-muted);
+		font-size: 0.72rem;
+		font-family: var(--font-mono);
+	}
+
+	.msg-date {
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		white-space: nowrap;
+	}
+
+	.msg-subject-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+	}
+
+	.msg-subject {
+		color: var(--text-secondary);
+		font-size: 0.82rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.empty-notice {
+		padding: 2.5rem 1.5rem;
+		text-align: center;
+		color: var(--text-muted);
+		font-size: 0.85rem;
+		display: grid;
+		gap: 0.75rem;
+		place-items: center;
+	}
+
+	.empty-notice p {
+		margin: 0;
+	}
+
+	.mono-meta {
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	@media (max-width: 960px) {
+		.telemetry-grid {
+			grid-template-columns: 1fr;
+		}
+		.operations-grid {
+			grid-template-columns: 1fr;
+		}
+		.pipeline-flow {
+			grid-template-columns: 1fr;
+			gap: 0.75rem;
+		}
+		.pipeline-connector {
+			text-align: center;
+			transform: rotate(90deg);
+		}
+	}
+
+	@media (max-width: 680px) {
+		.dashboard-header {
+			flex-direction: column;
+			align-items: stretch;
+		}
+		.header-actions {
+			flex-direction: column;
+			align-items: stretch;
+		}
+		.header-actions > * {
+			width: 100%;
+		}
+		.header-actions form button {
+			width: 100%;
+		}
+	}
+</style>

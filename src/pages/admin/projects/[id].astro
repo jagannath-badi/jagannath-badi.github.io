@@ -1,0 +1,205 @@
+---
+// src/pages/admin/projects/[id].astro — Edit Engineering System Record
+import Layout from '../../../layouts/Layout.astro';
+import ProjectForm from '../../../components/admin/ProjectForm.astro';
+import { authorizeAdmin } from '../../../lib/admin-auth';
+import { createSupabaseServerClient } from '../../../lib/supabase';
+
+const authorization = await authorizeAdmin(Astro);
+if (authorization.status === 'unauthenticated') return Astro.redirect('/admin/login');
+if (authorization.status === 'forbidden') return new Response('Forbidden', { status: 403 });
+
+const id = Astro.params.id;
+const supabase = createSupabaseServerClient(Astro);
+const { data: project, error } = await supabase
+	.from('projects')
+	.select('id, slug, title, summary, description, technologies, project_type, is_featured, is_published, github_url, demo_url, sort_order')
+	.eq('id', id ?? '')
+	.maybeSingle();
+
+if (error || !project) {
+	return new Response('Project not found', { status: 404 });
+}
+
+const errorMessage =
+	Astro.url.searchParams.get('error') === 'invalid'
+		? 'The project could not be saved. Check all fields and try again.'
+		: Astro.url.searchParams.get('error') === 'duplicate'
+			? 'That slug is already in use. Choose another slug.'
+			: Astro.url.searchParams.get('error') === 'database'
+				? 'The project could not be saved because of a database error.'
+			: null;
+---
+
+<Layout title={`Edit ${project.title} — Admin — Jagan`}>
+	<main class="form-shell" id="main-content">
+		<header class="form-page-header border-b border-white/[0.08] pb-6 mb-8">
+			<div class="breadcrumb-row flex items-center gap-2 font-mono text-xs text-[#71717A] mb-2">
+				<a class="back-link hover:text-[#38BDF8] transition-colors" href="/admin/projects">← SYSTEM REGISTRY</a>
+				<span class="divider text-[#3F3F46]">/</span>
+				<span class="mono-tag text-[#38BDF8]">SYS-{project.id.slice(0, 8).toUpperCase()}</span>
+			</div>
+			<h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-[#F4F4F6] mb-1">Edit System Record</h1>
+			<p class="page-intro text-xs font-mono text-[#A1A1AA]">Updating specifications, architecture breakdown, and publication state for <code class="text-[#E2C974] bg-[#E2C974]/10 px-1.5 py-0.5 rounded-xs border border-[#E2C974]/30">{project.title}</code></p>
+		</header>
+
+		<section class="form-content-wrap" aria-labelledby="edit-project-title">
+			<h2 id="edit-project-title" class="visually-hidden">Edit project fields</h2>
+			<ProjectForm action="/api/admin/projects" submitLabel="Save System Changes" project={project} errorMessage={errorMessage ?? undefined} />
+
+			<div class="danger-zone">
+				<div class="danger-meta">
+					<span class="danger-label">DANGER ZONE</span>
+					<p class="danger-desc">Permanently remove this project record from the database. This action cannot be reversed.</p>
+				</div>
+				<form class="delete-form" method="post" action="/api/admin/projects" onsubmit="return confirm('Permanently delete this project record? This cannot be undone.')">
+					<input type="hidden" name="action" value="delete" />
+					<input type="hidden" name="id" value={project.id} />
+					<input type="hidden" name="confirm" value="delete" />
+					<button class="delete-button" type="submit">Delete Record</button>
+				</form>
+			</div>
+		</section>
+	</main>
+</Layout>
+
+<style>
+	.form-shell {
+		width: min(960px, calc(100% - 3rem));
+		margin-inline: auto;
+		padding-block: 3.5rem 6rem;
+		display: grid;
+		gap: 2.25rem;
+	}
+
+	.form-page-header {
+		padding-bottom: 1.75rem;
+		border-bottom: 1px solid var(--line-subtle);
+	}
+
+	.breadcrumb-row {
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		margin-bottom: 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+	}
+
+	.back-link {
+		color: var(--text-muted);
+		transition: color 180ms ease;
+	}
+
+	.back-link:hover {
+		color: var(--text-primary);
+	}
+
+	.divider {
+		color: var(--line-strong);
+	}
+
+	.mono-tag {
+		color: var(--text-secondary);
+		letter-spacing: 0.08em;
+	}
+
+	h1 {
+		margin: 0 0 0.5rem;
+		font-size: clamp(2rem, 4vw, 3rem);
+		line-height: 1.1;
+		letter-spacing: -0.04em;
+	}
+
+	.page-intro {
+		margin: 0;
+		color: var(--text-secondary);
+		font-size: 0.92rem;
+		max-width: 600px;
+		line-height: 1.6;
+	}
+
+	.page-intro code {
+		font-family: var(--font-mono);
+		color: var(--text-primary);
+		background: #141414;
+		padding: 0.15rem 0.4rem;
+		border-radius: 3px;
+		font-size: 0.85em;
+		border: 1px solid var(--line-subtle);
+	}
+
+	.form-content-wrap {
+		display: grid;
+		gap: 3rem;
+	}
+
+	.danger-zone {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1.5rem;
+		padding: 1.5rem 1.75rem;
+		border: 1px solid rgba(248, 113, 113, 0.2);
+		border-radius: 8px;
+		background: rgba(248, 113, 113, 0.02);
+	}
+
+	.danger-meta {
+		display: grid;
+		gap: 0.25rem;
+	}
+
+	.danger-label {
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		color: #f87171;
+	}
+
+	.danger-desc {
+		margin: 0;
+		font-size: 0.82rem;
+		color: var(--text-muted);
+	}
+
+	.delete-form {
+		margin: 0;
+	}
+
+	.delete-button {
+		border: 1px solid rgba(248, 113, 113, 0.35);
+		background: transparent;
+		color: #f87171;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		padding: 0.6rem 1.1rem;
+		border-radius: 4px;
+		cursor: pointer;
+		transition: all 180ms ease;
+	}
+
+	.delete-button:hover {
+		background: rgba(248, 113, 113, 0.12);
+		border-color: rgba(248, 113, 113, 0.7);
+		color: #fca5a5;
+	}
+
+	.delete-button:focus-visible {
+		outline: 2px solid #f87171;
+		outline-offset: 2px;
+	}
+
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+	}
+</style>

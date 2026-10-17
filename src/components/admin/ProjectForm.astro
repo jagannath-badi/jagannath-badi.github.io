@@ -1,0 +1,1068 @@
+---
+// src/components/admin/ProjectForm.astro — Comprehensive Engineering Case-Study & System Specification Form
+import type { ProjectFormValues } from '../../lib/project-validation';
+import {
+	parseCaseStudy,
+	DEFAULT_ENGINEERING_TEMPLATE
+} from '../../lib/case-study-schema';
+
+interface Props {
+	action: string;
+	submitLabel: string;
+	project?: Partial<ProjectFormValues> & { id?: string };
+	errorMessage?: string;
+}
+
+const { action, submitLabel, project = {}, errorMessage } = Astro.props;
+const technologies = project.technologies?.join(', ') ?? '';
+const isEdit = Boolean(project.id);
+
+// Parse structured case-study document from existing long-text description (or create default)
+const initialDoc = parseCaseStudy(project.description, project.summary, project.project_type);
+const serializedDoc = JSON.stringify(initialDoc);
+---
+
+{errorMessage && (
+	<div class="notice error" role="alert">
+		<span class="notice-indicator" aria-hidden="true">!</span>
+		<span>{errorMessage}</span>
+	</div>
+)}
+
+<form method="post" action={action} class="project-form" id="project-editor-form">
+	<input type="hidden" name="action" value={isEdit ? 'update' : 'create'} />
+	{project.id && <input type="hidden" name="id" value={project.id} />}
+	<input type="hidden" name="is_featured" value="false" />
+	<input type="hidden" name="is_published" value="false" />
+	
+	<!-- Serialized Case Study Document in existing description column -->
+	<input type="hidden" name="description" id="hidden-description-input" value={serializedDoc} />
+
+	<!-- SECTION 01: Core System Identity -->
+	<fieldset class="form-section admin-panel p-6 rounded-sm mb-8 border border-white/[0.08]">
+		<legend class="section-legend">
+			<span class="section-num text-[#38BDF8]">01 //</span>
+			<span class="section-title font-mono text-xs text-[#F4F4F6] font-semibold tracking-wider">HARDWARE & SYSTEM IDENTITY</span>
+		</legend>
+
+		<div class="fields-grid">
+			<div class="field field-span-2">
+				<label for="title">System Title</label>
+				<input
+					id="title"
+					name="title"
+					value={project.title ?? ''}
+					maxlength="200"
+					placeholder="e.g. Mixed-Signal DSP Pipeline"
+					required
+				/>
+				<span class="field-hint">Primary headline title for the engineering project or concept.</span>
+			</div>
+
+			<div class="field">
+				<label for="slug">Routing Slug</label>
+				<input
+					id="slug"
+					name="slug"
+					value={project.slug ?? ''}
+					pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+					maxlength="120"
+					placeholder="e.g. dsp-pipeline"
+					required
+				/>
+				<span class="field-hint">Lowercase alphanumeric with hyphens (e.g. <code>dsp-pipeline</code>).</span>
+			</div>
+
+			<div class="field">
+				<label for="project_type">System Classification</label>
+				<select id="project_type" name="project_type" required>
+					<option value="project" selected={project.project_type === 'project'}>Project (Engineered & Built)</option>
+					<option value="concept" selected={project.project_type === 'concept'}>Concept (Architecture & Design)</option>
+					<option value="in_progress" selected={project.project_type === 'in_progress'}>In Progress (Active Exploration)</option>
+				</select>
+				<span class="field-hint">Defines classification badge and lifecycle status on public site.</span>
+			</div>
+		</div>
+	</fieldset>
+
+	<!-- SECTION 02: High-Level Engineering Specifications & Metadata -->
+	<fieldset class="form-section admin-panel p-6 rounded-sm mb-8 border border-white/[0.08]">
+		<legend class="section-legend">
+			<span class="section-num text-[#38BDF8]">02 //</span>
+			<span class="section-title font-mono text-xs text-[#F4F4F6] font-semibold tracking-wider">TOP TELEMETRY & VISUAL PRESENTATION</span>
+		</legend>
+
+		<div class="fields-grid">
+			<div class="field">
+				<label for="meta-subtitle">Subtitle / Category Badge</label>
+				<input
+					id="meta-subtitle"
+					type="text"
+					value={initialDoc.metadata.subtitle ?? ''}
+					placeholder="e.g. HARDWARE ARCHITECTURE"
+				/>
+				<span class="field-hint">Displayed as the top uppercase category kicker on the case study.</span>
+			</div>
+
+			<div class="field">
+				<label for="meta-status">Status Badge Label</label>
+				<input
+					id="meta-status"
+					type="text"
+					value={initialDoc.metadata.status_label ?? ''}
+					placeholder="e.g. PROTOTYPE DESIGN"
+				/>
+				<span class="field-hint">Sub-badge on the case study header (e.g. PROTOTYPE SPEC or HARDWARE LAB).</span>
+			</div>
+
+			<div class="field">
+				<label for="meta-role">System Role</label>
+				<input
+					id="meta-role"
+					type="text"
+					value={initialDoc.metadata.system_role ?? ''}
+					placeholder="e.g. Lead Systems Engineer"
+				/>
+				<span class="field-hint">Telemetry item 1: Your specific technical contribution.</span>
+			</div>
+
+			<div class="field">
+				<label for="meta-platform">Core Platform</label>
+				<input
+					id="meta-platform"
+					type="text"
+					value={initialDoc.metadata.core_platform ?? ''}
+					placeholder="e.g. Microcontroller / Embedded C++"
+				/>
+				<span class="field-hint">Telemetry item 2: Primary compute or framework platform.</span>
+			</div>
+
+			<div class="field">
+				<label for="meta-evidence">Evidence Tier</label>
+				<input
+					id="meta-evidence"
+					type="text"
+					value={initialDoc.metadata.evidence_tier ?? ''}
+					placeholder="e.g. Tier 2: System Architecture"
+				/>
+				<span class="field-hint">Epistemic proof level (Tier 1: Documented, Tier 2: Architecture, Tier 3: Built).</span>
+			</div>
+
+			<div class="field">
+				<label for="meta-diagram-type">Primary Card Visual / Diagram Type</label>
+				<select id="meta-diagram-type">
+					<option value="none" selected={initialDoc.metadata.diagram_type === 'none'}>None</option>
+					<option value="placeholder" selected={initialDoc.metadata.diagram_type === 'placeholder'}>Technical Artifact Placeholder</option>
+					<option value="image" selected={initialDoc.metadata.diagram_type === 'image'}>Custom Diagram / Image URL</option>
+				</select>
+				<span class="field-hint">Visual treatment used on homepage cards and default architecture slot.</span>
+			</div>
+
+			<div class="field field-span-2" id="diagram-url-field" style={initialDoc.metadata.diagram_type === 'image' ? 'display: block;' : 'display: none;'}>
+				<label for="meta-diagram-url">Custom Diagram / Image URL</label>
+				<input
+					id="meta-diagram-url"
+					type="url"
+					value={initialDoc.metadata.diagram_url ?? ''}
+					placeholder="https://example.com/schematic.png"
+				/>
+				<span class="field-hint">Direct link to hosted schematic, block diagram, or prototype photo.</span>
+			</div>
+
+			<div class="field field-span-2">
+				<label for="meta-diagram-caption">Diagram Caption / Note</label>
+				<input
+					id="meta-diagram-caption"
+					type="text"
+					value={initialDoc.metadata.diagram_caption ?? ''}
+					placeholder="e.g. FIGURE 1.0 // System Architecture Overview"
+				/>
+				<span class="field-hint">Monospace caption displayed underneath the homepage card diagram.</span>
+			</div>
+		</div>
+	</fieldset>
+
+	<!-- SECTION 03: Executive Summary -->
+	<fieldset class="form-section admin-panel p-6 rounded-sm mb-8 border border-white/[0.08]">
+		<legend class="section-legend">
+			<span class="section-num text-[#38BDF8]">03 //</span>
+			<span class="section-title font-mono text-xs text-[#F4F4F6] font-semibold tracking-wider">EXECUTIVE SUMMARY</span>
+		</legend>
+
+		<div class="fields-grid">
+			<div class="field field-span-2">
+				<label for="summary">Executive Summary</label>
+				<textarea
+					id="summary"
+					name="summary"
+					maxlength="500"
+					rows="3"
+					placeholder="One or two sentences explaining the engineering problem statement and concrete solution..."
+					required
+				>{project.summary ?? ''}</textarea>
+				<span class="field-hint">Displayed on homepage cards and case study subheaders. (Max 500 characters).</span>
+			</div>
+		</div>
+	</fieldset>
+
+	<!-- SECTION 04: Dynamic Case-Study Sections Builder -->
+	<fieldset class="form-section admin-panel p-6 rounded-sm mb-8 border border-white/[0.08]">
+		<legend class="section-legend">
+			<span class="section-num text-[#38BDF8]">04 //</span>
+			<span class="section-title font-mono text-xs text-[#F4F4F6] font-semibold tracking-wider">MODULAR CASE-STUDY SECTIONS</span>
+		</legend>
+
+		<div class="builder-toolbar">
+			<div class="builder-presets">
+				<span class="toolbar-label">PRESETS:</span>
+				<button type="button" class="preset-btn" id="load-template-btn">Load Default Template</button>
+			</div>
+			<button type="button" class="button button-secondary add-section-btn" id="add-section-btn">
+				+ Add Custom Section
+			</button>
+		</div>
+
+		<div id="sections-container" class="sections-container">
+			<!-- Rendered dynamically by script below -->
+		</div>
+	</fieldset>
+
+	<!-- SECTION 05: Technologies & Repositories -->
+	<fieldset class="form-section admin-panel p-6 rounded-sm mb-8 border border-white/[0.08]">
+		<legend class="section-legend">
+			<span class="section-num text-[#38BDF8]">05 //</span>
+			<span class="section-title font-mono text-xs text-[#F4F4F6] font-semibold tracking-wider">TECHNOLOGIES & REPOSITORIES</span>
+		</legend>
+
+		<div class="fields-grid">
+			<div class="field field-span-2">
+				<label for="technologies">Technology Stack Tags</label>
+				<input
+					id="technologies"
+					name="technologies"
+					value={technologies}
+					maxlength="2000"
+					placeholder="e.g. C++, FreeRTOS, ESP32, PyTorch, KiCad, MQTT"
+				/>
+				<span class="field-hint">Comma-separated technologies displayed as metadata chips.</span>
+			</div>
+
+			<div class="field">
+				<label for="github_url">GitHub Repository Link</label>
+				<input
+					id="github_url"
+					name="github_url"
+					type="url"
+					value={project.github_url ?? ''}
+					maxlength="2048"
+					placeholder="https://github.com/jagannath-badi/repository"
+				/>
+				<span class="field-hint">Direct link to source code, schematics, or firmware repository.</span>
+			</div>
+
+			<div class="field">
+				<label for="demo_url">Live Demonstration / Interactive Simulator</label>
+				<input
+					id="demo_url"
+					name="demo_url"
+					type="url"
+					value={project.demo_url ?? ''}
+					maxlength="2048"
+					placeholder="https://demo.domain.com"
+				/>
+				<span class="field-hint">Optional link to web simulator, interactive dashboard, or hosted app.</span>
+			</div>
+		</div>
+	</fieldset>
+
+	<!-- SECTION 06: Sequencing & Publication Gate -->
+	<fieldset class="form-section admin-panel p-6 rounded-sm mb-8 border border-white/[0.08]">
+		<legend class="section-legend">
+			<span class="section-num text-[#38BDF8]">06 //</span>
+			<span class="section-title font-mono text-xs text-[#F4F4F6] font-semibold tracking-wider">SEQUENCING & PUBLICATION GATE</span>
+		</legend>
+
+		<div class="fields-grid">
+			<div class="field">
+				<label for="sort_order">Feed Sort Order</label>
+				<input
+					id="sort_order"
+					name="sort_order"
+					type="number"
+					step="1"
+					value={project.sort_order ?? 0}
+					required
+				/>
+				<span class="field-hint">Lower integer values (e.g. 1, 2, 3) render first on the public portfolio.</span>
+			</div>
+
+			<div class="field-flags">
+				<label class="flag-toggle">
+					<input
+						type="checkbox"
+						name="is_published"
+						value="true"
+						checked={project.is_published === true}
+					/>
+					<div class="flag-info">
+						<span class="flag-name">Published (Live on Portfolio)</span>
+						<span class="flag-desc">When checked, system is visible to public visitors on homepage and case-study route.</span>
+					</div>
+				</label>
+
+				<label class="flag-toggle">
+					<input
+						type="checkbox"
+						name="is_featured"
+						value="true"
+						checked={project.is_featured === true}
+					/>
+					<div class="flag-info">
+						<span class="flag-name">Featured Presentation</span>
+						<span class="flag-desc">Promotes system to the primary full-width split layout in Selected Engineering Work.</span>
+					</div>
+				</label>
+			</div>
+		</div>
+	</fieldset>
+
+	<!-- Form Commands Toolbar -->
+	<div class="form-commands sticky bottom-0 z-40 bg-[#0B0D12]/95 backdrop-blur-md border-t border-white/[0.08] py-4 px-6 rounded-sm flex items-center justify-between shadow-2xl">
+		<div class="commands-left flex items-center gap-3">
+			<a class="button button-secondary" href="/admin/projects">Discard Changes</a>
+			{isEdit && project.slug && (
+				<a
+					class="button button-muted preview-link"
+					href={`/projects/${project.slug}?preview=1`}
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					Preview Case Study ↗
+				</a>
+			)}
+		</div>
+		<button class="button button-primary" type="submit" id="save-btn">
+			<span>{submitLabel}</span>
+			<span aria-hidden="true">→</span>
+		</button>
+	</div>
+</form>
+
+<script is:inline define:vars={{ initialDoc, DEFAULT_ENGINEERING_TEMPLATE }}>
+	// Client-side interactive sections builder
+	let currentDoc = initialDoc || JSON.parse(JSON.stringify(DEFAULT_ENGINEERING_TEMPLATE));
+
+	const container = document.getElementById('sections-container');
+	const hiddenInput = document.getElementById('hidden-description-input');
+	const form = document.getElementById('project-editor-form');
+
+	const diagramTypeSelect = document.getElementById('meta-diagram-type');
+	const diagramUrlField = document.getElementById('diagram-url-field');
+
+	if (diagramTypeSelect && diagramUrlField) {
+		diagramTypeSelect.addEventListener('change', () => {
+			diagramUrlField.style.display = diagramTypeSelect.value === 'image' ? 'block' : 'none';
+		});
+	}
+
+	function escapeHtml(str) {
+		return (str || '')
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#39;');
+	}
+
+	function slugify(text) {
+		return (text || '')
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, '-')
+			.replace(/^-+|-+$/g, '') || 'section';
+	}
+
+	function renderSections() {
+		if (!container) return;
+		container.innerHTML = '';
+
+		currentDoc.sections.forEach((sec, idx) => {
+			const isFirst = idx === 0;
+			const isLast = idx === currentDoc.sections.length - 1;
+
+			const card = document.createElement('div');
+			card.className = 'section-item section-card bg-[#080A0F] border border-white/[0.08] p-5 rounded-[2px] mb-5 block';
+			card.dataset.index = String(idx);
+
+			const listItemsText = Array.isArray(sec.list_items) ? sec.list_items.join('\n') : '';
+
+			card.innerHTML = `
+				<div class="section-item-header flex items-center justify-between pb-3 mb-4 border-b border-white/[0.06]">
+					<div class="section-item-title flex items-center gap-2">
+						<span class="font-mono text-xs text-[#38BDF8] font-semibold">SECTION ${String(idx + 1).padStart(2, '0')} //</span>
+						<span class="font-mono text-xs uppercase text-[#F4F4F6] font-semibold tracking-wider section-title-preview">${escapeHtml(sec.heading || 'UNTITLED SECTION')}</span>
+					</div>
+					<div class="section-item-controls flex items-center gap-1.5">
+						<button type="button" class="ctrl-btn move-up-btn button-muted px-2 py-1 text-xs rounded-xs font-mono" data-action="up" ${isFirst ? 'disabled' : ''} title="Move Up">↑</button>
+						<button type="button" class="ctrl-btn move-down-btn button-muted px-2 py-1 text-xs rounded-xs font-mono" data-action="down" ${isLast ? 'disabled' : ''} title="Move Down">↓</button>
+						<button type="button" class="ctrl-btn delete-sec-btn button-muted text-[#EF4444] hover:bg-[#EF4444]/15 hover:border-[#EF4444]/40 px-2 py-1 text-xs rounded-xs font-mono" data-action="delete" title="Remove Section">✕</button>
+					</div>
+				</div>
+
+				<div class="section-card-body">
+					<div class="sec-grid">
+						<div class="field">
+							<label class="font-mono text-[11px] uppercase tracking-wider text-[#A1A1AA] block mb-1.5">Section Heading</label>
+							<input type="text" class="sec-input sec-heading block w-full text-xs px-3 py-2 rounded-sm bg-[#0D1017] border border-white/[0.08] text-[#F4F4F6] focus:border-[#38BDF8] focus:outline-none mb-3.5" value="${escapeHtml(sec.heading || '')}" placeholder="e.g. Subsystem Breakdown" />
+						</div>
+						<div class="field">
+							<label class="font-mono text-[11px] uppercase tracking-wider text-[#A1A1AA] block mb-1.5">Badge / Kicker (Optional)</label>
+							<input type="text" class="sec-input sec-badge block w-full text-xs px-3 py-2 rounded-sm bg-[#0D1017] border border-white/[0.08] text-[#F4F4F6] focus:border-[#38BDF8] focus:outline-none mb-3.5" value="${escapeHtml(sec.badge || '')}" placeholder="e.g. 04 //" />
+						</div>
+					</div>
+
+					<div class="field">
+						<label class="font-mono text-[11px] uppercase tracking-wider text-[#A1A1AA] block mb-1.5">Body Content (Paragraphs)</label>
+						<textarea rows="4" class="sec-input sec-body block w-full text-xs px-3 py-2 rounded-sm bg-[#0D1017] border border-white/[0.08] text-[#F4F4F6] focus:border-[#38BDF8] focus:outline-none mb-3.5 leading-relaxed" placeholder="Describe this architectural section, technical trade-offs, or implementation specifics...">${escapeHtml(sec.body || '')}</textarea>
+					</div>
+
+					<div class="field">
+						<label class="font-mono text-[11px] uppercase tracking-wider text-[#A1A1AA] block mb-1.5">Key Bullet Points / Design Goals (Optional, 1 per line)</label>
+						<textarea rows="3" class="sec-input sec-list block w-full text-xs px-3 py-2 rounded-sm bg-[#0D1017] border border-white/[0.08] text-[#F4F4F6] focus:border-[#38BDF8] focus:outline-none mb-3.5 leading-relaxed" placeholder="Point 1&#10;Point 2&#10;Point 3">${escapeHtml(listItemsText)}</textarea>
+					</div>
+
+					<!-- Visual Selector -->
+					<div class="sec-grid">
+						<div class="field">
+							<label class="font-mono text-[11px] uppercase tracking-wider text-[#A1A1AA] block mb-1.5">Section Visual / Graphic</label>
+							<select class="sec-input sec-visual-type block w-full text-xs px-3 py-2 rounded-sm bg-[#0D1017] border border-white/[0.08] text-[#F4F4F6] focus:border-[#38BDF8] focus:outline-none mb-3.5">
+								<option value="none" ${(!sec.visual || sec.visual.type === 'none') ? 'selected' : ''}>None</option>
+								<option value="placeholder" ${sec.visual?.type === 'placeholder' ? 'selected' : ''}>Technical Artifact Placeholder</option>
+								<option value="image" ${sec.visual?.type === 'image' ? 'selected' : ''}>Custom Diagram / Image URL</option>
+							</select>
+						</div>
+						<div class="field">
+							<label class="font-mono text-[11px] uppercase tracking-wider text-[#A1A1AA] block mb-1.5">Visual Caption / Title</label>
+							<input type="text" class="sec-input sec-visual-caption block w-full text-xs px-3 py-2 rounded-sm bg-[#0D1017] border border-white/[0.08] text-[#F4F4F6] focus:border-[#38BDF8] focus:outline-none mb-3.5" value="${escapeHtml(sec.visual?.caption || sec.visual?.title || '')}" placeholder="e.g. FIGURE 1.0 // Technical Diagram Overview" />
+						</div>
+					</div>
+
+					<!-- Technical Callout Box -->
+					<div class="sec-grid">
+						<div class="field">
+							<label class="font-mono text-[11px] uppercase tracking-wider text-[#A1A1AA] block mb-1.5">Callout Label (Optional)</label>
+							<input type="text" class="sec-input sec-callout-label block w-full text-xs px-3 py-2 rounded-sm bg-[#0D1017] border border-white/[0.08] text-[#F4F4F6] focus:border-[#38BDF8] focus:outline-none mb-3.5" value="${escapeHtml(sec.callout?.label || '')}" placeholder="e.g. NOTE or VERIFICATION STATUS" />
+						</div>
+						<div class="field">
+							<label class="font-mono text-[11px] uppercase tracking-wider text-[#A1A1AA] block mb-1.5">Callout Note / Text (Optional)</label>
+							<input type="text" class="sec-input sec-callout-text block w-full text-xs px-3 py-2 rounded-sm bg-[#0D1017] border border-white/[0.08] text-[#F4F4F6] focus:border-[#38BDF8] focus:outline-none mb-3.5" value="${escapeHtml(sec.callout?.text || '')}" placeholder="Highlighted technical or boundary note..." />
+						</div>
+					</div>
+				</div>
+			`;
+
+			container.appendChild(card);
+		});
+
+		syncToHidden();
+	}
+
+	function readFormDataToDoc() {
+		const metaSubtitle = document.getElementById('meta-subtitle');
+		const metaStatus = document.getElementById('meta-status');
+		const metaRole = document.getElementById('meta-role');
+		const metaPlatform = document.getElementById('meta-platform');
+		const metaEvidence = document.getElementById('meta-evidence');
+		const metaDiagramType = document.getElementById('meta-diagram-type');
+		const metaDiagramUrl = document.getElementById('meta-diagram-url');
+		const metaDiagramCaption = document.getElementById('meta-diagram-caption');
+
+		currentDoc.metadata = {
+			subtitle: metaSubtitle?.value || '',
+			status_label: metaStatus?.value || '',
+			system_role: metaRole?.value || '',
+			core_platform: metaPlatform?.value || '',
+			evidence_tier: metaEvidence?.value || '',
+			diagram_type: metaDiagramType?.value || 'none',
+			diagram_url: metaDiagramUrl?.value || '',
+			diagram_caption: metaDiagramCaption?.value || '',
+			additional_links: currentDoc.metadata?.additional_links || []
+		};
+
+		const cards = container?.querySelectorAll('.section-card') || [];
+		const updatedSections = [];
+
+		cards.forEach((card, idx) => {
+			const heading = card.querySelector('.sec-heading')?.value || `Section ${idx + 1}`;
+			const badge = card.querySelector('.sec-badge')?.value || `${String(idx + 1).padStart(2, '0')} //`;
+			const body = card.querySelector('.sec-body')?.value || '';
+			const listRaw = card.querySelector('.sec-list')?.value || '';
+			const listItems = listRaw.split('\n').map(s => s.trim()).filter(Boolean);
+
+			const visualType = card.querySelector('.sec-visual-type')?.value || 'none';
+			const visualCaption = card.querySelector('.sec-visual-caption')?.value || '';
+
+			const calloutLabel = card.querySelector('.sec-callout-label')?.value || '';
+			const calloutText = card.querySelector('.sec-callout-text')?.value || '';
+
+			const existingSec = currentDoc.sections[idx] || {};
+
+			updatedSections.push({
+				id: slugify(heading),
+				heading,
+				badge,
+				body,
+				list_items: listItems,
+				specs: existingSec.specs || [],
+				visual: visualType !== 'none' ? {
+					type: visualType,
+					caption: visualCaption,
+					title: visualCaption,
+					description: existingSec.visual?.description || ''
+				} : undefined,
+				callout: calloutText ? {
+					label: calloutLabel || 'NOTE',
+					text: calloutText
+				} : undefined
+			});
+		});
+
+		currentDoc.sections = updatedSections;
+	}
+
+	function syncToHidden() {
+		readFormDataToDoc();
+		if (hiddenInput) {
+			hiddenInput.value = JSON.stringify(currentDoc);
+		}
+	}
+
+	// Event Delegation for Section Controls
+	container?.addEventListener('click', (e) => {
+		const target = e.target;
+		if (!target || !target.classList.contains('ctrl-btn')) return;
+
+		const card = target.closest('.section-card');
+		if (!card) return;
+
+		const idx = Number(card.dataset.index);
+		readFormDataToDoc();
+
+		const action = target.dataset.action;
+
+		if (action === 'up' && idx > 0) {
+			const temp = currentDoc.sections[idx];
+			currentDoc.sections[idx] = currentDoc.sections[idx - 1];
+			currentDoc.sections[idx - 1] = temp;
+			renderSections();
+		} else if (action === 'down' && idx < currentDoc.sections.length - 1) {
+			const temp = currentDoc.sections[idx];
+			currentDoc.sections[idx] = currentDoc.sections[idx + 1];
+			currentDoc.sections[idx + 1] = temp;
+			renderSections();
+		} else if (action === 'delete') {
+			if (currentDoc.sections.length <= 1) {
+				alert('At least one case study section is required.');
+				return;
+			}
+			if (confirm(`Remove section "${currentDoc.sections[idx].heading}"?`)) {
+				currentDoc.sections.splice(idx, 1);
+				renderSections();
+			}
+		}
+	});
+
+	// Input synchronization
+	container?.addEventListener('input', () => {
+		syncToHidden();
+	});
+
+	// Preset Loaders
+	document.getElementById('add-section-btn')?.addEventListener('click', () => {
+		readFormDataToDoc();
+		const newIndex = currentDoc.sections.length + 1;
+		currentDoc.sections.push({
+			id: `section-${newIndex}`,
+			heading: `New Architectural Subsystem ${newIndex}`,
+			badge: `${String(newIndex).padStart(2, '0')} //`,
+			body: '',
+			list_items: []
+		});
+		renderSections();
+	});
+
+	document.getElementById('load-template-btn')?.addEventListener('click', () => {
+		if (confirm('Load standard engineering template? Any unsaved section edits will be replaced.')) {
+			currentDoc = JSON.parse(JSON.stringify(DEFAULT_ENGINEERING_TEMPLATE));
+			populateMetadataInputs();
+			renderSections();
+		}
+	});
+
+	function populateMetadataInputs() {
+		const metaSubtitle = document.getElementById('meta-subtitle');
+		const metaStatus = document.getElementById('meta-status');
+		const metaRole = document.getElementById('meta-role');
+		const metaPlatform = document.getElementById('meta-platform');
+		const metaEvidence = document.getElementById('meta-evidence');
+		const metaDiagramType = document.getElementById('meta-diagram-type');
+		const metaDiagramCaption = document.getElementById('meta-diagram-caption');
+
+		if (metaSubtitle) metaSubtitle.value = currentDoc.metadata.subtitle || '';
+		if (metaStatus) metaStatus.value = currentDoc.metadata.status_label || '';
+		if (metaRole) metaRole.value = currentDoc.metadata.system_role || '';
+		if (metaPlatform) metaPlatform.value = currentDoc.metadata.core_platform || '';
+		if (metaEvidence) metaEvidence.value = currentDoc.metadata.evidence_tier || '';
+		if (metaDiagramType) {
+			metaDiagramType.value = currentDoc.metadata.diagram_type || 'none';
+			if (diagramUrlField) diagramUrlField.style.display = metaDiagramType.value === 'image' ? 'block' : 'none';
+		}
+		if (metaDiagramCaption) metaDiagramCaption.value = currentDoc.metadata.diagram_caption || '';
+	}
+
+	// Form Submit Safety
+	form?.addEventListener('submit', () => {
+		syncToHidden();
+	});
+
+	// Initialize UI
+	renderSections();
+</script>
+
+<style>
+	.notice {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin-bottom: 2rem;
+		padding: 0.85rem 1.15rem;
+		border-radius: var(--radius-md);
+		font-size: 0.84rem;
+	}
+
+	.notice.error {
+		border: 1px solid rgba(229, 152, 155, 0.35);
+		background: rgba(229, 152, 155, 0.08);
+		color: #f0b0b4;
+	}
+
+	.notice-indicator {
+		display: grid;
+		place-items: center;
+		width: 1.1rem;
+		height: 1.1rem;
+		border-radius: 50%;
+		border: 1px solid currentColor;
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		font-weight: 700;
+	}
+
+	.project-form {
+		display: grid;
+		gap: 2.25rem;
+	}
+
+	.form-section {
+		margin: 0;
+		padding: 1.75rem 2rem;
+		border: 1px solid var(--line-subtle);
+		border-radius: var(--radius-lg);
+		background: linear-gradient(160deg, rgba(255, 255, 255, 0.02), rgba(12, 12, 14, 0.8));
+	}
+
+	.section-legend {
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		padding-inline: 0.5rem;
+		font-family: var(--font-mono);
+	}
+
+	.section-num {
+		color: var(--text-muted);
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
+	}
+
+	.section-title {
+		color: var(--text-primary);
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+	}
+
+	.fields-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 1.5rem 1.75rem;
+		margin-top: 1.5rem;
+	}
+
+	.field {
+		display: grid;
+		gap: 0.5rem;
+	}
+
+	.field-span-2 {
+		grid-column: span 2;
+	}
+
+	label {
+		color: var(--text-secondary);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+	}
+
+	input,
+	select,
+	textarea {
+		width: 100%;
+		padding: 0.75rem 0.95rem;
+		border-radius: var(--radius-md);
+		border: 1px solid var(--line-subtle);
+		background: rgba(255, 255, 255, 0.025);
+		color: var(--text-primary);
+		font-family: inherit;
+		font-size: 0.85rem;
+		transition: border-color 160ms ease, background 160ms ease;
+		box-sizing: border-box;
+	}
+
+	input:focus,
+	select:focus,
+	textarea:focus {
+		outline: none;
+		border-color: var(--line-strong);
+		background: rgba(255, 255, 255, 0.05);
+	}
+
+	textarea {
+		resize: vertical;
+		line-height: 1.6;
+	}
+
+	.field-hint {
+		color: var(--text-muted);
+		font-size: 0.72rem;
+		line-height: 1.45;
+	}
+
+	.field-hint code {
+		color: var(--text-secondary);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+	}
+
+	/* Field Flags */
+	.field-flags {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 1rem;
+		padding-top: 0.5rem;
+	}
+
+	.flag-toggle {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.85rem;
+		padding: 0.85rem 1rem;
+		border-radius: var(--radius-md);
+		border: 1px solid var(--line-subtle);
+		background: rgba(255, 255, 255, 0.015);
+		cursor: pointer;
+		transition: border-color 160ms ease, background 160ms ease;
+	}
+
+	.flag-toggle:hover {
+		border-color: var(--line-strong);
+		background: rgba(255, 255, 255, 0.035);
+	}
+
+	.flag-toggle input[type="checkbox"] {
+		width: 1.1rem;
+		height: 1.1rem;
+		margin-top: 0.15rem;
+		accent-color: #ffffff;
+		cursor: pointer;
+	}
+
+	.flag-info {
+		display: grid;
+		gap: 0.2rem;
+	}
+
+	.flag-name {
+		color: var(--text-primary);
+		font-size: 0.82rem;
+		font-weight: 500;
+	}
+
+	.flag-desc {
+		color: var(--text-muted);
+		font-size: 0.72rem;
+		line-height: 1.4;
+	}
+
+	/* Sections Builder Styles */
+	.builder-toolbar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-top: 1.25rem;
+		padding-bottom: 1.25rem;
+		border-bottom: 1px solid var(--line-subtle);
+		flex-wrap: wrap;
+	}
+
+	.builder-presets {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+	}
+
+	.toolbar-label {
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		letter-spacing: 0.08em;
+	}
+
+	.preset-btn {
+		background: rgba(255, 255, 255, 0.04);
+		border: 1px solid var(--line-subtle);
+		color: var(--text-secondary);
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		padding: 0.35rem 0.65rem;
+		border-radius: var(--radius-sm);
+		cursor: pointer;
+		transition: all 140ms ease;
+	}
+
+	.preset-btn:hover {
+		background: rgba(255, 255, 255, 0.08);
+		color: #ffffff;
+		border-color: var(--line-strong);
+	}
+
+	.add-section-btn {
+		font-size: 0.72rem;
+		padding: 0.45rem 0.95rem;
+		white-space: nowrap;
+	}
+
+	.sections-container {
+		display: grid;
+		gap: 1.25rem;
+		margin-top: 1.5rem;
+	}
+
+	.section-card {
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 2px;
+		background: #080A0F;
+		padding: 1.25rem;
+		display: grid;
+		gap: 1rem;
+		margin-bottom: 1.25rem;
+		transition: border-color 160ms ease;
+	}
+
+	:global(.section-item),
+	:global(.section-card) {
+		background: #080A0F;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		padding: 1.25rem;
+		border-radius: 2px;
+		margin-bottom: 1.25rem;
+		display: block;
+	}
+
+	:global(.section-item label),
+	:global(.section-card label) {
+		display: block;
+		font-family: var(--font-mono);
+		font-size: 11px;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: #A1A1AA;
+		margin-bottom: 0.35rem;
+	}
+
+	:global(.section-item input),
+	:global(.section-item textarea),
+	:global(.section-item select),
+	:global(.section-card input),
+	:global(.section-card textarea),
+	:global(.section-card select) {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+		margin-top: 0.35rem;
+		margin-bottom: 0.85rem;
+		padding: 0.65rem 0.85rem;
+		border-radius: 2px;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		background: #0D1017;
+		color: #F4F4F6;
+		font-size: 0.82rem;
+	}
+
+	:global(.section-item input:focus),
+	:global(.section-item textarea:focus),
+	:global(.section-item select:focus),
+	:global(.section-card input:focus),
+	:global(.section-card textarea:focus),
+	:global(.section-card select:focus) {
+		outline: none;
+		border-color: #38BDF8;
+		background: #121620;
+	}
+
+	.section-card:hover {
+		border-color: rgba(255, 255, 255, 0.15);
+	}
+
+	.section-card-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding-bottom: 0.75rem;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+	}
+
+	.section-card-title {
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+	}
+
+	.section-index-badge {
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		color: var(--text-muted);
+		background: rgba(255, 255, 255, 0.05);
+		padding: 0.2rem 0.45rem;
+		border-radius: var(--radius-sm);
+	}
+
+	.section-title-preview {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--text-primary);
+	}
+
+	.section-card-controls {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+	}
+
+	.ctrl-btn {
+		width: 1.75rem;
+		height: 1.75rem;
+		display: grid;
+		place-items: center;
+		background: rgba(255, 255, 255, 0.04);
+		border: 1px solid var(--line-subtle);
+		border-radius: var(--radius-sm);
+		color: var(--text-secondary);
+		cursor: pointer;
+		font-size: 0.75rem;
+		transition: all 120ms ease;
+	}
+
+	.ctrl-btn:hover:not(:disabled) {
+		background: rgba(255, 255, 255, 0.1);
+		color: #ffffff;
+		border-color: var(--line-strong);
+	}
+
+	.ctrl-btn:disabled {
+		opacity: 0.3;
+		cursor: not-allowed;
+	}
+
+	.delete-sec-btn:hover:not(:disabled) {
+		background: rgba(239, 68, 68, 0.15);
+		color: #f87171;
+		border-color: rgba(239, 68, 68, 0.4);
+	}
+
+	.section-card-body {
+		display: grid;
+		gap: 1rem;
+	}
+
+	.sec-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 1rem;
+	}
+
+	/* Form Commands Toolbar */
+	.form-commands {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1.5rem;
+		padding-top: 1rem;
+		flex-wrap: wrap;
+	}
+
+	.commands-left {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+	}
+
+	.preview-link {
+		opacity: 0.9;
+	}
+
+	.preview-link:hover {
+		opacity: 1;
+	}
+
+	@media (max-width: 768px) {
+		.fields-grid,
+		.sec-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.field-span-2 {
+			grid-column: span 1;
+		}
+
+		.form-section {
+			padding: 1.25rem 1.25rem;
+		}
+
+		.builder-toolbar {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.form-commands {
+			flex-direction: column-reverse;
+			align-items: stretch;
+		}
+
+		.commands-left {
+			flex-direction: column;
+		}
+
+		.commands-left > * {
+			width: 100%;
+		}
+
+		#save-btn {
+			width: 100%;
+		}
+	}
+</style>

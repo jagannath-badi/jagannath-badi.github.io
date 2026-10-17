@@ -1,0 +1,104 @@
+---
+// src/pages/admin/projects/new.astro — Create Engineering Project Specification
+import Layout from '../../../layouts/Layout.astro';
+import ProjectForm from '../../../components/admin/ProjectForm.astro';
+import { authorizeAdmin } from '../../../lib/admin-auth';
+
+const authorization = await authorizeAdmin(Astro);
+if (authorization.status === 'unauthenticated') return Astro.redirect('/admin/login');
+if (authorization.status === 'forbidden') return new Response('Forbidden', { status: 403 });
+
+const errorMessage =
+	Astro.url.searchParams.get('error') === 'invalid'
+		? 'The project could not be saved. Check all required fields and try again.'
+		: Astro.url.searchParams.get('error') === 'duplicate'
+			? 'That slug is already in use. Choose another unique slug.'
+			: Astro.url.searchParams.get('error') === 'database'
+				? 'The project could not be saved because of a database error.'
+				: null;
+---
+
+<Layout title="New System Record — Admin — Jagan">
+	<main class="form-shell" id="main-content">
+		<header class="form-page-header border-b border-white/[0.08] pb-6 mb-8">
+			<div class="breadcrumb-row flex items-center gap-2 font-mono text-xs text-[#71717A] mb-2">
+				<a class="back-link hover:text-[#38BDF8] transition-colors" href="/admin/projects">← SYSTEM REGISTRY</a>
+				<span class="divider text-[#3F3F46]">/</span>
+				<span class="mono-tag text-[#38BDF8]">NEW RECORD</span>
+			</div>
+			<h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-[#F4F4F6] mb-1">Author System Record</h1>
+			<p class="page-intro text-xs font-mono text-[#A1A1AA]">Author a new engineering system or hardware concept record in draft state.</p>
+		</header>
+
+		<section class="form-content-wrap" aria-labelledby="new-project-title">
+			<h2 id="new-project-title" class="visually-hidden">New project specification form</h2>
+			<ProjectForm action="/api/admin/projects" submitLabel="Create System Record" errorMessage={errorMessage ?? undefined} />
+		</section>
+	</main>
+</Layout>
+
+<style>
+	.form-shell {
+		width: min(960px, calc(100% - 3rem));
+		margin-inline: auto;
+		padding-block: 3.5rem 6rem;
+		display: grid;
+		gap: 2.25rem;
+	}
+
+	.form-page-header {
+		padding-bottom: 1.75rem;
+		border-bottom: 1px solid var(--line-subtle);
+	}
+
+	.breadcrumb-row {
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		margin-bottom: 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+	}
+
+	.back-link {
+		color: var(--text-muted);
+		transition: color 180ms ease;
+	}
+
+	.back-link:hover {
+		color: var(--text-primary);
+	}
+
+	.divider {
+		color: var(--line-strong);
+	}
+
+	.mono-tag {
+		color: var(--text-secondary);
+		letter-spacing: 0.08em;
+	}
+
+	h1 {
+		margin: 0 0 0.5rem;
+		font-size: clamp(2rem, 4vw, 3rem);
+		line-height: 1.1;
+		letter-spacing: -0.04em;
+	}
+
+	.page-intro {
+		margin: 0;
+		color: var(--text-secondary);
+		font-size: 0.92rem;
+		max-width: 600px;
+		line-height: 1.6;
+	}
+
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+	}
+</style>

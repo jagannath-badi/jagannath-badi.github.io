@@ -1,0 +1,260 @@
+---
+// src/pages/admin/login.astro — Armored Security Gateway Terminal
+import Layout from '../../layouts/Layout.astro';
+
+const errorMessage =
+	Astro.url.searchParams.get('error') === 'invalid'
+		? 'Authentication failed. Please verify credentials and try again.'
+		: null;
+---
+
+<Layout title="Workspace Access — Admin — Jagan">
+	<main class="auth-page" id="main-content">
+		<section class="auth-card admin-panel" aria-labelledby="login-title">
+			<header class="auth-header border-b border-white/[0.08] pb-4 mb-6 flex items-center justify-between">
+				<div class="flex items-center gap-2">
+					<span class="inline-block w-2 h-2 rounded-full bg-[#38BDF8] animate-pulse" aria-hidden="true"></span>
+					<span class="font-mono text-[11px] font-semibold tracking-wider text-[#38BDF8]">AUTH_GATE // RESTRICTED ACCESS</span>
+				</div>
+				<a class="auth-back-link font-mono text-xs text-[#A1A1AA] hover:text-[#38BDF8] transition-colors" href="/">← Return to portfolio</a>
+			</header>
+
+			<div class="auth-intro-block mb-6">
+				<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-xs bg-[#E2C974]/10 border border-[#E2C974]/30 text-[#E2C974] font-mono text-[10px] uppercase mb-2.5">
+					SECURITY CLEARANCE // LEVEL 01
+				</div>
+				<h1 id="login-title" class="text-2xl sm:text-3xl font-semibold tracking-tight text-[#F4F4F6] mb-2">Operator Gateway</h1>
+				<p class="auth-intro text-sm text-[#A1A1AA] leading-relaxed">Enter verified administrative credentials to access the portfolio control node and system registry.</p>
+			</div>
+
+			{errorMessage && (
+				<div class="notice error mb-6 p-3.5 rounded-sm bg-[#EF4444]/10 border border-[#EF4444]/30 text-xs font-mono text-[#FCA5A5] flex items-start gap-2.5" role="alert">
+					<span class="notice-icon font-bold shrink-0 mt-0.5" aria-hidden="true">!</span>
+					<span>AUTHENTICATION FAULT: {errorMessage}</span>
+				</div>
+			)}
+
+			<form method="post" action="/api/admin/login" class="auth-form space-y-4" id="login-form">
+				<div class="field">
+					<label for="email" class="block font-mono text-[11px] uppercase tracking-wider text-[#A1A1AA] mb-1.5">Operator Identifier (Email)</label>
+					<input
+						id="email"
+						name="email"
+						type="email"
+						autocomplete="email"
+						placeholder="admin@example.com"
+						required
+					/>
+				</div>
+				<div class="field">
+					<label for="password" class="block font-mono text-[11px] uppercase tracking-wider text-[#A1A1AA] mb-1.5">Passcode Phrase</label>
+					<input
+						id="password"
+						name="password"
+						type="password"
+						autocomplete="current-password"
+						placeholder="••••••••••••"
+						required
+					/>
+				</div>
+				<button class="button button-primary auth-submit w-full py-2.5 mt-2 flex items-center justify-center gap-2" type="submit" id="submit-btn">
+					<span class="btn-text">Authenticate Session</span>
+					<span class="btn-arrow" aria-hidden="true">→</span>
+				</button>
+			</form>
+
+			<footer class="auth-footer border-t border-white/[0.08] pt-4 mt-6 flex items-center justify-between text-[10px] font-mono text-[#71717A] uppercase">
+				<span>TLS ENCRYPTED // SUPABASE AUTH</span>
+				<span>NODE VERIFIED</span>
+			</footer>
+		</section>
+	</main>
+</Layout>
+
+<script>
+	const form = document.querySelector<HTMLFormElement>('#login-form');
+	const submitBtn = document.querySelector<HTMLButtonElement>('#submit-btn');
+	const btnText = submitBtn?.querySelector<HTMLSpanElement>('.btn-text');
+
+	form?.addEventListener('submit', () => {
+		if (submitBtn && btnText && form.checkValidity()) {
+			submitBtn.disabled = true;
+			btnText.textContent = 'Authenticating…';
+		}
+	});
+</script>
+
+<style>
+	.auth-page {
+		display: grid;
+		min-height: calc(100vh - 5rem);
+		place-items: center;
+		padding: 2.5rem 1.5rem;
+	}
+
+	.auth-card {
+		width: min(100%, 28rem);
+		padding: 2.25rem 2rem;
+		border: 1px solid var(--line-subtle);
+		border-radius: var(--radius-lg);
+		background: linear-gradient(165deg, rgba(255, 255, 255, 0.035), rgba(12, 12, 14, 0.85));
+		box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	}
+
+	.auth-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 1.75rem;
+		padding-bottom: 1rem;
+		border-bottom: 1px solid var(--line-subtle);
+	}
+
+	.auth-system-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.status-indicator {
+		width: 0.4rem;
+		height: 0.4rem;
+		border-radius: 50%;
+		background: var(--text-primary);
+		box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+	}
+
+	.auth-back-link {
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		letter-spacing: 0.04em;
+		transition: color 180ms ease;
+	}
+
+	.auth-back-link:hover {
+		color: var(--text-primary);
+	}
+
+	.auth-intro-block {
+		margin-bottom: 1.75rem;
+	}
+
+	h1 {
+		margin: 0 0 0.45rem;
+		font-size: clamp(1.6rem, 3.5vw, 2.1rem);
+		line-height: 1.15;
+		letter-spacing: -0.04em;
+	}
+
+	.auth-intro {
+		margin: 0;
+		color: var(--text-secondary);
+		font-size: 0.88rem;
+		line-height: 1.6;
+	}
+
+	.notice {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.65rem;
+		margin-bottom: 1.5rem;
+		padding: 0.8rem 1rem;
+		border-radius: var(--radius-md);
+		font-size: 0.82rem;
+		line-height: 1.5;
+	}
+
+	.notice.error {
+		border: 1px solid rgba(229, 152, 155, 0.35);
+		background: rgba(229, 152, 155, 0.08);
+		color: #f0b0b4;
+	}
+
+	.notice-icon {
+		display: grid;
+		place-items: center;
+		width: 1.1rem;
+		height: 1.1rem;
+		flex-shrink: 0;
+		margin-top: 0.125rem;
+		border-radius: 50%;
+		border: 1px solid currentColor;
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		font-weight: 700;
+	}
+
+	.auth-form {
+		display: grid;
+		gap: 1.25rem;
+	}
+
+	.field {
+		display: grid;
+		gap: 0.45rem;
+	}
+
+	label {
+		color: var(--text-secondary);
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	input {
+		width: 100%;
+		box-sizing: border-box;
+		border: 1px solid var(--line-strong);
+		border-radius: var(--radius-md);
+		background: rgba(14, 14, 16, 0.85);
+		padding: 0.85rem 1rem;
+		color: var(--text-primary);
+		font: inherit;
+		font-size: 0.92rem;
+		transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+	}
+
+	input:focus {
+		border-color: var(--text-primary);
+		background: rgba(22, 22, 26, 0.95);
+		box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+		outline: none;
+	}
+
+	.auth-submit {
+		width: 100%;
+		margin-top: 0.5rem;
+	}
+
+	.auth-submit:disabled {
+		opacity: 0.65;
+		cursor: wait;
+	}
+
+	.auth-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-top: 2rem;
+		padding-top: 1rem;
+		border-top: 1px solid var(--line-subtle);
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.55rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	@media (max-width: 480px) {
+		.auth-card {
+			padding: 1.75rem 1.25rem;
+		}
+	}
+</style>

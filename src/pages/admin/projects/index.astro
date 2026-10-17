@@ -1,0 +1,643 @@
+---
+// src/pages/admin/projects/index.astro — Dense Engineering Projects Control Table
+import Layout from '../../../layouts/Layout.astro';
+import { authorizeAdmin } from '../../../lib/admin-auth';
+import { createSupabaseServerClient } from '../../../lib/supabase';
+
+const authorization = await authorizeAdmin(Astro);
+if (authorization.status === 'unauthenticated') return Astro.redirect('/admin/login');
+if (authorization.status === 'forbidden') return new Response('Forbidden', { status: 403 });
+
+const supabase = createSupabaseServerClient(Astro);
+const { data: allProjects, error } = await supabase
+	.from('projects')
+	.select('id, slug, title, summary, project_type, is_featured, is_published, sort_order, created_at')
+	.order('sort_order', { ascending: true })
+	.order('created_at', { ascending: false });
+
+const totalCount = allProjects?.length ?? 0;
+const publishedCount = allProjects?.filter((p) => p.is_published).length ?? 0;
+const draftCount = totalCount - publishedCount;
+const featuredCount = allProjects?.filter((p) => p.is_featured).length ?? 0;
+
+const currentFilter = Astro.url.searchParams.get('filter') ?? 'all';
+
+const filteredProjects = (allProjects ?? []).filter((p) => {
+	if (currentFilter === 'published') return p.is_published;
+	if (currentFilter === 'draft') return !p.is_published;
+	if (currentFilter === 'featured') return p.is_featured;
+	return true;
+});
+
+const status = Astro.url.searchParams.get('status');
+const statusMessage =
+	status === 'created'
+		? 'Project created successfully.'
+		: status === 'updated'
+			? 'Project updated successfully.'
+			: status === 'deleted'
+				? 'Project deleted successfully.'
+				: status === 'published'
+					? 'Project published successfully.'
+					: status === 'unpublished'
+						? 'Project unpublished successfully.'
+						: null;
+
+const errorMessage = error
+	? 'Unable to load projects from database.'
+	: Astro.url.searchParams.get('error') === 'invalid'
+		? 'Please check all required fields and try again.'
+		: Astro.url.searchParams.get('error') === 'duplicate'
+			? 'That slug is already in use by another project.'
+			: Astro.url.searchParams.get('error') === 'database'
+				? 'Database error occurred. Please try again.'
+				: null;
+---
+
+<Layout title="Projects — Admin — Jagan">
+	<main class="admin-shell" id="main-content">
+		<!-- Header -->
+		<header class="admin-header border-b border-white/[0.08] pb-6 mb-6 flex flex-wrap items-end justify-between gap-4">
+			<div>
+				<div class="breadcrumb-row flex items-center gap-2 font-mono text-xs text-[#71717A] mb-2">
+					<a class="back-link hover:text-[#38BDF8] transition-colors" href="/admin">← CONTROL PANEL</a>
+					<span class="divider text-[#3F3F46]">/</span>
+					<span class="mono-tag text-[#38BDF8]">SYSTEM REGISTRY</span>
+				</div>
+				<h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-[#F4F4F6] mb-1">System Registry Console</h1>
+				<p class="page-intro text-xs font-mono text-[#A1A1AA]">Author, inspect, curate, and toggle publication states across all portfolio engineering systems.</p>
+			</div>
+			<div class="header-actions flex items-center gap-3">
+				<a class="button button-primary" href="/admin/projects/new">+ New System Record</a>
+				<form method="post" action="/api/admin/logout">
+					<button class="button button-muted" type="submit">Disconnect [OP]</button>
+				</form>
+			</div>
+		</header>
+
+		{statusMessage && (
+			<div class="notice success" role="status">
+				<span class="notice-indicator" aria-hidden="true">✓</span>
+				<span>{statusMessage}</span>
+			</div>
+		)}
+
+		{errorMessage && (
+			<div class="notice error" role="alert">
+				<span class="notice-indicator" aria-hidden="true">!</span>
+				<span>{errorMessage}</span>
+			</div>
+		)}
+
+		<!-- Filter Tabs & Telemetry Strip -->
+		<div class="inventory-controls flex flex-wrap items-center justify-between gap-4 mb-6">
+			<div class="flex items-center gap-3">
+				<input
+					type="text"
+					id="registry-search"
+					class="text-xs px-3 py-1.5 rounded-sm w-64 bg-[#080A0F] border border-white/[0.08] text-[#F4F4F6]"
+					placeholder="Filter by title or slug…"
+					aria-label="Filter systems by title or slug"
+				/>
+			</div>
+			<nav class="filter-tabs flex items-center gap-1.5 bg-[#080A0F] border border-white/[0.08] p-1 rounded-sm" aria-label="Filter project records">
+				<a
+					class:list={['filter-tab', currentFilter === 'all' && 'is-active']}
+					href="/admin/projects?filter=all"
+				>
+					<span>All Systems</span>
+					<span class="tab-count">{totalCount}</span>
+				</a>
+				<a
+					class:list={['filter-tab', currentFilter === 'published' && 'is-active']}
+					href="/admin/projects?filter=published"
+				>
+					<span>Published</span>
+					<span class="tab-count">{publishedCount}</span>
+				</a>
+				<a
+					class:list={['filter-tab', currentFilter === 'draft' && 'is-active']}
+					href="/admin/projects?filter=draft"
+				>
+					<span>Drafts</span>
+					<span class="tab-count">{draftCount}</span>
+				</a>
+				<a
+					class:list={['filter-tab', currentFilter === 'featured' && 'is-active']}
+					href="/admin/projects?filter=featured"
+				>
+					<span>Featured</span>
+					<span class="tab-count">{featuredCount}</span>
+				</a>
+			</nav>
+
+			<div class="inventory-meta">
+				<span>SHOWING {filteredProjects.length} OF {totalCount} RECORDS</span>
+			</div>
+		</div>
+
+		<!-- Table Section -->
+		{error ? (
+			<section class="empty-state">
+				<div class="empty-badge">TELEMETRY FAULT</div>
+				<h2>Database Synchronisation Failed</h2>
+				<p>A network or PostgreSQL error occurred while querying project records. Please retry.</p>
+				<a class="button button-secondary" href="/admin/projects">Retry Query ↻</a>
+			</section>
+		) : filteredProjects.length > 0 ? (
+			<section class="table-container admin-panel rounded-sm border border-white/[0.08] overflow-hidden" aria-label="Projects Table">
+				<table class="inventory-table w-full text-left" id="projects-table">
+					<thead>
+						<tr>
+							<th class="col-order">Order</th>
+							<th class="col-main">System Identity & Slug</th>
+							<th class="col-type">Category</th>
+							<th class="col-status">Status</th>
+							<th class="col-flags">Flags</th>
+							<th class="col-date">Authored</th>
+							<th class="col-action">Command</th>
+						</tr>
+					</thead>
+					<tbody>
+						{filteredProjects.map((project) => (
+							<tr class:list={['inventory-row', !project.is_published && 'is-draft']}>
+								<td class="col-order mono-cell">
+									<span class="order-chip">#{project.sort_order}</span>
+								</td>
+								<td class="col-main">
+									<a class="row-title" href={`/admin/projects/${project.id}`}>{project.title}</a>
+									<span class="row-slug">/{project.slug}</span>
+								</td>
+								<td class="col-type">
+									<span class="type-pill">{project.project_type}</span>
+								</td>
+								<td class="col-status">
+									<form method="post" action="/api/admin/projects" class="status-toggle-form">
+										<input type="hidden" name="action" value="toggle_publish" />
+										<input type="hidden" name="id" value={project.id} />
+										<input type="hidden" name="is_published" value={project.is_published ? 'false' : 'true'} />
+										<button
+											type="submit"
+											class:list={['badge', 'badge-toggle-btn', project.is_published ? 'badge-published' : 'badge-draft']}
+											title={project.is_published ? 'Click to unpublish (switch to draft)' : 'Click to publish (make live)'}
+										>
+											{project.is_published ? '● Published' : '○ Draft'}
+											<span class="toggle-hint">{project.is_published ? 'Unpublish' : 'Publish'}</span>
+										</button>
+									</form>
+								</td>
+								<td class="col-flags">
+									{project.is_featured ? (
+										<span class="flag-featured">★ Featured</span>
+									) : (
+										<span class="flag-standard">—</span>
+									)}
+								</td>
+								<td class="col-date mono-cell">
+									{new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(project.created_at))}
+								</td>
+								<td class="col-action">
+									<div class="row-actions">
+										<a class="button button-secondary row-btn" href={`/admin/projects/${project.id}`}>
+											Edit <span aria-hidden="true">→</span>
+										</a>
+										<a class="button button-muted row-btn preview-btn" href={`/projects/${project.slug}?preview=1`} target="_blank" rel="noopener noreferrer" title="Preview case study in new tab">
+											Preview <span aria-hidden="true">↗</span>
+										</a>
+									</div>
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</section>
+		) : (
+			<section class="empty-state admin-well p-10 rounded-sm border border-dashed border-white/[0.1] text-center">
+				<div class="empty-badge font-mono text-xs text-[#E2C974] mb-2">REGISTRY // CLEAN STATE</div>
+				<h2 class="text-xl font-semibold text-[#F4F4F6] mb-2">No projects match filter: "{currentFilter}"</h2>
+				<p class="text-sm text-[#A1A1AA] max-w-md mx-auto mb-6">There are currently zero systems matching this criteria in the database.</p>
+				<div class="empty-actions flex justify-center gap-3">
+					<a class="button button-secondary" href="/admin/projects?filter=all">Show All Records</a>
+					<a class="button button-primary" href="/admin/projects/new">+ Create System Record</a>
+				</div>
+			</section>
+		)}
+	</main>
+</Layout>
+
+<style>
+	.admin-shell {
+		width: min(1200px, calc(100% - 3rem));
+		margin-inline: auto;
+		padding-block: 3.5rem 6rem;
+		display: grid;
+		gap: 2rem;
+	}
+
+	.admin-header {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 2rem;
+		padding-bottom: 2rem;
+		border-bottom: 1px solid var(--line-subtle);
+	}
+
+	.breadcrumb-row {
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		margin-bottom: 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+	}
+
+	.back-link {
+		color: var(--text-muted);
+		transition: color 180ms ease;
+	}
+
+	.back-link:hover {
+		color: var(--text-primary);
+	}
+
+	.divider {
+		color: var(--line-strong);
+	}
+
+	.mono-tag {
+		color: var(--text-secondary);
+		letter-spacing: 0.08em;
+	}
+
+	h1 {
+		margin: 0 0 0.5rem;
+		font-size: clamp(2rem, 4vw, 3rem);
+		line-height: 1.1;
+		letter-spacing: -0.04em;
+	}
+
+	.page-intro {
+		margin: 0;
+		color: var(--text-secondary);
+		font-size: 0.9rem;
+		max-width: 600px;
+	}
+
+	.header-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.button-muted {
+		border-color: var(--line-strong);
+		background: transparent;
+		color: var(--text-muted);
+	}
+
+	.button-muted:hover {
+		border-color: var(--text-primary);
+		background: rgba(255, 255, 255, 0.06);
+		color: var(--text-primary);
+	}
+
+	/* Notice Bars */
+	.notice {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.85rem 1.15rem;
+		border-radius: var(--radius-md);
+		font-size: 0.84rem;
+	}
+
+	.notice.success {
+		border: 1px solid rgba(163, 177, 138, 0.35);
+		background: rgba(163, 177, 138, 0.08);
+		color: #b7c4a1;
+	}
+
+	.notice.error {
+		border: 1px solid rgba(229, 152, 155, 0.35);
+		background: rgba(229, 152, 155, 0.08);
+		color: #f0b0b4;
+	}
+
+	.notice-indicator {
+		display: grid;
+		place-items: center;
+		width: 1.1rem;
+		height: 1.1rem;
+		border-radius: 50%;
+		border: 1px solid currentColor;
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		font-weight: 700;
+	}
+
+	/* Inventory Controls & Filter Tabs */
+	.inventory-controls {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1.5rem;
+		flex-wrap: wrap;
+	}
+
+	.filter-tabs {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		background: rgba(255, 255, 255, 0.02);
+		padding: 0.35rem;
+		border: 1px solid var(--line-subtle);
+		border-radius: 999px;
+	}
+
+	.filter-tab {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.45rem 0.85rem;
+		border-radius: 999px;
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		transition: color 180ms ease, background 180ms ease;
+	}
+
+	.filter-tab:hover {
+		color: var(--text-primary);
+	}
+
+	.filter-tab.is-active {
+		background: rgba(255, 255, 255, 0.08);
+		color: #ffffff;
+		border: 1px solid var(--line-strong);
+	}
+
+	.tab-count {
+		opacity: 0.75;
+		font-size: 0.58rem;
+	}
+
+	.inventory-meta {
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		letter-spacing: 0.1em;
+	}
+
+	/* Inventory Table */
+	.table-container {
+		border: 1px solid var(--line-subtle);
+		border-radius: var(--radius-lg);
+		background: linear-gradient(160deg, rgba(255, 255, 255, 0.02), rgba(10, 10, 12, 0.75));
+		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+		overflow: hidden;
+	}
+
+	.inventory-table {
+		width: 100%;
+		border-collapse: collapse;
+		text-align: left;
+		font-size: 0.84rem;
+	}
+
+	.inventory-table th {
+		padding: 0.85rem 1.15rem;
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		border-bottom: 1px solid var(--line-subtle);
+		background: rgba(255, 255, 255, 0.015);
+	}
+
+	.inventory-table td {
+		padding: 1rem 1.15rem;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+		vertical-align: middle;
+	}
+
+	.inventory-row:hover {
+		background: rgba(255, 255, 255, 0.025);
+	}
+
+	.inventory-row.is-draft {
+		opacity: 0.88;
+	}
+
+	.order-chip {
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+	}
+
+	.row-title {
+		display: block;
+		color: var(--text-primary);
+		font-weight: 550;
+		font-size: 0.95rem;
+		margin-bottom: 0.15rem;
+		transition: color 180ms ease;
+	}
+
+	.row-title:hover {
+		color: #ffffff;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	.row-slug {
+		display: block;
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+	}
+
+	.type-pill {
+		display: inline-block;
+		padding: 0.2rem 0.5rem;
+		border-radius: 0.35rem;
+		background: rgba(255, 255, 255, 0.04);
+		border: 1px solid var(--line-subtle);
+		color: var(--text-secondary);
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+	}
+
+	.badge {
+		display: inline-block;
+		padding: 0.25rem 0.65rem;
+		border: 1px solid;
+		border-radius: 999px;
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+
+	.badge-published {
+		border-color: rgba(255, 255, 255, 0.35);
+		background: rgba(255, 255, 255, 0.08);
+		color: var(--text-primary);
+	}
+
+	.badge-draft {
+		border-color: var(--line-subtle);
+		background: transparent;
+		color: var(--text-muted);
+	}
+
+	.flag-featured {
+		color: #ffffff;
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+	}
+
+	.flag-standard {
+		color: var(--text-muted);
+	}
+
+	.mono-cell {
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+	}
+
+	.row-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	.row-btn {
+		font-size: 0.65rem;
+		padding: 0.5rem 0.8rem;
+		min-height: 2.2rem;
+		white-space: nowrap;
+	}
+
+	.preview-btn {
+		opacity: 0.85;
+	}
+
+	.preview-btn:hover {
+		opacity: 1;
+	}
+
+	.status-toggle-form {
+		display: inline-block;
+		margin: 0;
+	}
+
+	.badge-toggle-btn {
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		transition: transform 120ms ease, opacity 150ms ease;
+		border: 1px solid var(--line-subtle);
+		background: transparent;
+	}
+
+	.badge-toggle-btn:hover {
+		transform: translateY(-1px);
+		opacity: 0.9;
+	}
+
+	.toggle-hint {
+		font-size: 0.55rem;
+		opacity: 0.6;
+		text-transform: uppercase;
+	}
+
+	/* Empty State */
+	.empty-state {
+		padding: 3.5rem 2rem;
+		text-align: center;
+		border: 1px dashed var(--line-subtle);
+		border-radius: var(--radius-lg);
+		background: rgba(255, 255, 255, 0.015);
+		display: grid;
+		gap: 0.85rem;
+		place-items: center;
+	}
+
+	.empty-badge {
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		letter-spacing: 0.12em;
+	}
+
+	.empty-state h2 {
+		margin: 0;
+		font-size: clamp(1.4rem, 3vw, 1.8rem);
+	}
+
+	.empty-state p {
+		margin: 0;
+		color: var(--text-secondary);
+		max-width: 480px;
+		line-height: 1.6;
+	}
+
+	.empty-actions {
+		display: flex;
+		gap: 0.75rem;
+		margin-top: 0.75rem;
+		flex-wrap: wrap;
+	}
+
+	@media (max-width: 900px) {
+		.table-container {
+			overflow-x: auto;
+		}
+		.inventory-table {
+			min-width: 760px;
+		}
+	}
+
+	@media (max-width: 680px) {
+		.admin-header {
+			flex-direction: column;
+			align-items: stretch;
+		}
+		.header-actions {
+			flex-direction: column;
+			align-items: stretch;
+		}
+		.header-actions > * {
+			width: 100%;
+		}
+		.header-actions form button {
+			width: 100%;
+		}
+	}
+</style>
+
+<script>
+	const searchInput = document.getElementById('registry-search') as HTMLInputElement | null;
+	const table = document.getElementById('projects-table');
+	if (searchInput && table) {
+		searchInput.addEventListener('input', () => {
+			const query = searchInput.value.toLowerCase().trim();
+			const rows = table.querySelectorAll<HTMLTableRowElement>('tbody tr');
+			rows.forEach((row) => {
+				const text = row.textContent?.toLowerCase() || '';
+				row.style.display = text.includes(query) ? '' : 'none';
+			});
+		});
+	}
+</script>

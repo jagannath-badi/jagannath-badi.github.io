@@ -1,0 +1,210 @@
+---
+// src/components/GenericStagingDiagram.astro
+// Architectural Hardware Atelier — Illustrative System Staging & Signal Flow Console
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+const uid = Math.random().toString(36).slice(2, 7);
+---
+
+<figure class={`staging-diagram w-full bg-[#080A0F] border border-white/[0.08] rounded-sm shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] ${className}`}>
+  <!-- Console Header Bar -->
+  <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.06] pb-2.5 p-3.5 sm:p-4 bg-[#0D1017]">
+    <div class="flex items-center gap-2">
+      <span class="inline-block w-2 h-2 rounded-full bg-[#38BDF8] animate-pulse" aria-hidden="true"></span>
+      <span class="mono-label text-[#E4E4E7] text-[11px] font-semibold tracking-wider">
+        SYS_PIPELINE // REFERENCE SIGNAL-CHAIN ARCHITECTURE
+      </span>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="mono-kicker text-[10px] text-[#E2C974] bg-[#E2C974]/10 border border-[#E2C974]/30 px-2 py-0.5 rounded-xs">
+        STAGING // R&amp;D BENCH
+      </span>
+      <span class="mono-label text-[10px] text-[#71717A] hidden sm:inline">REF_MODEL.04</span>
+    </div>
+  </div>
+
+  <!-- Main Diagram Canvas -->
+  <div class="p-3 sm:p-5 pt-3">
+    <svg
+      viewBox="0 0 760 260"
+      class="w-full h-auto block"
+      role="img"
+      aria-labelledby={`staging-arch-title-${uid}`}
+      id={`staging-svg-${uid}`}
+    >
+      <title id={`staging-arch-title-${uid}`}>Illustrative generic signal chain architecture diagram showing transducer acquisition through embedded processing and actuation</title>
+      <defs>
+        <pattern id={`stg-grid-${uid}`} width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#121620" stroke-width="1" />
+        </pattern>
+        <marker id={`stg-arrow-${uid}`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 8 5 L 0 9 z" fill="#71717A" />
+        </marker>
+      </defs>
+
+      <rect width="760" height="260" fill={`url(#stg-grid-${uid})`} rx="2" />
+
+      <!-- Stage 01: Sensor / Transducer Input -->
+      <g
+        class="diagram-node cursor-pointer"
+        tabindex="0"
+        role="button"
+        data-stage-title="STAGE 01 // TRANSDUCER INPUT"
+        data-stage-info="Physical Transducer Acquisition: Acquires physical domain signals (voltage, variable impedance, frequency) from environmental sensors and bench instruments."
+        transform="translate(20, 45)"
+      >
+        <rect width="155" height="170" rx="2" fill="#0D1017" stroke="#262C38" stroke-width="1.2" class="node-rect transition-all duration-200" />
+        <text x="12" y="24" fill="#71717A" font-family="monospace" font-size="9.5" letter-spacing="0.05em">STAGE 01 // INPUT</text>
+        <text x="12" y="46" fill="#F4F4F6" font-family="sans-serif" font-size="12.5" font-weight="600">Transducer Stage</text>
+        <line x1="12" y1="58" x2="143" y2="58" stroke="#1C2230" stroke-width="1" />
+        <text x="12" y="80" fill="#A1A1AA" font-family="monospace" font-size="9.5">• Physical Signal</text>
+        <text x="12" y="96" fill="#A1A1AA" font-family="monospace" font-size="9.5">  Transduction</text>
+        <text x="12" y="118" fill="#A1A1AA" font-family="monospace" font-size="9.5">• Analog Voltage</text>
+        <text x="12" y="134" fill="#A1A1AA" font-family="monospace" font-size="9.5">  &amp; Resistance</text>
+        <text x="12" y="152" fill="#71717A" font-family="monospace" font-size="9">CHANNEL: A0..A3</text>
+      </g>
+
+      <!-- Stage 02: Signal Conditioning & ADC -->
+      <g
+        class="diagram-node cursor-pointer"
+        tabindex="0"
+        role="button"
+        data-stage-title="STAGE 02 // CONDITIONING &amp; ADC"
+        data-stage-info="Active Filtering &amp; Conversion: Operational amplifiers perform impedance buffering, active anti-aliasing, and voltage range division prior to high-resolution ADC quantization."
+        transform="translate(210, 45)"
+      >
+        <rect width="160" height="170" rx="2" fill="#121622" stroke="#38BDF8" stroke-width="1.2" stroke-opacity="0.6" class="node-rect transition-all duration-200" />
+        <text x="12" y="24" fill="#38BDF8" font-family="monospace" font-size="9.5" letter-spacing="0.05em">STAGE 02 // ADC</text>
+        <text x="12" y="46" fill="#F4F4F6" font-family="sans-serif" font-size="12.5" font-weight="600">Conditioning &amp; ADC</text>
+        <line x1="12" y1="58" x2="148" y2="58" stroke="#222C3D" stroke-width="1" />
+        <text x="12" y="80" fill="#A1A1AA" font-family="monospace" font-size="9.5">• Op-Amp Buffer</text>
+        <text x="12" y="96" fill="#A1A1AA" font-family="monospace" font-size="9.5">  &amp; Active Filter</text>
+        <text x="12" y="118" fill="#A1A1AA" font-family="monospace" font-size="9.5">• Voltage Divider</text>
+        <text x="12" y="134" fill="#A1A1AA" font-family="monospace" font-size="9.5">  &amp; Range Clamp</text>
+        <text x="12" y="152" fill="#38BDF8" font-family="monospace" font-size="9">12-BIT QUANTIZATION</text>
+      </g>
+
+      <!-- Stage 03: Embedded Controller Loop -->
+      <g
+        class="diagram-node cursor-pointer"
+        tabindex="0"
+        role="button"
+        data-stage-title="STAGE 03 // CONTROLLER CORE"
+        data-stage-info="Deterministic Microcontroller Core: Executes calibration polynomials, finite state machine routing, threshold boundary comparisons, and telemetry packet generation."
+        transform="translate(405, 45)"
+      >
+        <rect width="165" height="170" rx="2" fill="#161B26" stroke="#E2C974" stroke-width="1.4" class="node-rect transition-all duration-200" />
+        <text x="12" y="24" fill="#E2C974" font-family="monospace" font-size="9.5" letter-spacing="0.05em">STAGE 03 // MCU CORE</text>
+        <text x="12" y="46" fill="#F4F4F6" font-family="sans-serif" font-size="12.5" font-weight="600">Embedded Controller</text>
+        <line x1="12" y1="58" x2="153" y2="58" stroke="#2A3244" stroke-width="1" />
+        <text x="12" y="80" fill="#A1A1AA" font-family="monospace" font-size="9.5">• Parameter Eval</text>
+        <text x="12" y="96" fill="#A1A1AA" font-family="monospace" font-size="9.5">  &amp; Threshold Logic</text>
+        <text x="12" y="118" fill="#A1A1AA" font-family="monospace" font-size="9.5">• State Machine</text>
+        <text x="12" y="134" fill="#A1A1AA" font-family="monospace" font-size="9.5">  Routing Engine</text>
+        <text x="12" y="152" fill="#E2C974" font-family="monospace" font-size="9">DETERMINISTIC LOOP</text>
+      </g>
+
+      <!-- Stage 04: Actuation & Bus Interface -->
+      <g
+        class="diagram-node cursor-pointer"
+        tabindex="0"
+        role="button"
+        data-stage-title="STAGE 04 // ACTUATION &amp; BUS"
+        data-stage-info="Physical Output &amp; Communication: Drives power switches, isolation relays, or PWM lines, and serializes diagnostic telemetry over UART/I2C/SPI busses."
+        transform="translate(600, 45)"
+      >
+        <rect width="140" height="170" rx="2" fill="#0D1017" stroke="#262C38" stroke-width="1.2" class="node-rect transition-all duration-200" />
+        <text x="12" y="24" fill="#71717A" font-family="monospace" font-size="9.5" letter-spacing="0.05em">STAGE 04 // OUTPUT</text>
+        <text x="12" y="46" fill="#F4F4F6" font-family="sans-serif" font-size="12.5" font-weight="600">Actuation &amp; Bus</text>
+        <line x1="12" y1="58" x2="128" y2="58" stroke="#1C2230" stroke-width="1" />
+        <text x="12" y="80" fill="#A1A1AA" font-family="monospace" font-size="9.5">• Driver Relays /</text>
+        <text x="12" y="96" fill="#A1A1AA" font-family="monospace" font-size="9.5">  Switching FETs</text>
+        <text x="12" y="118" fill="#A1A1AA" font-family="monospace" font-size="9.5">• Serial Telemetry</text>
+        <text x="12" y="134" fill="#A1A1AA" font-family="monospace" font-size="9.5">  (UART / SPI / I2C)</text>
+        <text x="12" y="152" fill="#10B981" font-family="monospace" font-size="9">STATUS: ARMED</text>
+      </g>
+
+      <!-- Static Connectors -->
+      <line x1="175" y1="130" x2="205" y2="130" stroke="#3F3F46" stroke-width="1.2" marker-end={`url(#stg-arrow-${uid})`} />
+      <line x1="370" y1="130" x2="400" y2="130" stroke="#3F3F46" stroke-width="1.2" marker-end={`url(#stg-arrow-${uid})`} />
+      <line x1="570" y1="130" x2="595" y2="130" stroke="#3F3F46" stroke-width="1.2" marker-end={`url(#stg-arrow-${uid})`} />
+
+      <!-- Animated Signal Flow Lines -->
+      <line class="stg-sig-line" x1="175" y1="130" x2="205" y2="130" stroke="#38BDF8" stroke-width="1.5" stroke-dasharray="4 6" opacity="0.8" />
+      <line class="stg-sig-line" x1="370" y1="130" x2="400" y2="130" stroke="#38BDF8" stroke-width="1.5" stroke-dasharray="4 6" opacity="0.8" />
+      <line class="stg-sig-line" x1="570" y1="130" x2="595" y2="130" stroke="#38BDF8" stroke-width="1.5" stroke-dasharray="4 6" opacity="0.8" />
+    </svg>
+  </div>
+
+  <!-- Stage Telemetry Readout Bar -->
+  <div
+    class="stg-readout px-3.5 sm:px-4 py-2.5 border-t border-white/[0.06] bg-[#0A0D14] flex items-center justify-between font-mono text-[11px] text-[#A1A1AA]"
+    role="status"
+    aria-live="polite"
+    id={`stg-readout-${uid}`}
+  >
+    <div class="truncate">
+      <span class="text-[#71717A]">HOVER OR TAB TO A SUBSYSTEM BLOCK TO VIEW TECHNICAL INTERFACE DETAILS</span>
+    </div>
+    <span class="text-[10px] text-[#71717A] shrink-0 ml-2 hidden md:inline">SIGNAL CHAIN // 4 STAGES</span>
+  </div>
+</figure>
+
+<style>
+  @media (prefers-reduced-motion: no-preference) {
+    .stg-sig-line {
+      stroke-dashoffset: 0;
+      animation: stg-signal-flow 1.8s linear infinite;
+    }
+  }
+  @keyframes stg-signal-flow {
+    to { stroke-dashoffset: -20; }
+  }
+  .diagram-node:focus-visible rect.node-rect,
+  .diagram-node:hover rect.node-rect {
+    stroke: #38BDF8 !important;
+    stroke-opacity: 1 !important;
+  }
+</style>
+
+<script>
+  (() => {
+    document.querySelectorAll<HTMLElement>('.staging-diagram').forEach((fig) => {
+      const readout = fig.querySelector('[role="status"] div') as HTMLElement | null;
+      const nodes = fig.querySelectorAll<SVGGElement>('.diagram-node');
+
+      const defaultText = 'HOVER OR TAB TO A SUBSYSTEM BLOCK TO VIEW TECHNICAL INTERFACE DETAILS';
+
+      nodes.forEach((node) => {
+        const title = node.dataset.stageTitle || '';
+        const info = node.dataset.stageInfo || '';
+        const rect = node.querySelector<SVGRectElement>('.node-rect');
+
+        const activate = () => {
+          if (readout) readout.innerHTML = `<span style="color:#38BDF8;font-weight:600">${title}</span> — ${info}`;
+          if (rect) rect.style.stroke = '#38BDF8';
+        };
+        const deactivate = () => {
+          if (readout) readout.innerHTML = `<span style="color:#71717A">${defaultText}</span>`;
+          if (rect) rect.style.stroke = '';
+        };
+
+        node.addEventListener('mouseenter', activate);
+        node.addEventListener('mouseleave', deactivate);
+        node.addEventListener('focus', activate);
+        node.addEventListener('blur', deactivate);
+        node.addEventListener('click', activate);
+        node.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            activate();
+          }
+        });
+      });
+    });
+  })();
+</script>
+

@@ -1,0 +1,347 @@
+---
+// src/pages/projects/[slug].astro — Precision Monograph Dynamic Case Study
+import Layout from '../../layouts/Layout.astro';
+import ArtifactPlaceholder from '../../components/ArtifactPlaceholder.astro';
+import { createSupabaseServerClient } from '../../lib/supabase';
+import { authorizeAdmin } from '../../lib/admin-auth';
+import { parseCaseStudy } from '../../lib/case-study-schema';
+
+const { slug } = Astro.params;
+
+if (!slug) {
+	return Astro.redirect('/#projects');
+}
+
+// 1. Check if requester is an authenticated administrator
+const authorization = await authorizeAdmin(Astro);
+const isAdmin = authorization.status === 'authorized';
+const isPreviewRequested = Astro.url.searchParams.get('preview') === '1';
+
+// 2. Query Supabase for matching project
+const supabase = createSupabaseServerClient(Astro);
+const query = supabase
+	.from('projects')
+	.select('id, slug, title, summary, description, technologies, project_type, is_featured, is_published, github_url, demo_url, sort_order, created_at');
+
+// If public visitor, restrict query strictly to published records
+if (!isAdmin) {
+	query.eq('is_published', true);
+}
+
+const { data: dbProjects } = await query;
+
+// 3. Find matching database record
+const normalizedSlug = (slug || '').toLowerCase().trim();
+const project = dbProjects?.find((p) => (p.slug || '').toLowerCase().trim() === normalizedSlug);
+
+// If project not found in database (or unpublished and visitor is not admin), block access
+if (!project) {
+	return Astro.redirect('/#projects');
+}
+
+// If project is unpublished and user is not admin, block access
+if (!project.is_published && !isAdmin) {
+	return Astro.redirect('/#projects');
+}
+
+// 4. Parse structured case study document
+const doc = parseCaseStudy(project.description, project.summary, project.project_type);
+
+const projectTitle = project.title;
+const projectSummary = project.summary;
+const projectStack = project.technologies && project.technologies.length > 0 ? project.technologies : [];
+const githubUrl = project.github_url ?? null;
+const demoUrl = project.demo_url ?? null;
+
+const subtitle = doc.metadata.subtitle || `${project.project_type.toUpperCase()} // SYSTEM SPECIFICATION`;
+const statusBadge = doc.metadata.status_label || (project.project_type === 'concept' ? 'CONCEPTUAL DESIGN' : 'PROTOTYPE SPEC');
+const systemRole = doc.metadata.system_role || 'Lead Systems Engineer';
+const corePlatform = doc.metadata.core_platform || (projectStack[0] ?? 'Microcontroller / Embedded C++');
+const statusText = doc.metadata.status_label || (project.is_published ? 'Published System' : 'Draft Specification');
+const evidenceTier = doc.metadata.evidence_tier || 'Tier 2: System Architecture';
+const additionalLinks = doc.metadata.additional_links || [];
+---
+
+<Layout title={`${projectTitle} — Engineering Case Study — Jagan`}>
+	{isAdmin && (!project.is_published || isPreviewRequested) && (
+		<div class="bg-[#121620] border-b border-[#E2C974]/30 py-2.5 px-4 text-xs font-mono text-[#D4D4D8] sticky top-0 z-50">
+			<div class="shell flex items-center justify-between">
+				<div class="flex items-center gap-2">
+					<span class="inline-block w-2 h-2 rounded-full bg-[#E2C974] animate-pulse"></span>
+					<span>ADMIN PREVIEW MODE — {!project.is_published ? 'DRAFT (NOT PUBLICLY VISIBLE)' : 'PUBLISHED RECORD'}</span>
+				</div>
+				<a href={`/admin/projects/${project.id}`} class="text-[#E2C974] hover:underline flex items-center gap-1 font-semibold">
+					Edit in Admin Dashboard <span aria-hidden="true">→</span>
+				</a>
+			</div>
+		</div>
+	)}
+
+	<header class="site-header border-b border-white/[0.06] bg-[#0B0D12]/85 backdrop-blur-md sticky top-0 z-40">
+		<div class="shell header-inner flex items-center justify-between py-3.5">
+			<a class="wordmark flex items-center gap-2.5 group" href="/" aria-label="Jagan home">
+				<span class="wordmark-mark inline-flex items-center justify-center w-6 h-6 text-xs font-mono font-bold text-[#E2C974] bg-[#E2C974]/10 border border-[#E2C974]/30 rounded-xs transition-colors group-hover:border-[#38BDF8] group-hover:text-[#38BDF8]" aria-hidden="true">J</span>
+				<span class="mono-label tracking-normal font-semibold text-[#F4F4F6] text-xs">JAGAN // ETC ENGINEERING</span>
+			</a>
+			<nav class="site-nav" aria-label="Breadcrumb navigation">
+				<a class="mono-label text-[11px] text-[#A1A1AA] hover:text-[#38BDF8] transition-colors flex items-center gap-1.5" href="/#projects">
+					<span class="arrow-left" aria-hidden="true">←</span> BACK TO PORTFOLIO
+				</a>
+			</nav>
+		</div>
+		<div class="scroll-progress-bar" aria-hidden="true"></div>
+	</header>
+
+	<main id="main-content" class="shell py-8 sm:py-12">
+		<!-- Case Study Header -->
+		<header class="border-b border-white/[0.08] pb-8 mb-8 sm:mb-12">
+			<div class="flex flex-wrap items-center gap-2 mb-3">
+				<span class="mono-kicker text-xs text-[#E2C974] bg-[#E2C974]/10 border border-[#E2C974]/30 px-2 py-0.5 rounded-xs">{subtitle}</span>
+				<span class="mono-kicker text-xs text-[#38BDF8] bg-[#38BDF8]/10 border border-[#38BDF8]/30 px-2 py-0.5 rounded-xs">{statusBadge}</span>
+			</div>
+			<h1 class="text-3xl sm:text-4xl lg:text-[44px] font-semibold tracking-tight text-[#F4F4F6] mb-4 max-w-3xl leading-[1.15]">
+				{projectTitle}
+			</h1>
+			<p class="text-base sm:text-lg text-[#A1A1AA] max-w-2xl leading-relaxed mb-6">
+				{projectSummary}
+			</p>
+
+			<!-- Key Specification Grid (Datasheet Matrix) -->
+			<div class="grid grid-cols-2 sm:grid-cols-4 gap-px bg-[#1E2330] border border-[#1E2330] rounded-sm overflow-hidden interactive-surface card-elevated">
+				<div class="bg-[#080A0F] p-3.5 sm:p-4">
+					<p class="mono-kicker text-[10px] text-[#71717A] tracking-wider mb-1">SYSTEM ROLE</p>
+					<p class="mono-data text-xs text-[#F4F4F6] font-medium">{systemRole}</p>
+				</div>
+				<div class="bg-[#080A0F] p-3.5 sm:p-4">
+					<p class="mono-kicker text-[10px] text-[#71717A] tracking-wider mb-1">CORE PLATFORM</p>
+					<p class="mono-data text-xs text-[#F4F4F6] font-medium">{corePlatform}</p>
+				</div>
+				<div class="bg-[#080A0F] p-3.5 sm:p-4">
+					<p class="mono-kicker text-[10px] text-[#71717A] tracking-wider mb-1">STATUS</p>
+					<p class="mono-data text-xs text-[#10B981] font-medium">{statusText}</p>
+				</div>
+				<div class="bg-[#080A0F] p-3.5 sm:p-4">
+					<p class="mono-kicker text-[10px] text-[#71717A] tracking-wider mb-1">EVIDENCE TIER</p>
+					<p class="mono-data text-xs text-[#38BDF8] font-medium">{evidenceTier}</p>
+				</div>
+			</div>
+		</header>
+
+		<!-- 12-Column Layout: Left Sticky Navigation (3 cols) + Right Narrative (9 cols) -->
+		<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+			<!-- Left Sticky TOC -->
+			<aside class="hidden lg:block lg:col-span-3 sticky top-24 border border-[#1E2330] bg-[#0D1017] p-4 rounded-sm shadow-xl">
+				<div class="flex items-center justify-between border-b border-[#1E2330] pb-2 mb-3">
+					<span class="mono-label text-[11px] text-[#71717A]">SECTIONS //</span>
+					<span class="mono-label text-[10px] text-[#38BDF8]">SPEC.TOC</span>
+				</div>
+				<nav class="flex flex-col gap-1.5 font-mono text-xs text-[#A1A1AA]">
+					{doc.sections.map((sec, idx) => (
+						<a href={`#${sec.id}`} class="toc-link hover:text-[#F4F4F6] py-1 transition-colors truncate" data-toc-target={sec.id}>
+							{sec.badge || `${String(idx + 1).padStart(2, '0')} //`} {sec.heading.toUpperCase()}
+						</a>
+					))}
+					<a href="#links" class="toc-link hover:text-[#F4F4F6] py-1 transition-colors" data-toc-target="links">
+						{String(doc.sections.length + 1).padStart(2, '0')} // REPOSITORY &amp; LINKS
+					</a>
+				</nav>
+			</aside>
+
+			<!-- Right Content Stream -->
+			<div class="lg:col-span-9 space-y-12">
+				{doc.sections.map((sec, idx) => (
+					<section id={sec.id} class="scroll-mt-24 border-b border-white/[0.08] pb-10">
+						<div class="flex items-center gap-2 mb-2">
+							<span class="mono-label text-[#71717A]">{sec.badge || `${String(idx + 1).padStart(2, '0')} //`}</span>
+							<h2 class="text-xl font-semibold text-[#F4F4F6]">{sec.heading}</h2>
+						</div>
+
+						{sec.subheading && (
+							<p class="text-xs font-mono text-[#A1A1AA] mb-3">{sec.subheading}</p>
+						)}
+
+						<div class="prose-monograph text-[#A1A1AA] text-sm sm:text-base leading-relaxed space-y-3">
+							{sec.body.split('\n\n').map((paragraph) => (
+								<p>{paragraph}</p>
+							))}
+						</div>
+
+						{sec.list_items && sec.list_items.length > 0 && (
+							<ul class="list-disc list-inside space-y-1.5 text-[#A1A1AA] text-sm mt-3">
+								{sec.list_items.map((item) => (
+									<li>{item}</li>
+								))}
+							</ul>
+						)}
+
+						{/* Visual Block */}
+						{sec.visual && sec.visual.type !== 'none' && (
+							<div class="my-6">
+								{sec.visual.type === 'image' && sec.visual.url ? (
+									<figure class="border border-[#1E2330] bg-[#0A0D14] p-3 rounded-sm shadow-xl">
+										<img
+											src={sec.visual.url}
+											alt={sec.visual.caption || sec.heading}
+											class="w-full h-auto rounded-sm max-h-[500px] object-contain"
+										/>
+										{sec.visual.caption && (
+											<figcaption class="text-[11px] text-[#71717A] mt-2.5 font-mono text-right">
+												{sec.visual.caption}
+											</figcaption>
+										)}
+									</figure>
+								) : (
+									<ArtifactPlaceholder
+										title={sec.visual.title || `${sec.heading} Artifact`}
+										description={sec.visual.description || 'Schematics, bench traces, and hardware capture can be uploaded via the Admin Dashboard.'}
+									/>
+								)}
+							</div>
+						)}
+
+						{/* Specifications / Subsystem Grid */}
+						{sec.specs && sec.specs.length > 0 && (
+							<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+								{sec.specs.map((spec) => (
+									<div class="p-4 bg-[#0D1017] border border-[#1E2330] rounded-sm interactive-surface card-elevated">
+										<p class="mono-kicker text-[11px] text-[#71717A] mb-1">{spec.label}</p>
+										<p class="text-sm font-semibold text-[#F4F4F6] mb-1">{spec.value}</p>
+										{spec.description && (
+											<p class="text-xs text-[#A1A1AA] leading-relaxed">{spec.description}</p>
+										)}
+									</div>
+								))}
+							</div>
+						)}
+
+						{/* Technical Callout Box */}
+						{sec.callout && (
+							<div class="p-3.5 bg-[#080A0F] border border-white/[0.08] rounded-sm mt-5 text-xs text-[#71717A] font-mono card-elevated">
+								{sec.callout.label ? <strong class="text-[#A1A1AA]">{sec.callout.label}: </strong> : ''}
+								{sec.callout.text}
+							</div>
+						)}
+					</section>
+				))}
+
+				<!-- Final Section: Project Links -->
+				<section id="links" class="scroll-mt-24 pb-8">
+					<div class="flex items-center gap-2 mb-2">
+						<span class="mono-label text-[#71717A]">{String(doc.sections.length + 1).padStart(2, '0')} //</span>
+						<h2 class="text-xl font-semibold text-[#F4F4F6]">Repository &amp; Deployment Links</h2>
+					</div>
+					<div class="flex flex-wrap items-center gap-3 mt-4">
+						{githubUrl ? (
+							<a class="button button-primary" href={githubUrl} target="_blank" rel="noopener noreferrer">
+								View on GitHub <span class="arrow-up-right" aria-hidden="true">↗</span>
+							</a>
+						) : (
+							<span class="spec-tag text-[#71717A]">REPO LINK PENDING</span>
+						)}
+
+						{demoUrl ? (
+							<a class="button button-secondary" href={demoUrl} target="_blank" rel="noopener noreferrer">
+								Live Application <span class="arrow-up-right" aria-hidden="true">↗</span>
+							</a>
+						) : null}
+
+						{additionalLinks.map((link) => (
+							<a class="button button-secondary" href={link.url} target="_blank" rel="noopener noreferrer">
+								{link.label} <span class="arrow-up-right" aria-hidden="true">↗</span>
+							</a>
+						))}
+
+						<a class="button button-secondary" href="/#projects">
+							<span class="arrow-left" aria-hidden="true">←</span> Back to All Projects
+						</a>
+					</div>
+					<p class="text-xs text-[#71717A] mt-3 font-mono">
+						Repository and live deployment links can be attached or updated anytime via the Admin Dashboard.
+					</p>
+				</section>
+			</div>
+		</div>
+	</main>
+
+	<footer class="site-footer bg-[#080A0F] border-t border-white/[0.06] py-8 mt-16">
+		<div class="shell flex flex-wrap items-center justify-between gap-4 font-mono text-xs text-[#71717A]">
+			<div>
+				<span>© {new Date().getFullYear()} JAGAN</span>
+				<span class="mx-2 text-[#262C38]">|</span>
+				<span>ELECTRONICS &amp; TELECOMMUNICATION ENGINEERING</span>
+			</div>
+			<div class="flex items-center gap-4">
+				<a href="https://github.com/jagannath-badi" target="_blank" rel="noopener noreferrer" class="hover:text-[#38BDF8] transition-colors">
+					GITHUB // @JAGANNATH-BADI ↗
+				</a>
+				<a href="/admin" class="hover:text-[#E2C974] transition-colors">
+					ADMIN [OP]
+				</a>
+			</div>
+		</div>
+	</footer>
+</Layout>
+
+<script>
+	function initCaseStudy() {
+		// Scroll progress bar
+		try {
+			const bar = document.querySelector<HTMLElement>('.scroll-progress-bar');
+			if (bar) {
+				const updateBar = () => {
+					const scrollTop = window.scrollY;
+					const docH = document.documentElement.scrollHeight - window.innerHeight;
+					bar.style.transform = `scaleX(${docH > 0 ? scrollTop / docH : 0})`;
+				};
+				window.addEventListener('scroll', updateBar, { passive: true });
+				updateBar();
+			}
+		} catch (_) {}
+
+		// Case study TOC scroll-spy
+		try {
+			const tocLinks = document.querySelectorAll<HTMLAnchorElement>('[data-toc-target]');
+			const caseSections = document.querySelectorAll<HTMLElement>('main section[id]');
+
+			if (tocLinks.length && caseSections.length) {
+				const setTocActive = (id: string) => {
+					tocLinks.forEach((a) => {
+						a.classList.toggle('is-active', a.dataset.tocTarget === id);
+					});
+				};
+				const tocObserver = new IntersectionObserver(
+					(entries) => {
+						entries.forEach((entry) => {
+							if (entry.isIntersecting) setTocActive((entry.target as HTMLElement).id);
+						});
+					},
+					{ rootMargin: '-20% 0px -65% 0px', threshold: 0 }
+				);
+				caseSections.forEach((s) => tocObserver.observe(s));
+			}
+		} catch (_) {}
+
+		// Pointer spotlight on interactive surfaces
+		try {
+			if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+				const surfaces = document.querySelectorAll<HTMLElement>('.interactive-surface');
+				if (surfaces.length) {
+					let rafId = 0;
+					document.addEventListener('pointermove', (e: MouseEvent) => {
+						cancelAnimationFrame(rafId);
+						rafId = requestAnimationFrame(() => {
+							surfaces.forEach((el) => {
+								const rect = el.getBoundingClientRect();
+								el.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+								el.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+							});
+						});
+					}, { passive: true });
+				}
+			}
+		} catch (_) {}
+	}
+
+	document.addEventListener('astro:page-load', initCaseStudy);
+	initCaseStudy();
+</script>

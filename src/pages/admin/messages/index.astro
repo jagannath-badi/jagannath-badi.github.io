@@ -1,0 +1,603 @@
+---
+// src/pages/admin/messages/index.astro — Engineering Communications Inbox
+import Layout from '../../../layouts/Layout.astro';
+import { authorizeAdmin } from '../../../lib/admin-auth';
+import { createSupabaseServerClient } from '../../../lib/supabase';
+
+const authorization = await authorizeAdmin(Astro);
+if (authorization.status === 'unauthenticated') return Astro.redirect('/admin/login');
+if (authorization.status === 'forbidden') return new Response('Forbidden', { status: 403 });
+
+const supabase = createSupabaseServerClient(Astro);
+const { data: messages, error } = await supabase
+	.from('contact_messages')
+	.select('id, name, email, subject, message, created_at, is_read')
+	.order('created_at', { ascending: false });
+
+const totalCount = messages?.length ?? 0;
+const unreadCount = messages?.filter((m) => !m.is_read).length ?? 0;
+const readCount = totalCount - unreadCount;
+
+const currentFilter = Astro.url.searchParams.get('filter') ?? 'all';
+
+const filteredMessages = (messages ?? []).filter((msg) => {
+	if (currentFilter === 'unread') return !msg.is_read;
+	if (currentFilter === 'read') return msg.is_read;
+	return true;
+});
+
+const status = Astro.url.searchParams.get('status');
+const statusMessage =
+	status === 'read'
+		? 'Message marked as read.'
+		: status === 'unread'
+			? 'Message marked as unread.'
+			: null;
+
+const errorMessage = error
+	? 'Unable to load messages from database.'
+	: Astro.url.searchParams.get('error') === 'invalid'
+		? 'Invalid message command parameter.'
+		: Astro.url.searchParams.get('error') === 'database'
+			? 'Database error: Message update failed.'
+			: null;
+---
+
+<Layout title="Messages Inbox — Admin — Jagan">
+	<main class="admin-shell" id="main-content">
+		<!-- Header -->
+		<header class="admin-header border-b border-white/[0.08] pb-6 mb-6 flex flex-wrap items-end justify-between gap-4">
+			<div>
+				<div class="breadcrumb-row flex items-center gap-2 font-mono text-xs text-[#71717A] mb-2">
+					<a class="back-link hover:text-[#38BDF8] transition-colors" href="/admin">← CONTROL PANEL</a>
+					<span class="divider text-[#3F3F46]">/</span>
+					<span class="mono-tag text-[#38BDF8]">COMMUNICATIONS DISPATCH</span>
+				</div>
+				<h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-[#F4F4F6] mb-1">Inbound Inquiries Console</h1>
+				<p class="page-intro text-xs font-mono text-[#A1A1AA]">Direct technical inquiries, project collaboration requests, and messages submitted via the public contact form.</p>
+			</div>
+			<div class="header-actions flex items-center gap-3">
+				<a class="button button-secondary" href="/admin/projects">System Registry <span aria-hidden="true">→</span></a>
+				<form method="post" action="/api/admin/logout">
+					<button class="button button-muted" type="submit">Disconnect [OP]</button>
+				</form>
+			</div>
+		</header>
+
+		{statusMessage && (
+			<div class="notice success" role="status">
+				<span class="notice-indicator" aria-hidden="true">✓</span>
+				<span>{statusMessage}</span>
+			</div>
+		)}
+
+		{errorMessage && (
+			<div class="notice error" role="alert">
+				<span class="notice-indicator" aria-hidden="true">!</span>
+				<span>{errorMessage}</span>
+			</div>
+		)}
+
+		<!-- Filter Tabs & Telemetry Strip -->
+		<div class="inventory-controls">
+			<nav class="filter-tabs" aria-label="Filter contact messages">
+				<a
+					class:list={['filter-tab', currentFilter === 'all' && 'is-active']}
+					href="/admin/messages?filter=all"
+				>
+					<span>All Messages</span>
+					<span class="tab-count">{totalCount}</span>
+				</a>
+				<a
+					class:list={['filter-tab', currentFilter === 'unread' && 'is-active']}
+					href="/admin/messages?filter=unread"
+				>
+					<span>Unread</span>
+					<span class="tab-count">{unreadCount}</span>
+				</a>
+				<a
+					class:list={['filter-tab', currentFilter === 'read' && 'is-active']}
+					href="/admin/messages?filter=read"
+				>
+					<span>Read</span>
+					<span class="tab-count">{readCount}</span>
+				</a>
+			</nav>
+
+			<div class="inventory-meta">
+				<span>SHOWING {filteredMessages.length} OF {totalCount} MESSAGES</span>
+			</div>
+		</div>
+
+		<!-- Messages Content Section -->
+		{error ? (
+			<section class="empty-state">
+				<div class="empty-badge">TELEMETRY FAULT</div>
+				<h2>Messages Synchronisation Failed</h2>
+				<p>A network or PostgreSQL error occurred while querying the contact messages repository. Please retry.</p>
+				<a class="button button-secondary" href="/admin/messages">Retry Query ↻</a>
+			</section>
+		) : filteredMessages.length > 0 ? (
+			<section class="message-list" aria-label="Contact messages feed">
+				{filteredMessages.map((message) => (
+					<article class:list={['message-card', !message.is_read ? 'is-unread' : 'is-read']}>
+						<header class="message-card-header">
+							<div class="header-main-meta">
+								<div class="title-status-line">
+									<span class:list={['badge', !message.is_read ? 'badge-unread' : 'badge-read']}>
+										{!message.is_read ? '● UNREAD' : '○ READ'}
+									</span>
+									<span class="record-id">MSG-{message.id.slice(0, 8)}</span>
+								</div>
+								<h2 class="message-subject">{message.subject}</h2>
+								<div class="sender-info">
+									<span class="sender-name">{message.name}</span>
+									<span class="sender-divider">/</span>
+									<a class="sender-email" href={`mailto:${message.email}`}>{message.email}</a>
+								</div>
+							</div>
+							<div class="header-timestamp">
+								<time class="message-date" datetime={message.created_at}>
+									{new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(message.created_at))}
+								</time>
+							</div>
+						</header>
+
+						<div class="message-body-wrap">
+							<p class="message-body">{message.message}</p>
+						</div>
+
+						<footer class="message-card-footer">
+							<div class="message-actions">
+								<form method="post" action="/api/admin/messages">
+									<input type="hidden" name="id" value={message.id} />
+									<input type="hidden" name="action" value={message.is_read ? 'unread' : 'read'} />
+									<button class="button button-secondary row-btn" type="submit">
+										{message.is_read ? 'Mark as Unread' : 'Mark as Read'}
+									</button>
+								</form>
+								<a
+									class="button button-muted row-btn"
+									href={`mailto:${message.email}?subject=Re:%20${encodeURIComponent(message.subject)}`}
+								>
+									Reply via Email ↗
+								</a>
+							</div>
+						</footer>
+					</article>
+				))}
+			</section>
+		) : (
+			<section class="empty-state">
+				<div class="empty-badge">INBOX CLEAR</div>
+				{currentFilter === 'all' ? (
+					<>
+						<h2>No Messages Yet</h2>
+						<p>Messages submitted through the public contact form will appear here.</p>
+					</>
+				) : (
+					<>
+						<h2>No Messages Match "{currentFilter.toUpperCase()}"</h2>
+						<p>There are currently zero messages matching the selected state filter.</p>
+						<div class="empty-actions">
+							<a class="button button-secondary" href="/admin/messages?filter=all">Show All Messages</a>
+						</div>
+					</>
+				)}
+			</section>
+		)}
+	</main>
+</Layout>
+
+<style>
+	.admin-shell {
+		width: min(1120px, calc(100% - 3rem));
+		margin-inline: auto;
+		padding-block: 3.5rem 6rem;
+		display: grid;
+		gap: 2rem;
+	}
+
+	.admin-header {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 2rem;
+		padding-bottom: 2rem;
+		border-bottom: 1px solid var(--line-subtle);
+	}
+
+	.breadcrumb-row {
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		margin-bottom: 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+	}
+
+	.back-link {
+		color: var(--text-muted);
+		transition: color 180ms ease;
+	}
+
+	.back-link:hover {
+		color: var(--text-primary);
+	}
+
+	.divider {
+		color: var(--line-strong);
+	}
+
+	.mono-tag {
+		color: var(--text-secondary);
+		letter-spacing: 0.08em;
+	}
+
+	h1 {
+		margin: 0 0 0.5rem;
+		font-size: clamp(2rem, 4vw, 3rem);
+		line-height: 1.1;
+		letter-spacing: -0.04em;
+	}
+
+	.page-intro {
+		margin: 0;
+		color: var(--text-secondary);
+		font-size: 0.9rem;
+		max-width: 620px;
+		line-height: 1.6;
+	}
+
+	.header-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.button-muted {
+		border-color: var(--line-strong);
+		background: transparent;
+		color: var(--text-muted);
+	}
+
+	.button-muted:hover {
+		border-color: var(--text-primary);
+		background: rgba(255, 255, 255, 0.06);
+		color: var(--text-primary);
+	}
+
+	/* Notice Bars */
+	.notice {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.85rem 1.15rem;
+		border-radius: var(--radius-md);
+		font-size: 0.84rem;
+	}
+
+	.notice.success {
+		border: 1px solid rgba(163, 177, 138, 0.35);
+		background: rgba(163, 177, 138, 0.08);
+		color: #b7c4a1;
+	}
+
+	.notice.error {
+		border: 1px solid rgba(229, 152, 155, 0.35);
+		background: rgba(229, 152, 155, 0.08);
+		color: #f0b0b4;
+	}
+
+	.notice-indicator {
+		display: grid;
+		place-items: center;
+		width: 1.1rem;
+		height: 1.1rem;
+		border-radius: 50%;
+		border: 1px solid currentColor;
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		font-weight: 700;
+	}
+
+	/* Inventory Controls & Filter Tabs */
+	.inventory-controls {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1.5rem;
+		flex-wrap: wrap;
+	}
+
+	.filter-tabs {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		background: rgba(255, 255, 255, 0.02);
+		padding: 0.35rem;
+		border: 1px solid var(--line-subtle);
+		border-radius: 999px;
+	}
+
+	.filter-tab {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.45rem 0.85rem;
+		border-radius: 999px;
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		transition: color 180ms ease, background 180ms ease;
+	}
+
+	.filter-tab:hover {
+		color: var(--text-primary);
+	}
+
+	.filter-tab.is-active {
+		background: rgba(255, 255, 255, 0.08);
+		color: #ffffff;
+		border: 1px solid var(--line-strong);
+	}
+
+	.tab-count {
+		opacity: 0.75;
+		font-size: 0.58rem;
+	}
+
+	.inventory-meta {
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		letter-spacing: 0.1em;
+	}
+
+	/* Message Cards */
+	.message-list {
+		display: grid;
+		gap: 1.25rem;
+	}
+
+	.message-card {
+		border: 1px solid var(--line-subtle);
+		border-radius: var(--radius-lg);
+		background: linear-gradient(160deg, rgba(255, 255, 255, 0.02), rgba(10, 10, 12, 0.75));
+		box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+		transition: border-color 180ms ease;
+		overflow: hidden;
+	}
+
+	.message-card.is-unread {
+		border-color: rgba(56, 189, 248, 0.3);
+		border-left: 3px solid #38bdf8;
+		background: linear-gradient(160deg, rgba(56, 189, 248, 0.04), rgba(13, 16, 23, 0.95));
+	}
+
+	.message-card:hover {
+		border-color: var(--line-strong);
+	}
+
+	.message-card-header {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 1.5rem;
+		padding: 1.35rem 1.6rem 1.15rem;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+	}
+
+	.header-main-meta {
+		display: grid;
+		gap: 0.45rem;
+	}
+
+	.title-status-line {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.badge {
+		display: inline-block;
+		padding: 0.2rem 0.55rem;
+		border: 1px solid;
+		border-radius: 999px;
+		font-family: var(--font-mono);
+		font-size: 0.55rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+
+	.badge-unread {
+		border-color: rgba(56, 189, 248, 0.4);
+		background: rgba(56, 189, 248, 0.12);
+		color: #38bdf8;
+		font-weight: 600;
+	}
+
+	.badge-read {
+		border-color: var(--line-subtle);
+		background: transparent;
+		color: var(--text-muted);
+	}
+
+	.record-id {
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		color: var(--text-muted);
+		letter-spacing: 0.05em;
+	}
+
+	.message-subject {
+		margin: 0;
+		font-size: 1.18rem;
+		font-weight: 600;
+		letter-spacing: -0.02em;
+		color: var(--text-primary);
+		overflow-wrap: anywhere;
+	}
+
+	.sender-info {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		font-size: 0.82rem;
+	}
+
+	.sender-name {
+		color: var(--text-secondary);
+		font-weight: 500;
+	}
+
+	.sender-divider {
+		color: var(--line-strong);
+	}
+
+	.sender-email {
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		transition: color 180ms ease;
+	}
+
+	.sender-email:hover {
+		color: var(--text-primary);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
+	.header-timestamp {
+		flex: 0 0 auto;
+	}
+
+	.message-date {
+		display: inline-block;
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		letter-spacing: 0.05em;
+		white-space: nowrap;
+	}
+
+	.message-body-wrap {
+		padding: 1.25rem 1.6rem;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+		background: rgba(0, 0, 0, 0.2);
+	}
+
+	.message-body {
+		margin: 0;
+		color: var(--text-secondary);
+		font-size: 0.92rem;
+		line-height: 1.7;
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+
+	.message-card-footer {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		padding: 0.9rem 1.6rem;
+		background: rgba(255, 255, 255, 0.01);
+	}
+
+	.message-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		flex-wrap: wrap;
+	}
+
+	.row-btn {
+		font-size: 0.65rem;
+		padding: 0.45rem 0.85rem;
+		min-height: 2.1rem;
+		white-space: nowrap;
+	}
+
+	/* Empty State */
+	.empty-state {
+		padding: 3.5rem 2rem;
+		text-align: center;
+		border: 1px dashed var(--line-subtle);
+		border-radius: var(--radius-lg);
+		background: rgba(255, 255, 255, 0.015);
+		display: grid;
+		gap: 0.85rem;
+		place-items: center;
+	}
+
+	.empty-badge {
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		letter-spacing: 0.12em;
+	}
+
+	.empty-state h2 {
+		margin: 0;
+		font-size: clamp(1.4rem, 3vw, 1.8rem);
+	}
+
+	.empty-state p {
+		margin: 0;
+		color: var(--text-secondary);
+		max-width: 480px;
+		line-height: 1.6;
+	}
+
+	.empty-actions {
+		display: flex;
+		gap: 0.75rem;
+		margin-top: 0.75rem;
+		flex-wrap: wrap;
+	}
+
+	@media (max-width: 768px) {
+		.admin-shell {
+			width: min(100% - 2rem, 1120px);
+		}
+		.admin-header {
+			flex-direction: column;
+			align-items: stretch;
+		}
+		.header-actions {
+			flex-direction: column;
+			align-items: stretch;
+		}
+		.header-actions > * {
+			width: 100%;
+		}
+		.header-actions form button {
+			width: 100%;
+		}
+		.message-card-header {
+			flex-direction: column;
+			gap: 0.75rem;
+		}
+		.header-timestamp {
+			order: -1;
+		}
+		.message-card-footer {
+			justify-content: stretch;
+		}
+		.message-actions {
+			width: 100%;
+			flex-direction: column;
+			align-items: stretch;
+		}
+		.message-actions > * {
+			width: 100%;
+		}
+		.message-actions form button {
+			width: 100%;
+		}
+	}
+</style>

@@ -1,0 +1,916 @@
+---
+// src/pages/index.astro — Architectural Hardware Atelier Public Homepage
+import Layout from '../layouts/Layout.astro';
+import GenericStagingDiagram from '../components/GenericStagingDiagram.astro';
+import ArtifactPlaceholder from '../components/ArtifactPlaceholder.astro';
+import { createSupabaseServerClient } from '../lib/supabase';
+import { parseCaseStudy } from '../lib/case-study-schema';
+
+// Fetch published projects from Supabase with strict publication filtering
+const supabase = createSupabaseServerClient(Astro);
+const { data: dbProjects } = await supabase
+	.from('projects')
+	.select(
+		'id, slug, title, summary, description, technologies, project_type, is_featured, github_url, demo_url, sort_order, created_at'
+	)
+	.eq('is_published', true)
+	.order('sort_order', { ascending: true })
+	.order('created_at', { ascending: false });
+
+const allPublishedProjects = dbProjects ?? [];
+
+// Separate featured vs secondary published projects (never duplicate)
+const featuredProjects = allPublishedProjects.filter((p) => p.is_featured);
+const secondaryProjects = allPublishedProjects.filter((p) => !p.is_featured);
+
+// Dynamic profile summary text from active projects
+const activeProjectNames = allPublishedProjects.length > 0
+	? allPublishedProjects.slice(0, 2).map((p) => p.title.split(' ')[0]).join(', ')
+	: 'Active Prototyping';
+---
+
+<Layout title="Jagan — Electronics & Telecommunication Engineering">
+	<!-- Sticky Header -->
+	<header class="site-header border-b border-white/[0.06] bg-[#0B0D12]/85 backdrop-blur-md sticky top-0 z-40">
+		<div class="shell header-inner flex items-center justify-between py-3.5 relative">
+			<a class="wordmark flex items-center gap-2.5 group" href="/" aria-label="Jagan home">
+				<span class="wordmark-mark inline-flex items-center justify-center w-6 h-6 text-xs font-mono font-bold text-[#E2C974] bg-[#E2C974]/10 border border-[#E2C974]/30 rounded-xs transition-colors group-hover:border-[#38BDF8] group-hover:text-[#38BDF8]" aria-hidden="true">J</span>
+				<span class="mono-label tracking-normal font-semibold text-[#F4F4F6] text-xs">JAGAN // ETC ENGINEERING</span>
+			</a>
+			<nav class="site-nav" aria-label="Primary navigation">
+				<button
+					class="menu-toggle sm:hidden inline-flex items-center justify-center w-11 h-11 rounded-sm border border-[#1E2330] bg-[#121620] text-[#F4F4F6] hover:border-[#38BDF8]/40 transition-colors"
+					type="button"
+					aria-expanded="false"
+					aria-controls="primary-navigation"
+					aria-label="Toggle navigation"
+				>
+					<span class="sr-only">Toggle navigation</span>
+					<svg
+						class="hamburger-icon w-5 h-5 pointer-events-none"
+						viewBox="0 0 20 20"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.75"
+						stroke-linecap="round"
+						aria-hidden="true"
+					>
+						<line class="line-top" x1="3" y1="5" x2="17" y2="5"></line>
+						<line class="line-mid" x1="3" y1="10" x2="17" y2="10"></line>
+						<line class="line-bot" x1="3" y1="15" x2="17" y2="15"></line>
+					</svg>
+				</button>
+				<ul class="nav-list flex items-center gap-5 text-xs font-mono text-[#A1A1AA]" id="primary-navigation">
+					<li><a href="#projects" data-nav-link class="hover:text-[#F4F4F6] transition-colors">Projects</a></li>
+					<li><a href="#capabilities" data-nav-link class="hover:text-[#F4F4F6] transition-colors">Focus</a></li>
+					<li><a href="#about" data-nav-link class="hover:text-[#F4F4F6] transition-colors">About</a></li>
+					<li><a href="#contact" data-nav-link class="hover:text-[#F4F4F6] transition-colors">Contact</a></li>
+				</ul>
+			</nav>
+		</div>
+		<div class="scroll-progress-bar" aria-hidden="true"></div>
+	</header>
+
+	<main id="main-content">
+		<!-- HERO SECTION: 1440x900 viewport target -->
+		<section class="monograph-section py-8 sm:py-14 relative overflow-hidden" aria-labelledby="hero-title">
+			<div class="shell grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative z-10">
+				<!-- Left 8 Columns: Engineering Positioning -->
+				<div class="lg:col-span-8 flex flex-col items-start" data-reveal>
+					<div class="flex items-center gap-2 mb-3.5" data-hero-item="0">
+						<span class="inline-block w-1.5 h-1.5 rounded-full bg-[#38BDF8]" aria-hidden="true"></span>
+						<p class="mono-kicker text-xs text-[#A1A1AA] tracking-wider">
+							ELECTRONICS &amp; TELECOMMUNICATION ENGINEERING // UNDERGRADUATE
+						</p>
+					</div>
+					<h1 id="hero-title" class="text-3xl sm:text-4xl lg:text-[44px] font-semibold tracking-tight text-[#F4F4F6] mb-4 max-w-2xl leading-[1.15]" data-hero-item="1">
+						Designing physical-digital systems at the intersection of <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#F4F4F6] via-[#D4D4D8] to-[#38BDF8]">hardware, embedded logic, and software</span>.
+					</h1>
+					<p class="text-base sm:text-[17px] text-[#A1A1AA] max-w-xl leading-relaxed mb-7" data-hero-item="2">
+						Second-year undergraduate combining circuit fundamentals, ESP32 embedded systems, and Python/AI software for practical engineering applications.
+					</p>
+					<div class="flex flex-wrap items-center gap-3.5" data-hero-item="2">
+						<a class="button button-primary" href="#projects">
+							Explore Engineering Work <span class="arrow-down" aria-hidden="true">↓</span>
+						</a>
+						<a class="button button-secondary" href="#contact">
+							Initiate Contact <span class="arrow-right" aria-hidden="true">→</span>
+						</a>
+					</div>
+				</div>
+
+				<!-- Right 4 Columns: Anodized Instrument Telemetry Placard -->
+				<div class="lg:col-span-4 w-full instrument-faceplate p-5 sm:p-6 interactive-surface card-elevated" data-hero-item="3" data-reveal style="--reveal-delay: 80ms">
+					<div class="flex items-center justify-between border-b border-white/[0.08] pb-2.5 mb-3.5">
+						<div class="flex items-center gap-2">
+							<span class="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" aria-hidden="true"></span>
+							<span class="mono-label text-[11px] text-[#E4E4E7] font-semibold tracking-wider">PROFILE SUMMARY</span>
+						</div>
+						<span class="brass-chip">SPEC // 2026</span>
+					</div>
+					<div class="space-y-2.5 font-mono text-xs">
+						<div class="flex items-baseline justify-between gap-2 border-b border-white/[0.04] pb-2">
+							<span class="text-[#71717A] text-[10px] tracking-wider">[DEGREE]</span>
+							<span class="text-[#F4F4F6] text-right font-medium">B.Tech ETC (2nd Year, IGIT Sarang)</span>
+						</div>
+						<div class="flex items-baseline justify-between gap-2 border-b border-white/[0.04] pb-2">
+							<span class="text-[#71717A] text-[10px] tracking-wider">[MCU PLATFORM]</span>
+							<span class="text-[#F4F4F6] text-right font-medium">ESP32 / ARM Cortex-M</span>
+						</div>
+						<div class="flex items-baseline justify-between gap-2 border-b border-white/[0.04] pb-2">
+							<span class="text-[#71717A] text-[10px] tracking-wider">[SIGNAL ANALYSIS]</span>
+							<span class="text-[#F4F4F6] text-right font-medium">Analog Cond. &amp; Multi-ADC</span>
+						</div>
+						<div class="flex items-baseline justify-between gap-2 border-b border-white/[0.04] pb-2">
+							<span class="text-[#71717A] text-[10px] tracking-wider">[COURSEWORK]</span>
+							<span class="text-[#F4F4F6] text-right font-medium">Signals &amp; Systems, Network Theory</span>
+						</div>
+						<div class="flex items-baseline justify-between gap-2 pt-0.5">
+							<span class="text-[#71717A] text-[10px] tracking-wider">[STATUS]</span>
+							<span class="text-[#10B981] text-right font-medium flex items-center gap-1">
+								Active Prototyping
+							</span>
+						</div>
+					</div>
+					<div class="mt-4 pt-3.5 border-t border-white/[0.06] flex items-center justify-between">
+						<a class="mono-label text-[11px] text-[#A1A1AA] hover:text-[#38BDF8] transition-colors flex items-center gap-1.5" href="https://github.com/jagannath-badi" target="_blank" rel="noopener noreferrer">
+							GITHUB // @JAGANNATH-BADI <span class="arrow-up-right" aria-hidden="true">↗</span>
+						</a>
+						<span class="mono-label text-[10px] text-[#71717A]">SYS.ID #01</span>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- 01 // FEATURED PROJECTS SECTION -->
+		<section class="monograph-section" id="projects" aria-labelledby="projects-title">
+			<div class="shell">
+				<!-- Section Index Header -->
+				<div class="section-index-header border-b border-white/[0.06] pb-4 mb-8">
+					<div>
+						<p class="mono-label text-xs text-[#71717A] mb-1">01 // SELECTED ENGINEERING WORK</p>
+						<h2 id="projects-title" class="text-2xl sm:text-3xl font-semibold text-[#F4F4F6]">
+							Featured Systems &amp; Prototypes
+						</h2>
+					</div>
+					<p class="text-xs sm:text-sm text-[#A1A1AA] max-w-md font-mono">
+						Documented engineering projects combining physical sensor acquisition, embedded control logic, and application tools.
+					</p>
+				</div>
+
+				{allPublishedProjects.length === 0 ? (
+					<div class="atelier-panel border border-white/[0.08] p-5 sm:p-8 rounded-sm interactive-surface card-elevated" data-reveal>
+						<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+							{/* Left Column (5 cols): Technical Scope & Grounded Staging Status */}
+							<div class="lg:col-span-5 flex flex-col justify-between h-full">
+								<div>
+									<div class="flex items-center gap-2 mb-2.5">
+										<span class="w-2 h-2 rounded-full bg-[#E2C974] animate-pulse" aria-hidden="true"></span>
+										<p class="mono-kicker text-xs text-[#E2C974]">SYS_PIPELINE // ACTIVE DEVELOPMENT &amp; STAGING</p>
+									</div>
+									<h3 class="text-xl sm:text-2xl font-semibold text-[#F4F4F6] mb-3.5 leading-snug">
+										Engineering Systems in Active Laboratory Development
+									</h3>
+									<p class="text-sm text-[#A1A1AA] leading-relaxed mb-4">
+										Hardware prototypes and technical case studies across microcontroller firmware, mixed-signal sensor acquisition, and applied AI software tools are currently undergoing structured verification and documentation review.
+									</p>
+									<p class="text-xs text-[#71717A] leading-relaxed mb-6 font-mono">
+										As project milestones pass technical review, complete architectural schematics, firmware repositories, and telemetry traces will be published directly to this index.
+									</p>
+
+									{/* Recessed Status Block */}
+									<div class="space-y-2 font-mono text-xs chassis-well p-3.5 rounded-sm mb-6">
+										<div class="flex items-center justify-between text-[#71717A]">
+											<span>FOCUS DOMAIN</span>
+											<span class="text-[#F4F4F6]">System Architecture &amp; Interfaces</span>
+										</div>
+										<div class="flex items-center justify-between text-[#71717A] border-t border-white/[0.04] pt-1.5">
+											<span>DOCUMENTATION</span>
+											<span class="text-[#F4F4F6]">Schematic &amp; Interface Planning</span>
+										</div>
+										<div class="flex items-center justify-between text-[#71717A] border-t border-white/[0.04] pt-1.5">
+											<span>VERIFICATION</span>
+											<span class="text-[#38BDF8]">Simulated &amp; Laboratory Review</span>
+										</div>
+									</div>
+								</div>
+
+								<div class="flex flex-wrap items-center gap-3">
+									<a class="button button-primary text-xs" href="#contact">
+										Direct Technical Inquiry <span class="arrow-right" aria-hidden="true">→</span>
+									</a>
+									<a class="button button-secondary text-xs" href="https://github.com/jagannath-badi?tab=repositories" target="_blank" rel="noopener noreferrer">
+										GitHub Repositories <span class="arrow-up-right" aria-hidden="true">↗</span>
+									</a>
+								</div>
+							</div>
+
+							{/* Right Column (7 cols): Generic Staging Architecture Flow */}
+							<div class="lg:col-span-7">
+								<GenericStagingDiagram />
+								<p class="text-[11px] text-[#71717A] mt-2.5 font-mono text-right">
+									FIG 01 // Illustrative Mixed-Signal Processing &amp; Control Architecture Flow
+								</p>
+							</div>
+						</div>
+					</div>
+				) : (
+					<div class="space-y-8">
+						{/* FEATURED PROJECTS (Split Card Layout) */}
+						{featuredProjects.map((p, pIdx) => {
+							const doc = parseCaseStudy(p.description, p.summary, p.project_type);
+							const isCustomImage = doc.metadata.diagram_type === 'image' && Boolean(doc.metadata.diagram_url);
+							const projectNum = String(pIdx + 1).padStart(2, '0');
+							const statusBadge = doc.metadata.status_label || (p.project_type === 'concept' ? 'CONCEPTUAL DESIGN' : 'PROTOTYPE DESIGN');
+
+							return (
+								<article class="atelier-panel border border-white/[0.08] p-5 sm:p-7 rounded-sm grid grid-cols-1 lg:grid-cols-12 gap-8 items-center interactive-surface card-elevated" data-reveal style={pIdx > 0 ? `--reveal-delay: ${pIdx * 80}ms` : undefined}>
+									{/* Left 5 Columns: Summary & Specification Matrix */}
+									<div class="lg:col-span-5 flex flex-col items-start order-1 lg:order-1">
+										<div class="flex flex-wrap items-center gap-2 mb-2.5">
+											<span class="mono-kicker text-xs text-[#E2C974] bg-[#E2C974]/10 border border-[#E2C974]/30 px-2 py-0.5 rounded-xs">
+												PROJECT {projectNum} // {p.project_type.toUpperCase()}
+											</span>
+											<span class="mono-kicker text-[10px] text-[#38BDF8] bg-[#38BDF8]/10 border border-[#38BDF8]/30 px-2 py-0.5 rounded-xs">
+												{statusBadge}
+											</span>
+										</div>
+										<h3 class="text-xl sm:text-2xl font-semibold text-[#F4F4F6] mb-3 leading-snug">
+											{p.title}
+										</h3>
+
+										{/* Mobile order: diagram preview shown right below title on mobile */}
+										<div class="w-full lg:hidden my-4 order-3">
+											<div class="bg-[#0A0D14] border border-[#1E2330] rounded-sm overflow-hidden p-2">
+												{isCustomImage ? (
+													<div class="p-2 border border-white/[0.08] bg-[#080A0F] rounded-sm">
+														<img src={doc.metadata.diagram_url} alt={p.title} class="w-full h-auto rounded-sm object-contain max-h-[300px]" />
+													</div>
+												) : (
+													<ArtifactPlaceholder title={doc.metadata.diagram_caption || p.title} description="System block diagram and architecture specification." />
+												)}
+											</div>
+										</div>
+
+										<p class="text-sm text-[#A1A1AA] leading-relaxed mb-4 order-2 lg:order-2">
+											{p.summary}
+										</p>
+
+										{/* 2x2 Segmented Datasheet Matrix */}
+										<div class="grid grid-cols-2 gap-px bg-[#1E2330] border border-[#1E2330] rounded-sm overflow-hidden mb-5 font-mono text-xs w-full order-3 lg:order-3">
+											<div class="bg-[#080A0F] p-2.5">
+												<p class="text-[9.5px] text-[#71717A] tracking-wider mb-0.5">CORE PLATFORM</p>
+												<p class="text-[#F4F4F6] text-xs font-medium truncate">{doc.metadata.core_platform || (p.technologies?.[0] ?? 'Embedded Systems')}</p>
+											</div>
+											<div class="bg-[#080A0F] p-2.5">
+												<p class="text-[9.5px] text-[#71717A] tracking-wider mb-0.5">SYSTEM ROLE</p>
+												<p class="text-[#F4F4F6] text-xs font-medium truncate">{doc.metadata.system_role || 'Hardware & Systems'}</p>
+											</div>
+											<div class="bg-[#080A0F] p-2.5">
+												<p class="text-[9.5px] text-[#71717A] tracking-wider mb-0.5">EVIDENCE</p>
+												<p class="text-[#38BDF8] text-xs font-medium truncate">{doc.metadata.evidence_tier || 'Laboratory Trace'}</p>
+											</div>
+											<div class="bg-[#080A0F] p-2.5">
+												<p class="text-[9.5px] text-[#71717A] tracking-wider mb-0.5">VALIDATION</p>
+												<p class="text-[#10B981] text-xs font-medium truncate">{statusBadge}</p>
+											</div>
+										</div>
+
+										{p.technologies && p.technologies.length > 0 && (
+											<div class="flex flex-wrap gap-1.5 mb-5 order-4">
+												{p.technologies.map((t) => (
+													<span class="spec-tag">{t}</span>
+												))}
+											</div>
+										)}
+
+										<div class="flex flex-wrap items-center gap-3 order-5">
+											<a class="button button-primary" href={`/projects/${p.slug}`}>
+												Read Case Study <span class="arrow-right" aria-hidden="true">→</span>
+											</a>
+											{p.github_url && (
+												<a class="button button-secondary" href={p.github_url} target="_blank" rel="noopener noreferrer">
+													Code <span class="arrow-up-right" aria-hidden="true">↗</span>
+												</a>
+											)}
+										</div>
+									</div>
+
+									{/* Right 7 Columns: Technical Artifact Frame (Desktop) */}
+									<div class="hidden lg:block lg:col-span-7 order-2 lg:order-2">
+										<div class="bg-[#0A0D14] border border-[#1E2330] rounded-sm overflow-hidden shadow-2xl">
+											<div class="flex items-center justify-between border-b border-[#1E2330] px-3.5 py-2 bg-[#0D1017] text-xs font-mono">
+												<div class="flex items-center gap-2">
+													<span class="w-1.5 h-1.5 rounded-full bg-[#38BDF8] animate-pulse" aria-hidden="true"></span>
+													<span class="text-[#A1A1AA] text-[11px]">SYS.TELEMETRY // {p.slug.toUpperCase().slice(0, 24)}</span>
+												</div>
+												<span class="text-[#71717A] text-[10px]">DIAGRAM_VIEW ↗</span>
+											</div>
+											<div class="p-3">
+												{isCustomImage ? (
+													<div class="p-2 border border-white/[0.08] bg-[#080A0F] rounded-sm">
+														<img src={doc.metadata.diagram_url} alt={p.title} class="w-full h-auto rounded-sm object-contain max-h-[420px]" />
+													</div>
+												) : (
+													<ArtifactPlaceholder title={doc.metadata.diagram_caption || p.title} description="System block diagram and architecture specification." />
+												)}
+											</div>
+											{doc.metadata.diagram_caption && (
+												<div class="border-t border-[#1E2330] px-3.5 py-1.5 bg-[#080A0F]">
+													<p class="text-[11px] text-[#71717A] font-mono text-right truncate">
+														{doc.metadata.diagram_caption}
+													</p>
+												</div>
+											)}
+										</div>
+									</div>
+								</article>
+							);
+						})}
+
+						{/* Secondary Published Projects Grid */}
+						{secondaryProjects.length > 0 && (
+							<div class="pt-6 border-t border-white/[0.06]">
+								<p class="mono-label text-xs text-[#71717A] mb-4">ADDITIONAL PUBLISHED PROJECTS //</p>
+								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+									{secondaryProjects.map((p) => (
+										<article class="atelier-panel border border-white/[0.08] p-4 rounded-sm flex flex-col justify-between interactive-surface card-elevated">
+											<div>
+												<div class="flex items-center justify-between mb-2">
+													<span class="spec-tag">{p.project_type.toUpperCase()}</span>
+													<span class="mono-kicker text-[10px] text-[#71717A]">DOCUMENTED</span>
+												</div>
+												<h4 class="text-base font-semibold text-[#F4F4F6] mb-2">{p.title}</h4>
+												<p class="text-xs text-[#A1A1AA] line-clamp-3 mb-3">{p.summary}</p>
+											</div>
+											<div class="pt-3 border-t border-white/[0.04] flex items-center justify-between">
+												<div class="flex flex-wrap gap-1">
+													{p.technologies?.slice(0, 3).map((t) => (
+														<span class="spec-tag text-[10px]">{t}</span>
+													))}
+												</div>
+												<a class="mono-label text-xs text-[#F4F4F6] hover:text-[#38BDF8]" href={`/projects/${p.slug}`}>
+													VIEW <span class="arrow-right" aria-hidden="true">→</span>
+												</a>
+											</div>
+										</article>
+									))}
+								</div>
+							</div>
+						)}
+					</div>
+				)}
+			</div>
+		</section>
+
+		<!-- 02 // TECHNICAL FOCUS & CAPABILITIES -->
+		<section class="monograph-section" id="capabilities" aria-labelledby="capabilities-title">
+			<div class="shell">
+				<div class="section-index-header border-b border-white/[0.06] pb-4 mb-8">
+					<div>
+						<p class="mono-label text-xs text-[#71717A] mb-1">02 // TECHNICAL FOCUS &amp; CAPABILITIES</p>
+						<h2 id="capabilities-title" class="text-2xl sm:text-3xl font-semibold text-[#F4F4F6]">
+							Engineering Domains &amp; Competencies
+						</h2>
+					</div>
+					<p class="text-xs sm:text-sm text-[#A1A1AA] max-w-md font-mono">
+						Core areas of study and hands-on prototyping across electronics, embedded firmware, and software tools.
+					</p>
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+					<!-- Domain 01: Embedded Hardware -->
+					<div class="atelier-panel border border-white/[0.08] p-5 sm:p-6 rounded-sm flex flex-col justify-between interactive-surface card-elevated" data-reveal>
+						<div>
+							<div class="flex items-center justify-between mb-3">
+								<p class="mono-kicker text-[10px] text-[#E2C974]">SUBSYSTEM 01 // HARDWARE</p>
+								<span class="text-[10px] font-mono text-[#71717A]">DEV_UNIT</span>
+							</div>
+							<h3 class="text-lg font-semibold text-[#F4F4F6] mb-2.5">Embedded Systems &amp; Hardware</h3>
+							<p class="text-xs text-[#A1A1AA] leading-relaxed mb-4">
+								Microcontroller development, GPIO and ADC peripheral interfacing, sensor signal acquisition, and actuation logic.
+							</p>
+						</div>
+						<div class="chassis-well p-3 rounded-sm space-y-1.5 font-mono text-[11px] text-[#A1A1AA]">
+							<div class="flex items-center justify-between">
+								<span class="text-[#71717A]">PLATFORM</span>
+								<span class="text-[#F4F4F6]">ESP32 / Microcontrollers</span>
+							</div>
+							<div class="flex items-center justify-between">
+								<span class="text-[#71717A]">SENSING</span>
+								<span class="text-[#F4F4F6]">Analog ADC &amp; Sensor Conditioning</span>
+							</div>
+							<div class="flex items-center justify-between">
+								<span class="text-[#71717A]">DRIVERS</span>
+								<span class="text-[#F4F4F6]">Power Switching &amp; Actuation Stages</span>
+							</div>
+							<div class="flex items-center justify-between">
+								<span class="text-[#71717A]">FIRMWARE</span>
+								<span class="text-[#38BDF8]">C++ State Machines</span>
+							</div>
+						</div>
+					</div>
+
+					<!-- Domain 02: Circuits & Telecommunication -->
+					<div class="atelier-panel border border-white/[0.08] p-5 sm:p-6 rounded-sm flex flex-col justify-between interactive-surface card-elevated" data-reveal style="--reveal-delay: 60ms">
+						<div>
+							<div class="flex items-center justify-between mb-3">
+								<p class="mono-kicker text-[10px] text-[#E2C974]">SUBSYSTEM 02 // CIRCUITS</p>
+								<span class="text-[10px] font-mono text-[#71717A]">DEV_UNIT</span>
+							</div>
+							<h3 class="text-lg font-semibold text-[#F4F4F6] mb-2.5">Electronics &amp; Telecommunication</h3>
+							<p class="text-xs text-[#A1A1AA] leading-relaxed mb-4">
+								Circuit principles, signals and systems fundamentals, laboratory instrumentation, and communication protocols.
+							</p>
+						</div>
+						<div class="chassis-well p-3 rounded-sm space-y-1.5 font-mono text-[11px] text-[#A1A1AA]">
+							<div class="flex items-center justify-between">
+								<span class="text-[#71717A]">ANALYSIS</span>
+								<span class="text-[#F4F4F6]">Signals &amp; Systems</span>
+							</div>
+							<div class="flex items-center justify-between">
+								<span class="text-[#71717A]">TEST BENCH</span>
+								<span class="text-[#F4F4F6]">Breadboard &amp; Multimeter (DMM)</span>
+							</div>
+							<div class="flex items-center justify-between">
+								<span class="text-[#71717A]">ISOLATION</span>
+								<span class="text-[#F4F4F6]">Signal Conditioning</span>
+							</div>
+							<div class="flex items-center justify-between">
+								<span class="text-[#71717A]">PROTOCOLS</span>
+								<span class="text-[#38BDF8]">UART / I2C / SPI</span>
+							</div>
+						</div>
+					</div>
+
+					<!-- Domain 03: Engineering Software & AI -->
+					<div class="atelier-panel border border-white/[0.08] p-5 sm:p-6 rounded-sm flex flex-col justify-between interactive-surface card-elevated" data-reveal style="--reveal-delay: 120ms">
+						<div>
+							<div class="flex items-center justify-between mb-3">
+								<p class="mono-kicker text-[10px] text-[#E2C974]">SUBSYSTEM 03 // SOFTWARE</p>
+								<span class="text-[10px] font-mono text-[#71717A]">DEV_UNIT</span>
+							</div>
+							<h3 class="text-lg font-semibold text-[#F4F4F6] mb-2.5">Engineering Software &amp; AI</h3>
+							<p class="text-xs text-[#A1A1AA] leading-relaxed mb-4">
+								Python tooling for laboratory assistance, responsive interactive web applications, and multi-model AI API integrations.
+							</p>
+						</div>
+						<div class="chassis-well p-3 rounded-sm space-y-1.5 font-mono text-[11px] text-[#A1A1AA]">
+							<div class="flex items-center justify-between">
+								<span class="text-[#71717A]">SCRIPTING</span>
+								<span class="text-[#F4F4F6]">Python &amp; Scientific Tools</span>
+							</div>
+							<div class="flex items-center justify-between">
+								<span class="text-[#71717A]">WORKSPACE</span>
+								<span class="text-[#F4F4F6]">Python &amp; Technical Tooling</span>
+							</div>
+							<div class="flex items-center justify-between">
+								<span class="text-[#71717A]">AI APIs</span>
+								<span class="text-[#F4F4F6]">Multi-Model Integration</span>
+							</div>
+							<div class="flex items-center justify-between">
+								<span class="text-[#71717A]">WEB STACK</span>
+								<span class="text-[#38BDF8]">Astro &amp; TypeScript</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- 03 // ABOUT & ACADEMIC BACKGROUND -->
+		<section class="monograph-section" id="about" aria-labelledby="about-title">
+			<div class="shell">
+				<!-- Section Index Header -->
+				<div class="section-index-header border-b border-white/[0.06] pb-4 mb-8">
+					<div>
+						<p class="mono-label text-xs text-[#71717A] mb-1">03 // ABOUT &amp; ACADEMIC BACKGROUND</p>
+						<h2 id="about-title" class="text-2xl sm:text-3xl font-semibold text-[#F4F4F6]">
+							Academic Background &amp; Engineering Focus
+						</h2>
+					</div>
+					<p class="text-xs sm:text-sm text-[#A1A1AA] max-w-md font-mono">
+						Undergraduate studies, practical laboratory work, and foundational engineering philosophy.
+					</p>
+				</div>
+
+				<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start" data-reveal>
+					<!-- Left 7 Columns: Narrative Context -->
+					<div class="lg:col-span-7 space-y-4">
+						<p class="mb-4 text-sm sm:text-base leading-relaxed text-[#D4D4D8]">
+							I am a second-year undergraduate student pursuing a B.Tech in Electronics and
+							Telecommunication Engineering at Indira Gandhi Institute of Technology (IGIT), Sarang, Odisha.
+						</p>
+						<p class="mb-4 text-sm sm:text-base leading-relaxed text-[#D4D4D8]">
+							My academic coursework covers analog circuit analysis, operational amplifier feedback
+							networks, signals and systems, and digital electronics fundamentals. I focus
+							on building a first-principles understanding of circuit behavior and physical signal conditioning
+							rather than simply memorizing formulas.
+						</p>
+						<p class="text-sm sm:text-base leading-relaxed text-[#D4D4D8]">
+							Alongside my coursework, I work with microcontrollers like the ESP32, interfacing
+							sensors with digital logic and maintaining structured engineering documentation.
+							My goal is to design reliable, verifiable physical-digital systems combining circuit fundamentals,
+							embedded controllers, and software tooling.
+						</p>
+					</div>
+
+					<!-- Right 5 Columns: Academic & Technical Interests Panel -->
+					<div class="lg:col-span-5 atelier-panel border border-white/[0.08] p-5 sm:p-6 rounded-sm card-elevated interactive-surface">
+						<div class="flex items-center justify-between border-b border-white/[0.06] pb-2.5 mb-4">
+							<p class="mono-kicker text-xs text-[#E2C974]">ACADEMIC &amp; TECHNICAL INTERESTS</p>
+							<span class="mono-label text-[10px] text-[#71717A]">CURRICULUM</span>
+						</div>
+						<div class="flex flex-wrap gap-2 mb-5">
+							<span class="spec-tag text-xs py-1 px-2.5">Signals &amp; Systems</span>
+							<span class="spec-tag text-xs py-1 px-2.5">Embedded Control</span>
+							<span class="spec-tag text-xs py-1 px-2.5">Sensor Interfacing</span>
+							<span class="spec-tag text-xs py-1 px-2.5">Physical Computing</span>
+							<span class="spec-tag text-xs py-1 px-2.5">Applied AI Software</span>
+						</div>
+						<div class="chassis-well p-3.5 rounded-sm font-mono text-xs text-[#A1A1AA] space-y-2 border border-white/[0.04]">
+							<div class="flex items-center justify-between">
+								<span class="text-[#71717A]">INSTITUTION</span>
+								<span class="text-[#F4F4F6]">IGIT Sarang, Odisha</span>
+							</div>
+							<div class="flex items-center justify-between border-t border-white/[0.04] pt-2">
+								<span class="text-[#71717A]">CURRENT YEAR</span>
+								<span class="text-[#F4F4F6]">Year 2 // ETC</span>
+							</div>
+							<div class="flex items-start justify-between border-t border-white/[0.04] pt-2 gap-2">
+								<span class="text-[#71717A] shrink-0">CORE FOCUS</span>
+								<span class="text-[#F4F4F6] text-right max-w-[65%]">Analog Circuits, Op-Amps, Signals &amp; Systems</span>
+							</div>
+							<div class="flex items-start justify-between border-t border-white/[0.04] pt-2 gap-2">
+								<span class="text-[#71717A] shrink-0">LAB TOOLING</span>
+								<span class="text-[#38BDF8] text-right max-w-[65%]">ESP32, MCU Peripherals, Git</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- 04 // CONTACT & COLLABORATION -->
+		<section class="monograph-section" id="contact" aria-labelledby="contact-title">
+			<div class="shell">
+				<!-- Section Index Header -->
+				<div class="section-index-header border-b border-white/[0.06] pb-4 mb-8">
+					<div>
+						<p class="mono-label text-xs text-[#71717A] mb-1">04 // CONTACT &amp; COLLABORATION</p>
+						<h2 id="contact-title" class="text-2xl sm:text-3xl font-semibold text-[#F4F4F6]">
+							Technical Communication &amp; Inquiries
+						</h2>
+					</div>
+					<p class="text-xs sm:text-sm text-[#A1A1AA] max-w-md font-mono">
+						Direct communication for engineering questions, project collaboration, or feedback.
+					</p>
+				</div>
+
+				<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start" data-reveal>
+					<!-- Left 4 Columns: Communication Context -->
+					<div class="lg:col-span-4 space-y-4">
+						<h3 class="text-lg font-semibold text-[#F4F4F6]">
+							Get in Touch
+						</h3>
+						<p class="text-sm text-[#A1A1AA] leading-relaxed">
+							Have an engineering question, technical feedback, or an embedded hardware/software project to discuss? Transmit a message directly via this form.
+						</p>
+						<div class="chassis-well p-4 rounded-sm font-mono text-xs text-[#A1A1AA] space-y-2.5 border border-white/[0.04]">
+							<div class="flex items-center justify-between">
+								<span class="text-[#71717A]">RESPONSE TIME</span>
+								<span class="text-[#10B981]">Within 24–48 Hours</span>
+							</div>
+							<div class="flex items-center justify-between border-t border-white/[0.04] pt-2">
+								<span class="text-[#71717A]">DELIVERY</span>
+								<span class="text-[#38BDF8]">Direct to Developer Inbox</span>
+							</div>
+							<div class="flex items-center justify-between border-t border-white/[0.04] pt-2">
+								<span class="text-[#71717A]">SECURITY</span>
+								<span class="text-[#E2C974]">Encrypted / Rate-Limited</span>
+							</div>
+						</div>
+					</div>
+
+					<!-- Right 8 Columns: Contact Form (Directly wired to /api/contact) -->
+					<div class="lg:col-span-8 atelier-panel border border-white/[0.08] p-5 sm:p-8 rounded-sm card-elevated">
+						<form id="contact-form" method="post" action="/api/contact" class="space-y-4">
+							<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+								<div>
+									<label for="contact-name" class="mono-label text-[11px] block mb-1 text-[#A1A1AA]">
+										NAME <span class="text-[#EF4444]">*</span>
+									</label>
+									<input id="contact-name" name="name" type="text" autocomplete="name" minlength="2" maxlength="100" required class="form-input w-full p-2.5 rounded-sm font-mono text-xs" placeholder="Your name" />
+								</div>
+								<div>
+									<label for="contact-email" class="mono-label text-[11px] block mb-1 text-[#A1A1AA]">
+										EMAIL <span class="text-[#EF4444]">*</span>
+									</label>
+									<input id="contact-email" name="email" type="email" autocomplete="email" maxlength="254" required class="form-input w-full p-2.5 rounded-sm font-mono text-xs" placeholder="your.email@domain.com" />
+								</div>
+							</div>
+
+							<div>
+								<label for="contact-subject" class="mono-label text-[11px] block mb-1 text-[#A1A1AA]">
+									SUBJECT <span class="text-[#EF4444]">*</span>
+								</label>
+								<input id="contact-subject" name="subject" type="text" maxlength="150" required class="form-input w-full p-2.5 rounded-sm font-mono text-xs" placeholder="Inquiry or project title" />
+							</div>
+
+							<div>
+								<label for="contact-message" class="mono-label text-[11px] block mb-1 text-[#A1A1AA]">
+									MESSAGE <span class="text-[#EF4444]">*</span>
+								</label>
+								<textarea id="contact-message" name="message" minlength="10" maxlength="5000" rows="5" required class="form-textarea w-full p-2.5 rounded-sm font-mono text-xs" placeholder="Detail your question or project context…"></textarea>
+							</div>
+
+							<!-- Honeypot anti-spam field -->
+							<div class="hidden" aria-hidden="true">
+								<label for="contact-website">Website</label>
+								<input id="contact-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+							</div>
+
+							<div class="pt-2 flex flex-wrap items-center justify-between gap-3">
+								<button type="submit" class="button button-primary">
+									<span>Send Message</span> <span class="arrow-right" aria-hidden="true">→</span>
+								</button>
+								<p id="contact-status" class="mono-data text-xs" role="status" aria-live="polite"></p>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<!-- Architectural Atelier Footer -->
+	<footer class="site-footer bg-[#080A0F] border-t border-white/[0.06] py-8 mt-16">
+		<div class="shell flex flex-wrap items-center justify-between gap-4 font-mono text-xs text-[#71717A]">
+			<div>
+				<span>© {new Date().getFullYear()} JAGAN</span>
+				<span class="mx-2 text-[#262C38]">|</span>
+				<span>ELECTRONICS &amp; TELECOMMUNICATION ENGINEERING</span>
+			</div>
+			<div class="flex items-center gap-4">
+				<a href="https://github.com/jagannath-badi" target="_blank" rel="noopener noreferrer" class="hover:text-[#38BDF8] transition-colors">
+					GITHUB // @JAGANNATH-BADI ↗
+				</a>
+				<a href="/admin" class="hover:text-[#E2C974] transition-colors">
+					ADMIN [OP]
+				</a>
+			</div>
+		</div>
+	</footer>
+</Layout>
+
+<script>
+	import gsap from 'gsap';
+	import { ScrollTrigger } from 'gsap/ScrollTrigger';
+	gsap.registerPlugin(ScrollTrigger);
+
+	// Progressive Enhancement: reveal items & active navigation
+	const root = document.documentElement;
+	root.classList.add('js');
+
+	const revealItems = document.querySelectorAll<HTMLElement>('[data-reveal]');
+	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+		revealItems.forEach((item) => item.classList.add('is-visible'));
+	} else {
+		const revealObserver = new IntersectionObserver(
+			(entries, observer) => {
+				entries.forEach((entry) => {
+					if (entry.isIntersecting) {
+						const item = entry.target as HTMLElement;
+						item.style.transitionDelay = item.dataset.reveal ? (item.style.getPropertyValue('--reveal-delay') || '0ms') : '0ms';
+						item.classList.add('is-visible');
+						observer.unobserve(item);
+					}
+				});
+			},
+			{ threshold: 0.1, rootMargin: '0px 0px -30px' }
+		);
+		revealItems.forEach((item) => revealObserver.observe(item));
+	}
+
+	// Hero Entrance Animation (GSAP)
+	try {
+		const heroItems = Array.from(document.querySelectorAll<HTMLElement>('[data-hero-item]'))
+			.sort((a, b) => Number(a.dataset.heroItem) - Number(b.dataset.heroItem));
+
+		if (heroItems.length && !prefersReducedMotion) {
+			const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.55 } });
+			heroItems.forEach((el, i) => {
+				const delay = [0, 0.07, 0.14, 0.20][i] ?? i * 0.07;
+				tl.from(el, { opacity: 0, y: 12, clearProps: 'all' }, delay);
+			});
+		} else if (heroItems.length) {
+			heroItems.forEach((el) => { el.style.opacity = '1'; el.style.transform = 'none'; });
+		}
+	} catch (_) {}
+
+	// Scroll Progress Bar
+	try {
+		const bar = document.querySelector<HTMLElement>('.scroll-progress-bar');
+		if (bar) {
+			const updateBar = () => {
+				const scrollTop = window.scrollY;
+				const docH = document.documentElement.scrollHeight - window.innerHeight;
+				bar.style.transform = `scaleX(${docH > 0 ? scrollTop / docH : 0})`;
+			};
+			window.addEventListener('scroll', updateBar, { passive: true });
+			updateBar();
+		}
+	} catch (_) {}
+
+	// Homepage Section Scroll-Spy & Active Navigation
+	try {
+		const navLinks = document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]');
+		const sectionIds = ['projects', 'capabilities', 'about', 'contact'];
+		const sections = sectionIds.map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
+
+		if (navLinks.length && sections.length) {
+			let activeId = '';
+			const setActive = (id: string) => {
+				if (id === activeId) return;
+				activeId = id;
+				navLinks.forEach((a) => {
+					const href = a.getAttribute('href')?.replace('#', '');
+					const isActive = href === id;
+					a.dataset.active = isActive ? 'true' : 'false';
+					if (isActive) {
+						a.setAttribute('aria-current', 'page');
+					} else {
+						a.removeAttribute('aria-current');
+					}
+				});
+			};
+
+			navLinks.forEach((a) => {
+				a.addEventListener('click', () => {
+					const href = a.getAttribute('href')?.replace('#', '');
+					if (href) setActive(href);
+				});
+			});
+
+			const spyObserver = new IntersectionObserver(
+				(entries) => {
+					entries.forEach((entry) => {
+						if (entry.isIntersecting) setActive((entry.target as HTMLElement).id);
+					});
+				},
+				{ rootMargin: '-30% 0px -60% 0px', threshold: 0 }
+			);
+			sections.forEach((s) => spyObserver.observe(s));
+		}
+	} catch (_) {}
+
+	// Interactive Surface Pointer Spotlight
+	try {
+		if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+			const surfaces = document.querySelectorAll<HTMLElement>('.interactive-surface');
+			if (surfaces.length) {
+				let rafId = 0;
+				const handler = (e: MouseEvent) => {
+					cancelAnimationFrame(rafId);
+					rafId = requestAnimationFrame(() => {
+						surfaces.forEach((el) => {
+							const rect = el.getBoundingClientRect();
+							el.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+							el.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+						});
+					});
+				};
+				document.addEventListener('pointermove', handler, { passive: true });
+			}
+		}
+	} catch (_) {}
+
+	// Mobile nav toggle with synchronized aria-expanded
+	const menuToggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
+	const navList = document.querySelector<HTMLUListElement>('#primary-navigation');
+
+	menuToggle?.addEventListener('click', () => {
+		const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
+		menuToggle.setAttribute('aria-expanded', String(!isExpanded));
+		if (navList) {
+			navList.classList.toggle('open');
+		}
+	});
+
+	// Close mobile menu on link click
+	navList?.querySelectorAll('a').forEach((link) => {
+		link.addEventListener('click', () => {
+			if (window.innerWidth < 640) {
+				menuToggle?.setAttribute('aria-expanded', 'false');
+				navList?.classList.remove('open');
+			}
+		});
+	});
+
+	// Close mobile menu when clicking outside
+	document.addEventListener('click', (e) => {
+		if (window.innerWidth < 640 && navList?.classList.contains('open')) {
+			const target = e.target as HTMLElement;
+			if (!menuToggle?.contains(target) && !navList.contains(target)) {
+				menuToggle?.setAttribute('aria-expanded', 'false');
+				navList.classList.remove('open');
+			}
+		}
+	});
+
+	// Contact form client fetch handler
+	const contactForm = document.querySelector<HTMLFormElement>('#contact-form');
+	const contactStatus = document.querySelector<HTMLElement>('#contact-status');
+	const contactSubmit = contactForm?.querySelector<HTMLButtonElement>('button[type="submit"]');
+
+	contactForm?.addEventListener('submit', async (event) => {
+		event.preventDefault();
+
+		if (!contactStatus || !contactSubmit || !contactForm.checkValidity() || contactSubmit.disabled) {
+			contactForm?.reportValidity();
+			return;
+		}
+
+		contactSubmit.disabled = true;
+		contactForm.setAttribute('aria-busy', 'true');
+		contactStatus.className = 'mono-data text-xs text-[#A1A1AA]';
+		contactStatus.textContent = 'Transmitting message…';
+
+		try {
+			const response = await fetch(contactForm.action, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+				body: JSON.stringify(Object.fromEntries(new FormData(contactForm)))
+			});
+			const result = (await response.json().catch(() => null)) as { code?: string; message?: string } | null;
+
+			if (response.ok && result?.code === 'notification_failed') {
+				contactStatus.className = 'mono-data text-xs status-error-text';
+				contactStatus.textContent = 'Message saved, but notification delivery was delayed. Please try again later if unacknowledged.';
+			} else if (response.ok && result?.code === 'sent') {
+				contactStatus.className = 'mono-data text-xs status-success-text';
+				contactStatus.textContent = 'Message sent successfully. Thank you.';
+				contactForm.reset();
+			} else {
+				contactStatus.className = 'mono-data text-xs status-error-text';
+				contactStatus.textContent = 'Unable to transmit message right now. Please try again.';
+			}
+		} catch {
+			contactStatus.className = 'mono-data text-xs status-error-text';
+			contactStatus.textContent = 'Network error. Please try again.';
+		} finally {
+			contactSubmit.disabled = false;
+			contactForm.removeAttribute('aria-busy');
+		}
+	});
+</script>
+
+<style>
+	@media (max-width: 639px) {
+		.menu-toggle {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 44px;
+			height: 44px;
+			min-width: 44px;
+			min-height: 44px;
+			padding: 0;
+			cursor: pointer;
+		}
+		.menu-toggle line {
+			transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms ease;
+			transform-origin: center;
+		}
+		.menu-toggle[aria-expanded="true"] .line-top {
+			transform: translateY(5px) rotate(45deg);
+		}
+		.menu-toggle[aria-expanded="true"] .line-mid {
+			opacity: 0;
+		}
+		.menu-toggle[aria-expanded="true"] .line-bot {
+			transform: translateY(-5px) rotate(-45deg);
+		}
+		.nav-list {
+			display: none;
+			position: absolute;
+			top: calc(100% + 0.5rem);
+			right: 1rem;
+			background: var(--bg-surface, #0D1017);
+			border: 1px solid var(--border-subtle, #1E2330);
+			padding: 0.875rem 1.25rem;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0.875rem;
+			border-radius: var(--radius-sm, 2px);
+			box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
+			z-index: 50;
+			min-width: 150px;
+		}
+		.nav-list.open {
+			display: flex;
+		}
+	}
+</style>
