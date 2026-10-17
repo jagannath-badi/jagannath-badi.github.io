@@ -43,7 +43,7 @@ Start the development server:
 npm run dev
 ```
 
-The site is available at ``.
+The site is available at `https://jagannath-badi-github-io.vercel.app/`.
 
 Build the static site:
 
