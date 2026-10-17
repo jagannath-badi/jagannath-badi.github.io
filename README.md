@@ -43,7 +43,7 @@ Start the development server:
 npm run dev
 ```
 
-The site is available at `http://localhost:4321`.
+The site is available at ``.
 
 Build the static site:
 
