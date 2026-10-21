@@ -1,56 +1,55 @@
-@import "tailwindcss";
-@import "@fontsource-variable/manrope";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import "@fontsource/ibm-plex-mono";
-:root {
-	--font-sans: 'Manrope Variable', 'Manrope', sans-serif;
-	--font-mono: 'IBM Plex Mono', monospace;
-}
+@import "tailwindcss";
 
 :root {
-	/* Precision Monograph Design System Tokens */
-	--bg-canvas: #09090b;
-	--bg-surface: #111114;
-	--bg-surface-hover: #18181c;
-	--bg-blueprint: #0d0d10;
-	--bg-glass: rgba(9, 9, 11, 0.88);
-	--text-primary: #f4f4f6;
-	--text-secondary: #a1a1aa;
-	--text-muted: #71717a;
-	--border-subtle: #26262a;
-	--border-strong: #3f3f46;
-	--accent-silver: #e4e4e7;
-	--accent-signal: #38bdf8;
-	--accent-amber: #f59e0b;
-	--accent-emerald: #10b981;
-	--status-success: #10b981;
-	--status-error: #ef4444;
+	/* EnduroSat Aerospace Design System Tokens */
+	--font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	--font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	--font-mono: 'IBM Plex Mono', monospace;
+
+	--bg-void: #020408;
+	--bg-surface: #070c14;
+	--bg-surface-card: rgba(7, 12, 20, 0.85);
+	--border-void: rgba(255, 255, 255, 0.08);
+	--border-subtle: rgba(255, 255, 255, 0.12);
+	--border-active: rgba(0, 163, 255, 0.45);
+
+	--cyan-enduro: #00A3FF;
+	--cyan-glow: rgba(0, 163, 255, 0.18);
+	--orange-enduro: #FF5C00;
+	--orange-glow: rgba(255, 92, 0, 0.18);
+
+	--text-white: #FFFFFF;
+	--text-muted: #94A3B8;
+	--text-dim: #64748B;
 
 	/* Backward compatibility aliases */
-	--page-bg: var(--bg-canvas);
+	--bg-canvas: var(--bg-void);
+	--page-bg: var(--bg-void);
 	--page-bg-elevated: var(--bg-surface);
-	--page-bg-deep: var(--bg-blueprint);
 	--surface: var(--bg-surface);
-	--surface-hover: var(--bg-surface-hover);
-	--surface-deep: rgba(0, 0, 0, 0.6);
-	--line: var(--border-subtle);
-	--line-subtle: var(--border-subtle);
-	--line-strong: var(--border-strong);
-	--accent: var(--accent-silver);
-	--focus: var(--text-primary);
+	--surface-hover: #0c1422;
+	--text-primary: var(--text-white);
+	--text-secondary: var(--text-muted);
+	--border-strong: var(--border-subtle);
+	--accent: var(--cyan-enduro);
+	--accent-signal: var(--cyan-enduro);
+	--accent-silver: #E2E8F0;
 	--radius-sm: 2px;
 	--radius-md: 4px;
-	--radius-lg: 4px;
 
 	color-scheme: dark;
 	font-family: var(--font-sans);
-	background: var(--bg-canvas);
-	color: var(--text-primary);
+	background: var(--bg-void);
+	color: var(--text-white);
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
 }
 
 html {
 	scroll-behavior: smooth;
+	background-color: var(--bg-void);
 }
 
 body {
@@ -58,9 +57,18 @@ body {
 	margin: 0;
 	min-width: 320px;
 	overflow-x: hidden;
-	background-color: var(--bg-canvas);
-	color: var(--text-primary);
+	background-color: var(--bg-void);
+	color: var(--text-white);
 	font-family: var(--font-sans);
+}
+
+body.public-atelier {
+	background-color: var(--bg-void);
+	background-image:
+		radial-gradient(1200px circle at 80% 15%, rgba(0, 163, 255, 0.06) 0%, transparent 60%),
+		radial-gradient(1000px circle at 20% 85%, rgba(255, 92, 0, 0.03) 0%, transparent 55%);
+	background-attachment: fixed;
+	background-repeat: no-repeat;
 }
 
 main, header, footer, nav, section, .shell {
@@ -69,778 +77,191 @@ main, header, footer, nav, section, .shell {
 }
 
 ::selection {
-	background: rgba(228, 228, 231, 0.22);
+	background: rgba(0, 163, 255, 0.35);
 	color: #ffffff;
 }
 
-a {
-	color: inherit;
-	text-decoration: none;
-	transition: color 140ms ease;
-}
-
-a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
-	outline: 2px solid var(--accent-silver);
-	outline-offset: 2px;
-}
-
+/* Skip link */
 .skip-link {
 	position: fixed;
 	top: 1rem;
 	left: 1rem;
-	z-index: 50;
+	z-index: 60;
 	transform: translateY(-180%);
-	border: 1px solid var(--border-strong);
-	border-radius: var(--radius-sm);
-	background: #111114;
+	border: 1px solid var(--border-active);
+	background: var(--bg-surface);
 	padding: 0.5rem 1rem;
-	color: var(--text-primary);
+	color: var(--cyan-enduro);
 	font-family: var(--font-mono);
 	font-size: 0.75rem;
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-	transition: transform 180ms ease;
+	transition: transform 160ms ease;
 }
-
 .skip-link:focus {
 	transform: translateY(0);
 }
 
-.shell {
-	width: min(1200px, calc(100% - 2rem));
-	margin-inline: auto;
+/* EnduroSat Typography & Display Headings */
+.font-display,
+.heading-display {
+	font-family: var(--font-display);
+	font-weight: 800;
+	letter-spacing: -0.04em;
+	line-height: 0.95;
 }
 
-@media (min-width: 768px) {
-	.shell {
-		width: min(1200px, calc(100% - 3rem));
-	}
-}
-
-/* Typography Hierarchy */
-h1, h2, h3, h4, p {
-	margin-top: 0;
-}
-
-h1, h2, h3, h4 {
-	color: var(--text-primary);
-	font-family: var(--font-sans);
-}
-
-h1 {
-	font-size: clamp(1.75rem, 3.5vw, 2.75rem);
-	line-height: 1.15;
-	font-weight: 600;
-	letter-spacing: -0.025em;
-}
-
-h2 {
-	font-size: clamp(1.375rem, 2.5vw, 1.75rem);
-	line-height: 1.25;
-	font-weight: 600;
-	letter-spacing: -0.02em;
-}
-
-h3 {
-	font-size: clamp(1.25rem, 2vw, 1.5rem);
-	line-height: 1.3;
-	font-weight: 600;
-	letter-spacing: -0.015em;
-}
-
-.mono-label {
+/* EnduroSat Kickers */
+.kicker-cyan {
 	font-family: var(--font-mono);
 	font-size: 0.75rem;
 	text-transform: uppercase;
-	letter-spacing: 0.06em;
-	font-weight: 500;
+	letter-spacing: 0.14em;
+	color: var(--cyan-enduro);
 }
 
-.mono-data {
+.kicker-orange {
 	font-family: var(--font-mono);
-	font-size: 0.8125rem;
-	line-height: 1.5;
-}
-
-.mono-kicker {
-	font-family: var(--font-mono);
-	font-size: 0.6875rem;
+	font-size: 0.75rem;
 	text-transform: uppercase;
-	letter-spacing: 0.08em;
-	color: var(--text-muted);
+	letter-spacing: 0.14em;
+	color: var(--orange-enduro);
 }
 
-.spec-tag {
+/* EnduroSat Action Button: Clean text + solid light-blue square box with ↗ */
+.enduro-btn {
 	display: inline-flex;
 	align-items: center;
-	padding: 0.2rem 0.5rem;
-	background: var(--bg-surface-hover);
-	border: 1px solid var(--border-subtle);
-	border-radius: var(--radius-sm);
+	gap: 0.85rem;
 	font-family: var(--font-mono);
-	font-size: 0.6875rem;
-	letter-spacing: 0.04em;
-	color: var(--text-secondary);
+	font-size: 0.72rem;
+	font-weight: 600;
+	letter-spacing: 0.1em;
 	text-transform: uppercase;
-}
-
-/* Site Header */
-.site-header {
-	position: sticky;
-	top: 0;
-	z-index: 40;
-	border-bottom: 1px solid var(--border-subtle);
-	background: var(--bg-glass);
-	backdrop-filter: blur(12px);
-}
-
-.header-inner {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	height: 3.75rem;
-}
-
-.wordmark {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.6rem;
-	font-size: 0.82rem;
-	font-weight: 600;
-	letter-spacing: 0.02em;
-	color: var(--text-primary);
-}
-
-.wordmark-mark {
-	display: grid;
-	width: 1.85rem;
-	height: 1.85rem;
-	place-items: center;
-	border: 1px solid var(--border-strong);
-	border-radius: var(--radius-sm);
-	color: var(--text-primary);
-	font-family: var(--font-mono);
-	font-size: 0.65rem;
-	font-weight: 600;
-	background: var(--bg-surface);
-}
-
-.nav-list {
-	display: flex;
-	align-items: center;
-	gap: clamp(1rem, 2.5vw, 1.75rem);
-	margin: 0;
+	color: #ffffff;
+	background: transparent;
+	border: none;
 	padding: 0;
-	list-style: none;
-	color: var(--text-secondary);
-	font-family: var(--font-mono);
-	font-size: 0.6875rem;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
+	cursor: pointer;
+	text-decoration: none;
+	transition: color 180ms ease;
 }
-
-.nav-list a {
-	position: relative;
-	transition: color 140ms ease;
-	padding: 0.25rem 0;
+.enduro-btn:hover {
+	color: var(--cyan-enduro);
 }
-
-.nav-list a:hover, .nav-list a[aria-current='page'] {
-	color: var(--text-primary);
-}
-
-/* Section Structure */
-.monograph-section {
-	padding-block: 2.75rem 3.5rem;
-	border-bottom: 1px solid var(--border-subtle);
-	position: relative;
-}
-
-@media (min-width: 768px) {
-	.monograph-section {
-		padding-block: 3.5rem 4.25rem;
-	}
-}
-
-.section-index-header {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: baseline;
-	justify-content: space-between;
-	gap: 1rem;
-	border-bottom: 1px solid var(--border-subtle);
-	padding-bottom: 1rem;
-	margin-bottom: 2rem;
-}
-
-/* Buttons */
-.button {
+.enduro-btn .badge-icon {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: 0.5rem;
-	min-height: 2.6rem;
-	padding: 0.55rem 1.1rem;
-	border: 1px solid transparent;
-	border-radius: var(--radius-sm);
+	width: 2.25rem;
+	height: 2.25rem;
+	background: #8ab4f8;
+	color: #020408;
+	font-size: 0.85rem;
+	font-weight: 700;
+	border-radius: 2px;
+	transition: transform 180ms ease, background 180ms ease;
+}
+.enduro-btn:hover .badge-icon {
+	transform: translate(2px, -2px);
+	background: #ffffff;
+}
+
+/* EnduroSat Pipeline Progress Bar */
+.progress-stepper {
+	display: inline-flex;
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	background: rgba(7, 12, 20, 0.75);
+	backdrop-filter: blur(10px);
+	border-radius: 2px;
+	overflow: hidden;
+}
+.progress-step {
+	padding: 0.65rem 1.5rem;
 	font-family: var(--font-mono);
 	font-size: 0.72rem;
-	letter-spacing: 0.04em;
+	font-weight: 600;
+	letter-spacing: 0.12em;
 	text-transform: uppercase;
-	font-weight: 500;
-	transition: background 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms cubic-bezier(0.16, 1, 0.3, 1), color 180ms cubic-bezier(0.16, 1, 0.3, 1), transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+	color: #94A3B8;
+	background: transparent;
+	border: none;
+	border-right: 1px solid rgba(255, 255, 255, 0.15);
 	cursor: pointer;
-	text-decoration: none;
+	transition: all 180ms ease;
 }
-
-.button-primary {
-	background: var(--accent-silver);
-	color: #09090b;
-	border-color: var(--accent-silver);
+.progress-step:last-child {
+	border-right: none;
 }
-
-.button-primary:hover {
-	background: #ffffff;
-	border-color: #ffffff;
-	color: #000000;
+.progress-step:hover {
+	color: #ffffff;
+	background: rgba(255, 255, 255, 0.05);
 }
-
-.button-secondary {
-	border-color: var(--border-strong);
-	background: var(--bg-surface);
-	color: var(--text-primary);
-}
-
-.button-secondary:hover {
-	border-color: var(--accent-silver);
-	background: var(--bg-surface-hover);
+.progress-step.active {
+	background: #0088ff;
 	color: #ffffff;
 }
 
-.button:disabled, .button[disabled] {
-	opacity: 0.5;
-	cursor: not-allowed;
-	pointer-events: none;
+/* EnduroSat Blueprint Tab Bar */
+.blueprint-tab {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.45rem 1rem;
+	background: rgba(7, 12, 20, 0.6);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	font-family: var(--font-mono);
+	font-size: 0.7rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+	border-radius: var(--radius-sm);
+	transition: all 140ms ease;
+}
+.blueprint-tab.active,
+.blueprint-tab:hover {
+	border-color: var(--cyan-enduro);
+	color: #ffffff;
+	background: rgba(0, 163, 255, 0.08);
+}
+
+/* Dark Glass Cards */
+.enduro-card {
+	background: rgba(7, 12, 20, 0.85);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: var(--radius-sm);
+	backdrop-filter: blur(12px);
+	transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+.enduro-card:hover {
+	border-color: var(--border-active);
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65), 0 0 20px rgba(0, 163, 255, 0.1);
 }
 
 /* Input Fields */
-.form-input, .form-textarea {
-	width: 100%;
-	border: 1px solid var(--border-subtle);
-	border-radius: var(--radius-sm);
-	background: var(--bg-surface);
-	padding: 0.65rem 0.85rem;
-	color: var(--text-primary);
-	font-family: var(--font-sans);
-	font-size: 0.875rem;
-	line-height: 1.5;
-	box-sizing: border-box;
-	transition: border-color 140ms ease, background 140ms ease;
-}
-
-.form-input:hover, .form-textarea:hover {
-	border-color: var(--border-strong);
-}
-
-.form-input:focus, .form-textarea:focus {
-	border-color: var(--accent-silver);
-	background: var(--bg-surface-hover);
-	outline: none;
-}
-
+.form-input,
 .form-textarea {
-	min-height: 7.5rem;
-	resize: vertical;
+	background: rgba(7, 12, 20, 0.9) !important;
+	border: 1px solid rgba(255, 255, 255, 0.12) !important;
+	color: #ffffff !important;
+	border-radius: var(--radius-sm);
+	transition: border-color 160ms ease, box-shadow 160ms ease !important;
+}
+.form-input:focus,
+.form-textarea:focus {
+	border-color: var(--cyan-enduro) !important;
+	box-shadow: 0 0 0 1px var(--cyan-enduro), 0 0 16px rgba(0, 163, 255, 0.2) !important;
+	outline: none !important;
 }
 
-/* Status text */
-.status-success-text {
-	color: var(--status-success);
-}
-.status-error-text {
-	color: var(--status-error);
-}
-
-/* Reveal transition helpers */
-[data-reveal] {
-	opacity: 1;
-	transform: none;
-}
-
-.js [data-reveal] {
-	opacity: 0;
-	transform: translateY(0.5rem);
-	transition: opacity 350ms cubic-bezier(0.16, 1, 0.3, 1), transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
-	will-change: opacity, transform;
-}
-
-.js [data-reveal].is-visible {
-	opacity: 1;
-	transform: none;
-	will-change: auto;
-}
-
-/* Reduced Motion Override */
-@media (prefers-reduced-motion: reduce) {
-	html {
-		scroll-behavior: auto;
-	}
-	*, *::before, *::after {
-		animation-duration: 0.01ms !important;
-		animation-iteration-count: 1 !important;
-		transition-duration: 0.01ms !important;
-	}
-	.js [data-reveal] {
-		opacity: 1 !important;
-		transform: none !important;
-		will-change: auto !important;
-	}
-}
-
-/* ============================================================
-   KINETIC LAB INSTRUMENT — Interactive Enhancement CSS
-   ============================================================ */
-
-/* Enhanced button tactile states */
-.button-primary {
-  transform: translateY(0);
-  transition: background 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms cubic-bezier(0.16, 1, 0.3, 1), color 180ms cubic-bezier(0.16, 1, 0.3, 1), transform 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.button-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(228, 228, 231, 0.15);
-}
-.button-primary:active {
-  transform: translateY(0) scale(0.98);
-  box-shadow: none;
-}
-.button-secondary {
-  transition: background 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms cubic-bezier(0.16, 1, 0.3, 1), color 180ms cubic-bezier(0.16, 1, 0.3, 1), transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.button-secondary:hover {
-  transform: translateY(-1px);
-}
-.button-secondary:active {
-  transform: translateY(0) scale(0.98);
-}
-
-/* Directional arrow glide on button hover */
-.button:hover .arrow-right { transform: translateX(3px); }
-.button:hover .arrow-up-right { transform: translate(2px, -2px); }
-.button:hover .arrow-down { transform: translateY(3px); }
-.arrow-right, .arrow-up-right, .arrow-down {
-  display: inline-block;
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* spec-tag hover */
-.spec-tag {
-  transition: border-color 140ms ease, color 140ms ease, background 140ms ease;
-}
-.spec-tag:hover {
-  border-color: var(--border-strong);
-  color: var(--text-primary);
-  background: #18181c;
-}
-
-/* Interactive surface spotlight */
-.interactive-surface {
-  position: relative;
-}
-.interactive-surface::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(480px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), rgba(228, 228, 231, 0.06), transparent 40%);
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0;
-  transition: opacity 300ms ease;
-}
-@media (hover: hover) and (pointer: fine) {
-  .interactive-surface::before {
-    opacity: 1;
-  }
-}
-
-/* Scroll progress bar */
+/* Progress Bar */
 .scroll-progress-bar {
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: var(--accent-signal);
-  transform: scaleX(0);
-  transform-origin: left;
-  z-index: 10;
-  transition: none;
-}
-
-/* Nav active link signal accent */
-.nav-list a[data-active='true'] {
-  color: var(--text-primary);
-}
-.nav-list a[data-active='true']::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: var(--accent-signal);
-  border-radius: 1px;
-}
-
-/* Card top-edge specular rim */
-.card-elevated {
-  border-top-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Hero entrance classes (set by JS after animation) */
-[data-hero-item] {
-  opacity: 1;
-  transform: none;
-}
-
-/* Admin preview banner — ensure no z-index conflict */
-.admin-preview-bar {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-}
-
-/* Diagram stage nodes */
-.diagram-node {
-  cursor: pointer;
-  outline: none;
-}
-.diagram-node:focus-visible rect:first-child,
-.diagram-node:hover rect:first-child {
-  stroke: var(--accent-signal) !important;
-}
-
-/* Stage readout bar */
-.diagram-readout {
-  display: block;
-  min-height: 2.5rem;
-  padding: 0.4rem 0.75rem;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-top: none;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: var(--text-secondary);
-  transition: color 200ms ease;
-  border-bottom-left-radius: var(--radius-sm);
-  border-bottom-right-radius: var(--radius-sm);
-}
-
-/* Dialog / Lightbox */
-.diagram-dialog {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 1.5rem;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  border: none;
-  max-width: 100vw;
-  max-height: 100vh;
-  width: 100%;
-  z-index: 100;
-  outline: none;
-}
-.diagram-dialog::backdrop {
-  background: rgba(0, 0, 0, 0.8);
-}
-.diagram-dialog-inner {
-  position: relative;
-  width: min(92vw, 900px);
-  max-height: 85vh;
-  overflow: auto;
-  background: var(--bg-canvas);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  padding: 1.5rem;
-}
-.diagram-dialog-close {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.06em;
-  padding: 0.3rem 0.6rem;
-  cursor: pointer;
-  transition: color 140ms ease, border-color 140ms ease;
-}
-.diagram-dialog-close:hover {
-  color: var(--text-primary);
-  border-color: var(--border-strong);
-}
-
-/* TOC active indicator */
-.toc-link {
-  position: relative;
-  padding-left: 0.75rem;
-  transition: color 200ms ease;
-}
-.toc-link::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%) scaleY(0);
-  width: 2px;
-  height: 14px;
-  background: var(--accent-signal);
-  border-radius: 1px;
-  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms ease;
-  opacity: 0;
-}
-.toc-link.is-active {
-  color: var(--text-primary);
-}
-.toc-link.is-active::before {
-  transform: translateY(-50%) scaleY(1);
-  opacity: 1;
-}
-
-/* Live electrical signal pulses along connector traces */
-.signal-trace-live {
-  stroke: #38bdf8 !important;
-  stroke-width: 1.5;
-  stroke-dasharray: 6 10;
-  animation: tracePulse 1.4s linear infinite;
-  filter: drop-shadow(0 0 3px rgba(56, 189, 248, 0.5));
-}
-@keyframes tracePulse {
-  from { stroke-dashoffset: 32; }
-  to { stroke-dashoffset: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .scroll-progress-bar,
-  .arrow-right, .arrow-up-right, .arrow-down {
-    transition: none !important;
-  }
-  .button-primary, .button-secondary {
-    transition: background 0.01ms, border-color 0.01ms, color 0.01ms !important;
-    transform: none !important;
-  }
-  .interactive-surface::before {
-    display: none;
-  }
-  .signal-trace-live {
-    animation: none !important;
-    stroke-dashoffset: 0 !important;
-    filter: none !important;
-  }
-}
-
-/* ============================================================
-   ARCHITECTURAL HARDWARE ATELIER — Phase 1 Public Foundation
-   Strictly Scoped Under .public-atelier (Zero Admin Impact)
-   ============================================================ */
-
-body.public-atelier {
-  background-color: #0b0d12;
-  background-image:
-    radial-gradient(1200px circle at 50% -80px, rgba(15, 26, 46, 0.55) 0%, transparent 68%),
-    radial-gradient(1000px circle at 50% 100%, rgba(26, 24, 22, 0.32) 0%, transparent 60%);
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  color: #f4f4f6;
-}
-
-.public-atelier {
-  --canvas-slate: #0b0d12;
-  --chassis-level-0: #080a0f;
-  --border-chassis: rgba(255, 255, 255, 0.05);
-
-  --panel-level-1: linear-gradient(145deg, #121620 0%, #0d1017 100%);
-  --panel-solid: #0d1017;
-  --border-panel: rgba(255, 255, 255, 0.08);
-  --shadow-panel-specular: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
-
-  --elevated-level-2: #161b26;
-  --border-elevated: rgba(255, 255, 255, 0.14);
-  --shadow-elevated-specular: inset 0 1px 0 0 rgba(255, 255, 255, 0.14), 0 8px 24px rgba(0, 0, 0, 0.45);
-
-  --accent-cyan: #38bdf8;
-  --accent-emerald: #10b981;
-  --accent-amber: #f59e0b;
-  --accent-brass: #e2c974;
-  --accent-brass-dim: #d4af37;
-}
-
-/* Surface Elevation Levels */
-.public-atelier .chassis-well {
-  background: #080a0f;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.public-atelier .atelier-panel {
-  background: linear-gradient(145deg, #121620 0%, #0d1017 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
-}
-
-.public-atelier .atelier-card-elevated {
-  background: #161b26;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14), 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-
-.public-atelier .datasheet-matrix {
-  background: #1e2330;
-  border: 1px solid #1e2330;
-}
-
-.public-atelier .datasheet-cell {
-  background: #080a0f;
-}
-
-.public-atelier .artifact-viewport {
-  background: #0a0d14;
-  border: 1px solid #1e2330;
-}
-
-/* Brass & Telemetry Chips */
-.public-atelier .brass-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.06em;
-  color: #e2c974;
-  background: rgba(226, 201, 116, 0.08);
-  border: 1px solid rgba(226, 201, 116, 0.3);
-  padding: 0.15rem 0.5rem;
-  border-radius: var(--radius-sm);
-}
-
-.public-atelier .cyan-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.06em;
-  color: #38bdf8;
-  background: rgba(56, 189, 248, 0.08);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  padding: 0.15rem 0.5rem;
-  border-radius: var(--radius-sm);
-}
-
-/* Watermark Section Numbering */
-.public-atelier .watermark-index {
-  position: absolute;
-  right: 1.5rem;
-  top: 0;
-  font-family: var(--font-mono);
-  font-size: 4.5rem;
-  font-weight: 800;
-  line-height: 1;
-  color: rgba(255, 255, 255, 0.025);
-  user-select: none;
-  pointer-events: none;
-}
-
-@media (min-width: 1024px) {
-  .public-atelier .watermark-index {
-    font-size: 6rem;
-    right: 2rem;
-  }
-}
-
-/* Anodized Instrument Faceplate Chamfer */
-.public-atelier .instrument-faceplate {
-  position: relative;
-  background: linear-gradient(145deg, #121620 0%, #0d1017 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 10px 30px rgba(0, 0, 0, 0.5);
-  border-radius: var(--radius-sm);
-}
-
-.public-atelier .instrument-faceplate::before,
-.public-atelier .instrument-faceplate::after {
-  content: '';
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: rgba(226, 201, 116, 0.4);
-  border-radius: 50%;
-  pointer-events: none;
-}
-.public-atelier .instrument-faceplate::before {
-  top: 6px;
-  left: 6px;
-}
-.public-atelier .instrument-faceplate::after {
-  top: 6px;
-  right: 6px;
-}
-
-/* Brushed Aluminum Primary Button */
-.public-atelier .button-primary {
-  background: linear-gradient(180deg, #f4f4f6 0%, #e4e4e7 100%) !important;
-  color: #0b0d12 !important;
-  font-weight: 600 !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
-  transform: translateY(0);
-}
-.public-atelier .button-primary:hover {
-  background: linear-gradient(180deg, #ffffff 0%, #ececed 100%) !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(228, 228, 231, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
-}
-.public-atelier .button-primary:active {
-  transform: translateY(0) scale(0.98) !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
-}
-
-/* Technical Glass Secondary Button */
-.public-atelier .button-secondary {
-  background: rgba(18, 22, 32, 0.65) !important;
-  backdrop-filter: blur(8px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  color: #f4f4f6 !important;
-}
-.public-atelier .button-secondary:hover {
-  background: rgba(22, 27, 38, 0.85) !important;
-  border-color: #38bdf8 !important;
-  color: #ffffff !important;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.15) !important;
-  transform: translateY(-1px);
-}
-.public-atelier .button-secondary:active {
-  transform: translateY(0) scale(0.98) !important;
-}
-
-/* Focus states for inputs in public atelier */
-.public-atelier .form-input,
-.public-atelier .form-textarea {
-  background: #080a0f !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  color: #f4f4f6 !important;
-  transition: border-color 160ms ease, box-shadow 160ms ease !important;
-}
-.public-atelier .form-input:focus,
-.public-atelier .form-textarea:focus {
-  border-color: #38bdf8 !important;
-  box-shadow: 0 0 0 1px #38bdf8, 0 0 12px rgba(56, 189, 248, 0.15) !important;
-  outline: none !important;
+	position: absolute;
+	bottom: -1px;
+	left: 0;
+	width: 100%;
+	height: 1px;
+	background: var(--cyan-enduro);
+	transform: scaleX(0);
+	transform-origin: left;
+	z-index: 50;
 }
 
 /* ============================================================
@@ -849,129 +270,126 @@ body.public-atelier {
    ============================================================ */
 
 body.admin-workspace {
-  background-color: #0b0d12;
-  background-image:
-    radial-gradient(1200px circle at 50% -80px, rgba(30, 41, 59, 0.35) 0%, transparent 68%),
-    radial-gradient(1000px circle at 50% 100%, rgba(15, 23, 42, 0.25) 0%, transparent 60%);
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  color: #f4f4f6;
+	background-color: #0b0d12;
+	background-image:
+		radial-gradient(1200px circle at 50% -80px, rgba(30, 41, 59, 0.35) 0%, transparent 68%),
+		radial-gradient(1000px circle at 50% 100%, rgba(15, 23, 42, 0.25) 0%, transparent 60%);
+	background-attachment: fixed;
+	background-repeat: no-repeat;
+	color: #f4f4f6;
 }
 
 .admin-workspace {
-  --admin-canvas: #0b0d12;
-  --admin-well: #080a0f;
-  --admin-border-subtle: rgba(255, 255, 255, 0.06);
-  --admin-border-strong: rgba(255, 255, 255, 0.12);
-  --admin-panel: linear-gradient(145deg, #121620 0%, #0d1017 100%);
-  --admin-elevated: #161b26;
-  --admin-cyan: #38bdf8;
-  --admin-emerald: #10b981;
-  --admin-amber: #f59e0b;
-  --admin-brass: #e2c974;
+	--admin-canvas: #0b0d12;
+	--admin-well: #080a0f;
+	--admin-border-subtle: rgba(255, 255, 255, 0.06);
+	--admin-border-strong: rgba(255, 255, 255, 0.12);
+	--admin-panel: linear-gradient(145deg, #121620 0%, #0d1017 100%);
+	--admin-elevated: #161b26;
+	--admin-cyan: #38bdf8;
+	--admin-emerald: #10b981;
+	--admin-amber: #f59e0b;
+	--admin-brass: #e2c974;
 }
 
-/* Admin Surface Elevation */
 .admin-workspace .admin-well {
-  background: #080a0f;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+	background: #080a0f;
+	border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .admin-workspace .admin-panel {
-  background: linear-gradient(145deg, #121620 0%, #0d1017 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+	background: linear-gradient(145deg, #121620 0%, #0d1017 100%);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
 }
 
 .admin-workspace .admin-card-elevated {
-  background: #161b26;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14), 0 8px 24px rgba(0, 0, 0, 0.45);
+	background: #161b26;
+	border: 1px solid rgba(255, 255, 255, 0.14);
+	box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14), 0 8px 24px rgba(0, 0, 0, 0.45);
 }
 
-/* High-Contrast Inputs for Administration */
 .admin-workspace input:not([type="checkbox"]):not([type="radio"]),
 .admin-workspace select,
 .admin-workspace textarea {
-  background: #080a0f !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #f4f4f6 !important;
-  font-family: inherit;
-  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease !important;
+	background: #080a0f !important;
+	border: 1px solid rgba(255, 255, 255, 0.1) !important;
+	color: #f4f4f6 !important;
+	font-family: inherit;
+	transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease !important;
 }
 
 .admin-workspace input:not([type="checkbox"]):not([type="radio"]):focus,
 .admin-workspace select:focus,
 .admin-workspace textarea:focus {
-  border-color: #38bdf8 !important;
-  box-shadow: 0 0 0 1px #38bdf8, 0 0 12px rgba(56, 189, 248, 0.2) !important;
-  outline: none !important;
+	border-color: #38bdf8 !important;
+	box-shadow: 0 0 0 1px #38bdf8, 0 0 12px rgba(56, 189, 248, 0.2) !important;
+	outline: none !important;
 }
 
-/* Admin Buttons */
 .admin-workspace .button-primary {
-  background: linear-gradient(180deg, #f4f4f6 0%, #e4e4e7 100%) !important;
-  color: #0b0d12 !important;
-  font-weight: 600 !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
-  transform: translateY(0);
-  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 160ms ease !important;
+	background: linear-gradient(180deg, #f4f4f6 0%, #e4e4e7 100%) !important;
+	color: #0b0d12 !important;
+	font-weight: 600 !important;
+	border: 1px solid rgba(255, 255, 255, 0.3) !important;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+	transform: translateY(0);
+	transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 160ms ease !important;
 }
 .admin-workspace .button-primary:hover {
-  background: linear-gradient(180deg, #ffffff 0%, #ececed 100%) !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(228, 228, 231, 0.25) !important;
+	background: linear-gradient(180deg, #ffffff 0%, #ececed 100%) !important;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(228, 228, 231, 0.25) !important;
 }
 .admin-workspace .button-primary:active {
-  transform: translateY(0) scale(0.98) !important;
+	transform: translateY(0) scale(0.98) !important;
 }
 
 .admin-workspace .button-secondary {
-  background: rgba(18, 22, 32, 0.75) !important;
-  backdrop-filter: blur(8px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  color: #f4f4f6 !important;
-  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease !important;
+	background: rgba(18, 22, 32, 0.75) !important;
+	backdrop-filter: blur(8px) !important;
+	border: 1px solid rgba(255, 255, 255, 0.12) !important;
+	color: #f4f4f6 !important;
+	transition: border-color 160ms ease, background 160ms ease, transform 160ms ease !important;
 }
 .admin-workspace .button-secondary:hover {
-  background: rgba(22, 27, 38, 0.9) !important;
-  border-color: #38bdf8 !important;
-  color: #ffffff !important;
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.15) !important;
-  transform: translateY(-1px);
+	background: rgba(22, 27, 38, 0.9) !important;
+	border-color: #38bdf8 !important;
+	color: #ffffff !important;
+	box-shadow: 0 0 10px rgba(56, 189, 248, 0.15) !important;
+	transform: translateY(-1px);
 }
 .admin-workspace .button-secondary:active {
-  transform: translateY(0) scale(0.98) !important;
+	transform: translateY(0) scale(0.98) !important;
 }
 
 .admin-workspace .button-muted {
-  background: transparent !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  color: #a1a1aa !important;
+	background: transparent !important;
+	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+	color: #a1a1aa !important;
 }
 .admin-workspace .button-muted:hover {
-  border-color: rgba(255, 255, 255, 0.25) !important;
-  color: #f4f4f6 !important;
-  background: rgba(255, 255, 255, 0.04) !important;
+	border-color: rgba(255, 255, 255, 0.25) !important;
+	color: #f4f4f6 !important;
+	background: rgba(255, 255, 255, 0.04) !important;
 }
 
 .admin-workspace .button-danger {
-  background: rgba(239, 68, 68, 0.1) !important;
-  border: 1px solid rgba(239, 68, 68, 0.35) !important;
-  color: #fca5a5 !important;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 160ms ease !important;
+	background: rgba(239, 68, 68, 0.1) !important;
+	border: 1px solid rgba(239, 68, 68, 0.35) !important;
+	color: #fca5a5 !important;
+	font-family: var(--font-mono);
+	font-size: 0.72rem;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	cursor: pointer;
+	transition: all 160ms ease !important;
 }
 .admin-workspace .button-danger:hover {
-  background: rgba(239, 68, 68, 0.2) !important;
-  border-color: rgba(239, 68, 68, 0.7) !important;
-  color: #ffffff !important;
+	background: rgba(239, 68, 68, 0.2) !important;
+	border-color: rgba(239, 68, 68, 0.7) !important;
+	color: #ffffff !important;
 }
 .admin-workspace .button-danger:active {
-  transform: scale(0.98) !important;
+	transform: scale(0.98) !important;
 }

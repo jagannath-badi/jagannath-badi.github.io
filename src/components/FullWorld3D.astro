@@ -1,0 +1,741 @@
+---
+// src/components/FullWorld3D.astro — EnduroSat 3D WebGL Engine & Aerospace Satellite
+---
+
+<!-- Fixed WebGL Universe Background -->
+<div class="world-3d-container pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+	<canvas id="world-canvas" class="block w-full h-full"></canvas>
+</div>
+
+<!-- Dynamic 3D Projected Aerospace HUD Telemetry -->
+<div id="hud-callouts" class="hud-callouts-container pointer-events-none fixed inset-0 z-10 overflow-hidden" aria-hidden="true">
+	<div class="hud-pin opacity-0" id="pin-payload">
+		<div class="pin-reticle"></div>
+		<div class="pin-stem"></div>
+		<div class="pin-card">
+			<span class="pin-id">01 // PAYLOAD BUS</span>
+			<span class="pin-title">[PAYLOAD: SENSOR &amp; TRANSCEIVER]</span>
+			<span class="pin-detail">Multi-ADC Signal Conditioning &amp; Data Acquisition</span>
+		</div>
+	</div>
+
+	<div class="hud-pin opacity-0" id="pin-solar">
+		<div class="pin-reticle"></div>
+		<div class="pin-stem"></div>
+		<div class="pin-card">
+			<span class="pin-id">02 // SOLAR ARRAY</span>
+			<span class="pin-title">[POWER: PHOTOVOLTAIC WINGS]</span>
+			<span class="pin-detail">Segmented Gallium Arsenide Photovoltaic Cells</span>
+		</div>
+	</div>
+
+	<div class="hud-pin opacity-0" id="pin-downlink">
+		<div class="pin-reticle"></div>
+		<div class="pin-stem"></div>
+		<div class="pin-card">
+			<span class="pin-id">03 // TELEMETRY DOWNLINK</span>
+			<span class="pin-title">[COMMS: DIRECTIONAL PATCH ARRAY]</span>
+			<span class="pin-detail">High-Rate Telecommunication &amp; Ground Downlink</span>
+		</div>
+	</div>
+</div>
+
+<style>
+	.hud-pin {
+		position: absolute;
+		top: 0;
+		left: 0;
+		pointer-events: none;
+		transition: opacity 300ms cubic-bezier(0.16, 1, 0.3, 1), transform 80ms linear;
+		will-change: transform, opacity;
+	}
+	.pin-reticle {
+		width: 10px;
+		height: 10px;
+		border: 1.5px solid #00A3FF;
+		border-radius: 50%;
+		background: rgba(0, 163, 255, 0.25);
+		box-shadow: 0 0 14px #00A3FF, inset 0 0 5px #00A3FF;
+		transform: translate(-50%, -50%);
+	}
+	.pin-stem {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 48px;
+		height: 1px;
+		background: linear-gradient(90deg, #00A3FF 0%, rgba(0, 163, 255, 0.15) 100%);
+		transform: translateY(-0.5px);
+	}
+	.pin-card {
+		position: absolute;
+		top: -18px;
+		left: 52px;
+		background: rgba(3, 5, 10, 0.94);
+		border: 1px solid rgba(0, 163, 255, 0.4);
+		border-left: 2px solid #00A3FF;
+		padding: 6px 12px;
+		border-radius: 2px;
+		font-family: var(--font-mono);
+		backdrop-filter: blur(12px);
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 163, 255, 0.2);
+		white-space: nowrap;
+	}
+	.pin-id {
+		display: block;
+		font-size: 8.5px;
+		color: #00A3FF;
+		letter-spacing: 0.12em;
+		font-weight: 600;
+	}
+	.pin-title {
+		display: block;
+		font-size: 11px;
+		font-weight: 700;
+		color: #ffffff;
+		letter-spacing: 0.02em;
+	}
+	.pin-detail {
+		display: block;
+		font-size: 9px;
+		color: #94A3B8;
+		margin-top: 1.5px;
+	}
+</style>
+
+<script>
+	import * as THREE from 'three';
+	import gsap from 'gsap';
+	import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+	gsap.registerPlugin(ScrollTrigger);
+
+	let animId: number = 0;
+	let renderer: THREE.WebGLRenderer | null = null;
+	let scene: THREE.Scene | null = null;
+	let camera: THREE.PerspectiveCamera | null = null;
+
+	function initAerospaceWorld() {
+		const canvas = document.getElementById('world-canvas') as HTMLCanvasElement | null;
+		if (!canvas) return;
+
+		// 1. Deep Orbital Space Void (#020408)
+		scene = new THREE.Scene();
+		scene.background = new THREE.Color(0x020408);
+		scene.fog = new THREE.FogExp2(0x020408, 0.015);
+
+		// 2. Camera Setup
+		camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+		camera.position.set(0, 1.2, 8.5);
+		const lookAtTarget = new THREE.Vector3(0, 0, 0);
+		camera.lookAt(lookAtTarget);
+
+		// 3. WebGL Renderer with ACESFilmic Tone Mapping
+		renderer = new THREE.WebGLRenderer({
+			canvas,
+			antialias: true,
+			alpha: false,
+			powerPreference: 'high-performance'
+		});
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+		renderer.toneMapping = THREE.ACESFilmicToneMapping;
+		renderer.toneMappingExposure = 1.35;
+
+		// 4. Studio & Orbital Lighting Rig
+		const ambientLight = new THREE.AmbientLight(0x050e1c, 1.25);
+		scene.add(ambientLight);
+
+		// Direct Sun Beam (Key Light)
+		const sunLight = new THREE.DirectionalLight(0xffffff, 2.6);
+		sunLight.position.set(12, 16, 10);
+		scene.add(sunLight);
+
+		// Sharp Earth-Albedo Rim Light (Atmospheric Electric Cyan #00A3FF)
+		const earthAlbedoRim = new THREE.DirectionalLight(0x00a3ff, 3.4);
+		earthAlbedoRim.position.set(-10, -8, -6);
+		scene.add(earthAlbedoRim);
+
+		// Payload Beacon Point Light
+		const beaconLight = new THREE.PointLight(0x00a3ff, 3.6, 22, 1.2);
+		beaconLight.position.set(0, 1.6, 0);
+		scene.add(beaconLight);
+
+		// 5. 2,000 Multi-Depth Twinkling Orbital Stars
+		const starCount = 2000;
+		const starGeo = new THREE.BufferGeometry();
+		const starPositions = new Float32Array(starCount * 3);
+		const starPhases = new Float32Array(starCount);
+		const starSpeeds = new Float32Array(starCount);
+
+		for (let i = 0; i < starCount; i++) {
+			const i3 = i * 3;
+			starPositions[i3] = (Math.random() - 0.5) * 160;
+			starPositions[i3 + 1] = (Math.random() - 0.5) * 110;
+			starPositions[i3 + 2] = (Math.random() - 0.5) * 140 - 25;
+
+			starPhases[i] = Math.random() * Math.PI * 2;
+			starSpeeds[i] = 1.0 + Math.random() * 2.5;
+		}
+
+		starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+		const starMat = new THREE.PointsMaterial({
+			color: 0xe0f2fe,
+			size: 0.08,
+			transparent: true,
+			opacity: 0.75,
+			blending: THREE.AdditiveBlending
+		});
+
+		const starField = new THREE.Points(starGeo, starMat);
+		scene.add(starField);
+
+		// 6. Planetary Horizon Sphere with Rayleigh Atmospheric Fresnel Edge Shader
+		const planetGeo = new THREE.SphereGeometry(32, 64, 64);
+		const planetUniforms = {
+			uAtmosphereColor: { value: new THREE.Color(0xb0d8ff) },
+			uPlanetColor: { value: new THREE.Color(0x020306) },
+			uAlpha: { value: 1.0 }
+		};
+
+		const planetMat = new THREE.ShaderMaterial({
+			uniforms: planetUniforms,
+			vertexShader: `
+				varying vec3 vNormal;
+				varying vec3 vPosition;
+				void main() {
+					vNormal = normalize(normalMatrix * normal);
+					vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
+					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+				}
+			`,
+			fragmentShader: `
+				uniform vec3 uAtmosphereColor;
+				uniform vec3 uPlanetColor;
+				uniform float uAlpha;
+				varying vec3 vNormal;
+				varying vec3 vPosition;
+				void main() {
+					vec3 viewDir = normalize(-vPosition);
+					float fresnel = 1.0 - max(dot(viewDir, vNormal), 0.0);
+					fresnel = pow(fresnel, 6.0);
+					vec3 col = mix(uPlanetColor, uAtmosphereColor, fresnel * 0.22);
+					gl_FragColor = vec4(col, uAlpha);
+				}
+			`,
+			transparent: true
+		});
+
+		const planet = new THREE.Mesh(planetGeo, planetMat);
+		// Positioned much lower: only a shallow dark horizon arc visible at the bottom
+		planet.position.set(0, -38, -6);
+		scene.add(planet);
+
+		// 7. Technical Staging Grid (Scroll Stage 3 Blueprint Coordinate Plane)
+		const gridGeo = new THREE.PlaneGeometry(160, 160, 1, 1);
+		const gridUniforms = {
+			uTime: { value: 0 },
+			uGridColor: { value: new THREE.Color(0x00a3ff) },
+			uAlpha: { value: 0.0 }
+		};
+
+		const gridMat = new THREE.ShaderMaterial({
+			uniforms: gridUniforms,
+			vertexShader: `
+				varying vec3 vWorldPos;
+				void main() {
+					vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+					vWorldPos = worldPosition.xyz;
+					gl_Position = projectionMatrix * viewMatrix * worldPosition;
+				}
+			`,
+			fragmentShader: `
+				uniform float uTime;
+				uniform vec3 uGridColor;
+				uniform float uAlpha;
+				varying vec3 vWorldPos;
+
+				void main() {
+					vec2 coord = vWorldPos.xz * 0.45;
+					coord.y += uTime * 0.35;
+
+					vec2 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord);
+					float line = min(grid.x, grid.y);
+					float majorMask = 1.0 - min(line, 1.0);
+
+					vec2 subCoord = coord * 4.0;
+					vec2 subGrid = abs(fract(subCoord - 0.5) - 0.5) / fwidth(subCoord);
+					float subLine = min(subGrid.x, subGrid.y);
+					float subMask = (1.0 - min(subLine, 1.0)) * 0.25;
+
+					float combined = clamp(majorMask + subMask, 0.0, 1.0);
+					float dist = length(vWorldPos.xz);
+					float fogFactor = clamp((dist - 6.0) / 45.0, 0.0, 1.0);
+
+					float finalAlpha = combined * (1.0 - fogFactor) * uAlpha;
+					gl_FragColor = vec4(uGridColor, finalAlpha);
+				}
+			`,
+			transparent: true,
+			depthWrite: false
+		});
+
+		const blueprintGrid = new THREE.Mesh(gridGeo, gridMat);
+		blueprintGrid.rotation.x = -Math.PI / 2;
+		blueprintGrid.position.y = -2.4;
+		scene.add(blueprintGrid);
+
+		// 8. The Aerospace Telecommunications Satellite (Centerpiece)
+		const satelliteGroup = new THREE.Group();
+		scene.add(satelliteGroup);
+
+		// Shared Blueprint Materials
+		const blueprintBodyMat = new THREE.MeshStandardMaterial({
+			color: 0x050a16,
+			roughness: 0.18,
+			metalness: 0.88,
+			transparent: true,
+			opacity: 0.85
+		});
+		const wireframeOverlayMat = new THREE.MeshBasicMaterial({
+			color: 0x00a3ff,
+			wireframe: true,
+			transparent: true,
+			opacity: 0.78
+		});
+		const goldMLIMat = new THREE.MeshStandardMaterial({
+			color: 0xe2c974,
+			metalness: 0.95,
+			roughness: 0.24
+		});
+		const solarCellMat = new THREE.MeshStandardMaterial({
+			color: 0x040b16,
+			metalness: 0.95,
+			roughness: 0.12,
+			transparent: true,
+			opacity: 0.9
+		});
+		const solarGridMat = new THREE.MeshBasicMaterial({
+			color: 0x00a3ff,
+			wireframe: true,
+			transparent: true,
+			opacity: 0.8
+		});
+
+		// A. Main Avionics Bus (Rectangular 1.5 x 2.2 x 1.2 chassis)
+		const busGeo = new THREE.BoxGeometry(1.5, 2.2, 1.2);
+		const busBody = new THREE.Mesh(busGeo, blueprintBodyMat);
+		const busWire = new THREE.Mesh(busGeo, wireframeOverlayMat);
+		busBody.add(busWire);
+		satelliteGroup.add(busBody);
+
+		// Titanium Corner Structural Rails
+		const railGeo = new THREE.CylinderGeometry(0.035, 0.035, 2.24, 16);
+		const railMat = new THREE.MeshStandardMaterial({ color: 0x00a3ff, metalness: 0.95, roughness: 0.15 });
+		[
+			[-0.75, -0.6],
+			[0.75, -0.6],
+			[-0.75, 0.6],
+			[0.75, 0.6]
+		].forEach(([rx, rz]) => {
+			const rail = new THREE.Mesh(railGeo, railMat);
+			rail.position.set(rx, 0, rz);
+			busBody.add(rail);
+		});
+
+		// Gold Multi-Layer Insulation (MLI) Thermal Panel on Sunward Side
+		const mliGeo = new THREE.BoxGeometry(0.04, 1.8, 0.9);
+		const mliPanel = new THREE.Mesh(mliGeo, goldMLIMat);
+		mliPanel.position.set(0.76, 0, 0);
+		busBody.add(mliPanel);
+
+		// B. Dual Articulated Photovoltaic Solar Wings (5.5 units length each)
+		const wingLeftGroup = new THREE.Group();
+		const wingRightGroup = new THREE.Group();
+		satelliteGroup.add(wingLeftGroup);
+		satelliteGroup.add(wingRightGroup);
+
+		// Solar Truss Spars & Root Hinge
+		const sparGeo = new THREE.BoxGeometry(0.6, 0.04, 0.04);
+		const sparLeft = new THREE.Mesh(sparGeo, railMat);
+		sparLeft.position.set(-1.05, 0, 0);
+		wingLeftGroup.add(sparLeft);
+
+		const sparRight = new THREE.Mesh(sparGeo, railMat);
+		sparRight.position.set(1.05, 0, 0);
+		wingRightGroup.add(sparRight);
+
+		// 3 Distinct Framed Rectangular Solar Panels per Wing with Hinge Couplers & X-Ray Trusses
+		const panelGeo = new THREE.BoxGeometry(1.45, 0.95, 0.02);
+		const hingeGeo = new THREE.BoxGeometry(0.12, 0.08, 0.04);
+		[-1.8, -3.4, -5.0].forEach((px, idx) => {
+			const panelMesh = new THREE.Mesh(panelGeo, solarCellMat);
+			panelMesh.position.set(px, 0, 0);
+			const panelGrid = new THREE.Mesh(panelGeo, solarGridMat);
+			panelMesh.add(panelGrid);
+			wingLeftGroup.add(panelMesh);
+			if (idx > 0) {
+				const hinge = new THREE.Mesh(hingeGeo, railMat);
+				hinge.position.set(px + 0.8, 0, 0);
+				wingLeftGroup.add(hinge);
+			}
+		});
+
+		[1.8, 3.4, 5.0].forEach((px, idx) => {
+			const panelMesh = new THREE.Mesh(panelGeo, solarCellMat);
+			panelMesh.position.set(px, 0, 0);
+			const panelGrid = new THREE.Mesh(panelGeo, solarGridMat);
+			panelMesh.add(panelGrid);
+			wingRightGroup.add(panelMesh);
+			if (idx > 0) {
+				const hinge = new THREE.Mesh(hingeGeo, railMat);
+				hinge.position.set(px - 0.8, 0, 0);
+				wingRightGroup.add(hinge);
+			}
+		});
+
+		// Angled Square Radiator / Antenna Array Panel at Bottom of Bus
+		const radiatorGroup = new THREE.Group();
+		radiatorGroup.position.set(0, -1.1, 0);
+		radiatorGroup.rotation.x = 0.55;
+		const radGeo = new THREE.BoxGeometry(1.4, 1.4, 0.03);
+		const radBody = new THREE.Mesh(radGeo, blueprintBodyMat);
+		const radWire = new THREE.Mesh(radGeo, wireframeOverlayMat);
+		radBody.add(radWire);
+		radiatorGroup.add(radBody);
+		satelliteGroup.add(radiatorGroup);
+
+		// C. Central Payload Canister (Sensor / Transceiver Module on Top Deck)
+		const payloadGroup = new THREE.Group();
+		payloadGroup.position.set(0, 1.1, 0);
+		satelliteGroup.add(payloadGroup);
+
+		const canisterGeo = new THREE.CylinderGeometry(0.42, 0.44, 0.75, 24);
+		const canisterBody = new THREE.Mesh(canisterGeo, blueprintBodyMat);
+		const canisterWire = new THREE.Mesh(canisterGeo, wireframeOverlayMat);
+		canisterBody.add(canisterWire);
+		payloadGroup.add(canisterBody);
+
+		// Optical Sensor / Transceiver Aperture Ring
+		const lensRingGeo = new THREE.TorusGeometry(0.38, 0.03, 16, 32);
+		const lensRingMat = new THREE.MeshBasicMaterial({ color: 0x00a3ff });
+		const lensRing = new THREE.Mesh(lensRingGeo, lensRingMat);
+		lensRing.rotation.x = Math.PI / 2;
+		lensRing.position.y = 0.38;
+		canisterBody.add(lensRing);
+
+		// D. Directional Patch Antenna Array (Comms Downlink on Front Deck)
+		const antennaGroup = new THREE.Group();
+		antennaGroup.position.set(0, 0, 0.61);
+		satelliteGroup.add(antennaGroup);
+
+		const patchBackplate = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.85, 0.03), goldMLIMat);
+		antennaGroup.add(patchBackplate);
+
+		// 16 Patch Elements Grid (4x4)
+		const elemGeo = new THREE.BoxGeometry(0.12, 0.12, 0.02);
+		for (let row = 0; row < 4; row++) {
+			for (let col = 0; col < 4; col++) {
+				const elem = new THREE.Mesh(elemGeo, railMat);
+				elem.position.set(-0.3 + col * 0.2, -0.3 + row * 0.2, 0.025);
+				antennaGroup.add(elem);
+			}
+		}
+
+		// Aft Micro-Thruster Nozzle
+		const thrusterGeo = new THREE.ConeGeometry(0.22, 0.35, 16);
+		const thrusterMesh = new THREE.Mesh(thrusterGeo, railMat);
+		thrusterMesh.rotation.x = Math.PI;
+		thrusterMesh.position.set(0, -1.25, 0);
+		satelliteGroup.add(thrusterMesh);
+
+		// Deployable VHF Whip Antennas
+		const whipGeo = new THREE.CylinderGeometry(0.015, 0.015, 1.3, 8);
+		const whip1 = new THREE.Mesh(whipGeo, railMat);
+		whip1.position.set(0.65, 1.45, 0.5);
+		whip1.rotation.z = -Math.PI / 4;
+		satelliteGroup.add(whip1);
+
+		const whip2 = new THREE.Mesh(whipGeo, railMat);
+		whip2.position.set(-0.65, 1.45, 0.5);
+		whip2.rotation.z = Math.PI / 4;
+		satelliteGroup.add(whip2);
+
+		// 9. Desktop Staging (Strict Right Separation with Dramatic -40° Diagonal Tilt)
+		const isDesktop = window.innerWidth >= 1024;
+		satelliteGroup.position.set(isDesktop ? 3.2 : 0, 0.4, 0);
+		satelliteGroup.rotation.set(0.45, -0.5, -0.7);
+		satelliteGroup.scale.set(0.72, 0.72, 0.72);
+
+		// 10. Dynamic 3D Spatial HUD Callouts
+		const pins = [
+			{
+				el: document.getElementById('pin-payload'),
+				target: payloadGroup,
+				offset: new THREE.Vector3(0.5, 0.4, 0),
+				visible: false // Strictly hidden in Hero!
+			},
+			{
+				el: document.getElementById('pin-solar'),
+				target: wingLeftGroup,
+				offset: new THREE.Vector3(-2.2, 0.5, 0),
+				visible: false // Strictly hidden in Hero!
+			},
+			{
+				el: document.getElementById('pin-downlink'),
+				target: antennaGroup,
+				offset: new THREE.Vector3(0.6, -0.3, 0.3),
+				visible: false // Strictly hidden in Hero!
+			}
+		];
+
+		const tempVec = new THREE.Vector3();
+		function updateSpatialHUD() {
+			if (!camera) return;
+			pins.forEach((pin) => {
+				if (!pin.el) return;
+				if (!pin.visible) {
+					pin.el.style.opacity = '0';
+					return;
+				}
+				tempVec.setFromMatrixPosition(pin.target.matrixWorld);
+				tempVec.add(pin.offset);
+				tempVec.project(camera);
+
+				if (tempVec.z < 1 && tempVec.x > -1.1 && tempVec.x < 1.1 && tempVec.y > -1.1 && tempVec.y < 1.1) {
+					const x = (tempVec.x * 0.5 + 0.5) * window.innerWidth;
+					const y = (-(tempVec.y * 0.5) + 0.5) * window.innerHeight;
+					pin.el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+					pin.el.style.opacity = '1';
+				} else {
+					pin.el.style.opacity = '0';
+				}
+			});
+		}
+
+		// 11. EnduroSat Scroll-Bound Scrollytelling Trajectory (GSAP ScrollTrigger)
+		const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		if (!prefersReduced) {
+			// Section 2: The Challenge (#challenge)
+			gsap.timeline({
+				scrollTrigger: {
+					trigger: '#challenge',
+					start: 'top bottom',
+					end: 'center center',
+					scrub: 1.2
+				}
+			})
+			.to(camera.position, { x: 1.2, y: 1.8, z: 8.2, ease: 'power2.inOut' }, 0)
+			.to(planet.position, { y: -40, ease: 'power2.inOut' }, 0);
+
+			// Section 3: Payload Integration & Systems (#projects)
+			// High isometric blueprint angle; coordinate ground grid plane fades in, planetary horizon fades out completely
+			gsap.timeline({
+				scrollTrigger: {
+					trigger: '#projects',
+					start: 'top bottom',
+					end: 'center center',
+					scrub: 1.2,
+					onEnter: () => {
+						pins.forEach((p) => (p.visible = true));
+					},
+					onLeaveBack: () => {
+						pins.forEach((p) => (p.visible = false));
+					}
+				}
+			})
+			// Fade out planetary horizon completely so dark isometric grid dominates
+			.to(planetUniforms.uAlpha, { value: 0.0, ease: 'power2.inOut' }, 0)
+			.to(satelliteGroup.position, { x: isDesktop ? 1.8 : 0, y: 0.2, z: 0, ease: 'power2.inOut' }, 0)
+			.to(satelliteGroup.rotation, { x: 0.32, y: -0.65, z: -0.15, ease: 'power2.inOut' }, 0)
+			.to(satelliteGroup.scale, { x: 0.78, y: 0.78, z: 0.78, ease: 'power2.inOut' }, 0)
+			// Technical staging grid plane fades in beneath satellite
+			.to(gridUniforms.uAlpha, { value: 0.9, ease: 'power2.inOut' }, 0)
+			// Slight expansion along deployment axes
+			.to(wingLeftGroup.position, { x: -0.35, ease: 'power2.out' }, 0)
+			.to(wingRightGroup.position, { x: 0.35, ease: 'power2.out' }, 0)
+			.to(payloadGroup.position, { y: 1.35, ease: 'power2.out' }, 0);
+
+			// Section 4: Avionics & Specifications (#specs)
+			// Macro zoom along the satellite bus
+			gsap.timeline({
+				scrollTrigger: {
+					trigger: '#specs',
+					start: 'top bottom',
+					end: 'center center',
+					scrub: 1.2,
+					onEnter: () => {
+						pins[0].visible = true;
+						pins[1].visible = false;
+						pins[2].visible = false;
+					},
+					onLeaveBack: () => {
+						pins.forEach((p) => (p.visible = true));
+					}
+				}
+			})
+			.to(wingLeftGroup.position, { x: 0, ease: 'power2.inOut' }, 0)
+			.to(wingRightGroup.position, { x: 0, ease: 'power2.inOut' }, 0)
+			.to(payloadGroup.position, { y: 1.1, ease: 'power2.inOut' }, 0)
+			.to(satelliteGroup.position, { x: isDesktop ? -1.35 : 0, y: 0.15, z: 0, ease: 'power2.inOut' }, 0)
+			.to(satelliteGroup.rotation, { x: 0.15, y: 0.85, z: -0.1, ease: 'power2.inOut' }, 0)
+			.to(camera.position, { x: 0.8, y: 1.6, z: 3.2, ease: 'power2.inOut' }, 0)
+			.to(lookAtTarget, { x: isDesktop ? -1.35 : 0, y: 0.6, z: 0, ease: 'power2.inOut' }, 0);
+
+			// Section 5: Mission Uplink (#contact)
+			// Satellite pitches forward pointing communication array directly toward viewport
+			gsap.timeline({
+				scrollTrigger: {
+					trigger: '#contact',
+					start: 'top bottom',
+					end: 'center center',
+					scrub: 1.2,
+					onEnter: () => {
+						pins[0].visible = false;
+						pins[1].visible = false;
+						pins[2].visible = true;
+					},
+					onLeaveBack: () => {
+						pins[0].visible = true;
+						pins[1].visible = false;
+						pins[2].visible = false;
+					}
+				}
+			})
+			.to(satelliteGroup.position, { x: 0, y: 0.2, z: 0, ease: 'power2.inOut' }, 0)
+			.to(satelliteGroup.rotation, { x: 1.2, y: 0, z: 0, ease: 'power2.inOut' }, 0)
+			.to(camera.position, { x: 0, y: 1.1, z: 5.0, ease: 'power2.inOut' }, 0)
+			.to(lookAtTarget, { x: 0, y: 0.2, z: 0, ease: 'power2.inOut' }, 0)
+			.to(beaconLight, { intensity: 7.5, distance: 28 }, 0);
+		}
+
+		// 12. Mouse Parallax & Dynamic Damping
+		let targetMouseX = 0;
+		let targetMouseY = 0;
+		let curMouseX = 0;
+		let curMouseY = 0;
+
+		const onPointerMove = (e: MouseEvent) => {
+			targetMouseX = (e.clientX / window.innerWidth) * 2 - 1;
+			targetMouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+		};
+		window.addEventListener('pointermove', onPointerMove, { passive: true });
+
+		// 13. Responsive Resize Handling
+		const onResize = () => {
+			if (!camera || !renderer) return;
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+		};
+		window.addEventListener('resize', onResize, { passive: true });
+
+		// 14. Main Animation Render Loop
+		const clock = new THREE.Clock();
+
+		const animate = () => {
+			animId = requestAnimationFrame(animate);
+			const elapsed = clock.getElapsedTime();
+
+			// Blueprint grid flow
+			gridUniforms.uTime.value = elapsed;
+
+			// Mouse easing & subtle satellite hovering float
+			curMouseX += (targetMouseX - curMouseX) * 0.05;
+			curMouseY += (targetMouseY - curMouseY) * 0.05;
+
+			satelliteGroup.rotation.y += curMouseX * 0.003;
+			satelliteGroup.rotation.x += curMouseY * 0.002;
+
+			// Zero-G idle floating bob
+			satelliteGroup.position.y += Math.sin(elapsed * 1.5) * 0.0008;
+
+			// Subtle planetary rotation & horizon drift
+			planet.rotation.y += 0.0004;
+
+			// Starfield twinkle
+			const starAlpha = 0.65 + Math.sin(elapsed * 1.8) * 0.15;
+			starMat.opacity = starAlpha;
+
+			// Optical beacon pulse
+			const pulse = Math.sin(elapsed * 2.8) * 0.3 + 0.7;
+			lensRingMat.opacity = pulse;
+			beaconLight.intensity = 2.8 + pulse * 1.6;
+
+			// Camera lookAt synchronization
+			if (camera) {
+				camera.lookAt(lookAtTarget);
+			}
+
+			// Update screen-space HUD pins
+			updateSpatialHUD();
+
+			if (renderer && scene && camera) {
+				renderer.render(scene, camera);
+			}
+		};
+
+		animate();
+
+		// 15. Global Step Pivot for Pipeline Stepper
+		(window as any).setSatelliteStep = (stepIdx: number) => {
+			const rotations = [
+				{ x: 0.32, y: -0.65, z: -0.15 }, // Step 0: DESIGN (Isometric Overview)
+				{ x: 0.75, y: -0.25, z: -0.45 }, // Step 1: AIT (Radiator / Underside)
+				{ x: 0.15, y: 0.45, z: -0.1 },  // Step 2: FIRMWARE (Avionics Bus Core)
+				{ x: 0.25, y: -0.05, z: -0.05 }  // Step 3: OPS (Full 11-Unit Wing Deployment)
+			];
+			const target = rotations[stepIdx] || rotations[0];
+			gsap.to(satelliteGroup.rotation, {
+				x: target.x,
+				y: target.y,
+				z: target.z,
+				duration: 0.8,
+				ease: 'power2.out'
+			});
+		};
+
+		// Cleanup on navigation
+		const cleanup = () => {
+			cancelAnimationFrame(animId);
+			window.removeEventListener('pointermove', onPointerMove);
+			window.removeEventListener('resize', onResize);
+			ScrollTrigger.getAll().forEach((t) => t.kill());
+			renderer?.dispose();
+			planetGeo.dispose();
+			planetMat.dispose();
+			gridGeo.dispose();
+			gridMat.dispose();
+			starGeo.dispose();
+			starMat.dispose();
+			busGeo.dispose();
+			blueprintBodyMat.dispose();
+			wireframeOverlayMat.dispose();
+			railGeo.dispose();
+			railMat.dispose();
+			mliGeo.dispose();
+			goldMLIMat.dispose();
+			sparGeo.dispose();
+			panelGeo.dispose();
+			solarCellMat.dispose();
+			solarGridMat.dispose();
+			canisterGeo.dispose();
+			lensRingGeo.dispose();
+			lensRingMat.dispose();
+			thrusterGeo.dispose();
+			whipGeo.dispose();
+		};
+
+		document.addEventListener('astro:before-preparation', cleanup, { once: true });
+	}
+
+	// Mount on initial load & view transitions
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initAerospaceWorld);
+	} else {
+		initAerospaceWorld();
+	}
+	document.addEventListener('astro:page-load', initAerospaceWorld);
+</script>

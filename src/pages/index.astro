@@ -1,8 +1,7 @@
 ---
-// src/pages/index.astro — Architectural Hardware Atelier Public Homepage
+// src/pages/index.astro — EnduroSat-Grade Hardware & Telecommunications Showcase
 import Layout from '../layouts/Layout.astro';
-import GenericStagingDiagram from '../components/GenericStagingDiagram.astro';
-import ArtifactPlaceholder from '../components/ArtifactPlaceholder.astro';
+import FullWorld3D from '../components/FullWorld3D.astro';
 import { createSupabaseServerClient } from '../lib/supabase';
 import { parseCaseStudy } from '../lib/case-study-schema';
 
@@ -22,24 +21,21 @@ const allPublishedProjects = dbProjects ?? [];
 // Separate featured vs secondary published projects (never duplicate)
 const featuredProjects = allPublishedProjects.filter((p) => p.is_featured);
 const secondaryProjects = allPublishedProjects.filter((p) => !p.is_featured);
-
-// Dynamic profile summary text from active projects
-const activeProjectNames = allPublishedProjects.length > 0
-	? allPublishedProjects.slice(0, 2).map((p) => p.title.split(' ')[0]).join(', ')
-	: 'Active Prototyping';
 ---
 
-<Layout title="Jagan — Electronics & Telecommunication Engineering">
-	<!-- Sticky Header -->
-	<header class="site-header border-b border-white/[0.06] bg-[#0B0D12]/85 backdrop-blur-md sticky top-0 z-40">
-		<div class="shell header-inner flex items-center justify-between py-3.5 relative">
-			<a class="wordmark flex items-center gap-2.5 group" href="/" aria-label="Jagan home">
-				<span class="wordmark-mark inline-flex items-center justify-center w-6 h-6 text-xs font-mono font-bold text-[#E2C974] bg-[#E2C974]/10 border border-[#E2C974]/30 rounded-xs transition-colors group-hover:border-[#38BDF8] group-hover:text-[#38BDF8]" aria-hidden="true">J</span>
-				<span class="mono-label tracking-normal font-semibold text-[#F4F4F6] text-xs">JAGAN // ETC ENGINEERING</span>
+<Layout title="Jagan — Hardware Logic & Telecommunication Engineering">
+	<FullWorld3D />
+
+	<!-- Fixed Minimal Aerospace Navigation Bar -->
+	<header class="site-header border-b border-white/[0.08] bg-[#020408]/85 backdrop-blur-md sticky top-0 z-40">
+		<div class="shell max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between py-3.5 relative">
+			<a class="wordmark flex items-center gap-3 group" href="/" aria-label="Jagan home">
+				<span class="inline-flex items-center justify-center w-6 h-6 text-[10px] font-mono font-bold text-[#00A3FF] bg-[#00A3FF]/10 border border-[#00A3FF]/30 rounded-xs transition-colors group-hover:border-white group-hover:text-white" aria-hidden="true">[E]</span>
+				<span class="font-mono tracking-wider font-semibold text-white text-xs">JAGAN &nbsp;EMBEDDED SYSTEMS</span>
 			</a>
-			<nav class="site-nav" aria-label="Primary navigation">
+			<nav class="site-nav flex items-center gap-6" aria-label="Primary navigation">
 				<button
-					class="menu-toggle sm:hidden inline-flex items-center justify-center w-11 h-11 rounded-sm border border-[#1E2330] bg-[#121620] text-[#F4F4F6] hover:border-[#38BDF8]/40 transition-colors"
+					class="menu-toggle sm:hidden inline-flex items-center justify-center w-11 h-11 rounded-sm border border-white/10 bg-[#070c14] text-white hover:border-[#00A3FF]/40 transition-colors"
 					type="button"
 					aria-expanded="false"
 					aria-controls="primary-navigation"
@@ -60,568 +56,287 @@ const activeProjectNames = allPublishedProjects.length > 0
 						<line class="line-bot" x1="3" y1="15" x2="17" y2="15"></line>
 					</svg>
 				</button>
-				<ul class="nav-list flex items-center gap-5 text-xs font-mono text-[#A1A1AA]" id="primary-navigation">
-					<li><a href="#projects" data-nav-link class="hover:text-[#F4F4F6] transition-colors">Projects</a></li>
-					<li><a href="#capabilities" data-nav-link class="hover:text-[#F4F4F6] transition-colors">Focus</a></li>
-					<li><a href="#about" data-nav-link class="hover:text-[#F4F4F6] transition-colors">About</a></li>
-					<li><a href="#contact" data-nav-link class="hover:text-[#F4F4F6] transition-colors">Contact</a></li>
+				<ul class="nav-list flex items-center gap-6 font-mono text-xs text-slate-400" id="primary-navigation">
+					<li><a href="#challenge" data-nav-link class="hover:text-[#00A3FF] transition-colors">Architecture</a></li>
+					<li><a href="#projects" data-nav-link class="hover:text-[#00A3FF] transition-colors">Payloads</a></li>
+					<li><a href="#specs" data-nav-link class="hover:text-[#00A3FF] transition-colors">Specifications</a></li>
+					<li><a href="#contact" data-nav-link class="hover:text-[#00A3FF] transition-colors">Contact</a></li>
 				</ul>
+				<a href="#contact" class="hidden sm:inline-flex enduro-btn text-[11px]">
+					<span>TRANSMISSION</span>
+					<span class="badge-icon" aria-hidden="true">↗</span>
+				</a>
 			</nav>
 		</div>
 		<div class="scroll-progress-bar" aria-hidden="true"></div>
 	</header>
 
 	<main id="main-content">
-		<!-- HERO SECTION: 1440x900 viewport target -->
-		<section class="monograph-section py-8 sm:py-14 relative overflow-hidden" aria-labelledby="hero-title">
-			<div class="shell grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative z-10">
-				<!-- Left 8 Columns: Engineering Positioning -->
-				<div class="lg:col-span-8 flex flex-col items-start" data-reveal>
-					<div class="flex items-center gap-2 mb-3.5" data-hero-item="0">
-						<span class="inline-block w-1.5 h-1.5 rounded-full bg-[#38BDF8]" aria-hidden="true"></span>
-						<p class="mono-kicker text-xs text-[#A1A1AA] tracking-wider">
-							ELECTRONICS &amp; TELECOMMUNICATION ENGINEERING // UNDERGRADUATE
+		<!-- SECTION 1: HERO (50/50 Desktop Split — Absolute Zero Occlusion on Right) -->
+		<section class="min-h-[calc(100vh-64px)] flex items-center relative overflow-hidden py-16 sm:py-24" aria-labelledby="hero-title">
+			<div class="shell w-full max-w-7xl mx-auto px-4 sm:px-6">
+				<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+					<!-- Left 6 Columns: Monumental Neo-Grotesque Display & Engineering Brief -->
+					<div class="lg:col-span-6 flex flex-col items-start" data-reveal>
+						<div class="flex items-center gap-2 mb-4" data-hero-item="0">
+							<span class="w-1.5 h-1.5 rounded-full bg-[#00A3FF] animate-pulse" aria-hidden="true"></span>
+							<p class="kicker-cyan">
+								Physical-Digital Systems &amp; Telecommunications
+							</p>
+						</div>
+						<h1 id="hero-title" class="font-display font-extrabold text-4xl sm:text-6xl lg:text-[68px] tracking-[-0.04em] leading-[0.95] text-white mb-6 uppercase" data-hero-item="1">
+							HARDWARE LOGIC.<br />
+							<span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-[#00A3FF]">ENGINEERED FOR THE EDGE.</span>
+						</h1>
+						<p class="text-base sm:text-lg text-slate-300 max-w-xl leading-relaxed mb-8 font-light" data-hero-item="2">
+							B.Tech Electronics &amp; Communication Engineering undergraduate combining sensor acquisition, ESP32 deterministic firmware, and applied software tools for reliable physical computing.
 						</p>
+						<div class="flex flex-wrap items-center gap-4" data-hero-item="2">
+							<a class="enduro-btn" href="#projects">
+								<span>EXPLORE ARCHITECTURE</span>
+								<span class="badge-icon" aria-hidden="true">↗</span>
+							</a>
+							<a class="enduro-btn" href="#contact">
+								<span>ESTABLISH UPLINK</span>
+								<span class="badge-icon" aria-hidden="true">↗</span>
+							</a>
+						</div>
 					</div>
-					<h1 id="hero-title" class="text-3xl sm:text-4xl lg:text-[44px] font-semibold tracking-tight text-[#F4F4F6] mb-4 max-w-2xl leading-[1.15]" data-hero-item="1">
-						Designing physical-digital systems at the intersection of <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#F4F4F6] via-[#D4D4D8] to-[#38BDF8]">hardware, embedded logic, and software</span>.
-					</h1>
-					<p class="text-base sm:text-[17px] text-[#A1A1AA] max-w-xl leading-relaxed mb-7" data-hero-item="2">
-						Second-year undergraduate combining circuit fundamentals, ESP32 embedded systems, and Python/AI software for practical engineering applications.
-					</p>
-					<div class="flex flex-wrap items-center gap-3.5" data-hero-item="2">
-						<a class="button button-primary" href="#projects">
-							Explore Engineering Work <span class="arrow-down" aria-hidden="true">↓</span>
-						</a>
-						<a class="button button-secondary" href="#contact">
-							Initiate Contact <span class="arrow-right" aria-hidden="true">→</span>
-						</a>
-					</div>
-				</div>
 
-				<!-- Right 4 Columns: Anodized Instrument Telemetry Placard -->
-				<div class="lg:col-span-4 w-full instrument-faceplate p-5 sm:p-6 interactive-surface card-elevated" data-hero-item="3" data-reveal style="--reveal-delay: 80ms">
-					<div class="flex items-center justify-between border-b border-white/[0.08] pb-2.5 mb-3.5">
-						<div class="flex items-center gap-2">
-							<span class="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" aria-hidden="true"></span>
-							<span class="mono-label text-[11px] text-[#E4E4E7] font-semibold tracking-wider">PROFILE SUMMARY</span>
-						</div>
-						<span class="brass-chip">SPEC // 2026</span>
-					</div>
-					<div class="space-y-2.5 font-mono text-xs">
-						<div class="flex items-baseline justify-between gap-2 border-b border-white/[0.04] pb-2">
-							<span class="text-[#71717A] text-[10px] tracking-wider">[DEGREE]</span>
-							<span class="text-[#F4F4F6] text-right font-medium">B.Tech ETC (2nd Year, IGIT Sarang)</span>
-						</div>
-						<div class="flex items-baseline justify-between gap-2 border-b border-white/[0.04] pb-2">
-							<span class="text-[#71717A] text-[10px] tracking-wider">[MCU PLATFORM]</span>
-							<span class="text-[#F4F4F6] text-right font-medium">ESP32 / ARM Cortex-M</span>
-						</div>
-						<div class="flex items-baseline justify-between gap-2 border-b border-white/[0.04] pb-2">
-							<span class="text-[#71717A] text-[10px] tracking-wider">[SIGNAL ANALYSIS]</span>
-							<span class="text-[#F4F4F6] text-right font-medium">Analog Cond. &amp; Multi-ADC</span>
-						</div>
-						<div class="flex items-baseline justify-between gap-2 border-b border-white/[0.04] pb-2">
-							<span class="text-[#71717A] text-[10px] tracking-wider">[COURSEWORK]</span>
-							<span class="text-[#F4F4F6] text-right font-medium">Signals &amp; Systems, Network Theory</span>
-						</div>
-						<div class="flex items-baseline justify-between gap-2 pt-0.5">
-							<span class="text-[#71717A] text-[10px] tracking-wider">[STATUS]</span>
-							<span class="text-[#10B981] text-right font-medium flex items-center gap-1">
-								Active Prototyping
-							</span>
-						</div>
-					</div>
-					<div class="mt-4 pt-3.5 border-t border-white/[0.06] flex items-center justify-between">
-						<a class="mono-label text-[11px] text-[#A1A1AA] hover:text-[#38BDF8] transition-colors flex items-center gap-1.5" href="https://github.com/jagannath-badi" target="_blank" rel="noopener noreferrer">
-							GITHUB // @JAGANNATH-BADI <span class="arrow-up-right" aria-hidden="true">↗</span>
-						</a>
-						<span class="mono-label text-[10px] text-[#71717A]">SYS.ID #01</span>
+					<!-- Right 6 Columns: Reserved Exclusively for EnduroSat 3D Microsatellite (Zero DOM Collision) -->
+					<div class="hidden lg:block lg:col-span-6 pointer-events-none min-h-[460px]" aria-hidden="true">
+						<!-- Viewport spatial zone intentionally kept clear so WebGL centerpiece shines through unobstructed -->
 					</div>
 				</div>
 			</div>
 		</section>
 
-		<!-- 01 // FEATURED PROJECTS SECTION -->
-		<section class="monograph-section" id="projects" aria-labelledby="projects-title">
-			<div class="shell">
-				<!-- Section Index Header -->
-				<div class="section-index-header border-b border-white/[0.06] pb-4 mb-8">
-					<div>
-						<p class="mono-label text-xs text-[#71717A] mb-1">01 // SELECTED ENGINEERING WORK</p>
-						<h2 id="projects-title" class="text-2xl sm:text-3xl font-semibold text-[#F4F4F6]">
-							Featured Systems &amp; Prototypes
-						</h2>
-					</div>
-					<p class="text-xs sm:text-sm text-[#A1A1AA] max-w-md font-mono">
-						Documented engineering projects combining physical sensor acquisition, embedded control logic, and application tools.
-					</p>
+		<!-- SECTION 2: THE CHALLENGE -->
+		<section class="monograph-section py-20 sm:py-32 relative" id="challenge" aria-labelledby="challenge-title">
+			<div class="shell max-w-7xl mx-auto px-4 sm:px-6">
+				<div class="max-w-3xl" data-reveal>
+					<p class="kicker-orange mb-4">THE CHALLENGE</p>
+					<h2 id="challenge-title" class="font-display font-semibold text-3xl sm:text-5xl lg:text-[46px] tracking-[-0.03em] leading-[1.12] text-white">
+						Building deterministic embedded hardware, low-noise analog signal chains, and real-time firmware architectures without bloated abstractions.
+					</h2>
 				</div>
+			</div>
+		</section>
 
-				{allPublishedProjects.length === 0 ? (
-					<div class="atelier-panel border border-white/[0.08] p-5 sm:p-8 rounded-sm interactive-surface card-elevated" data-reveal>
-						<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-							{/* Left Column (5 cols): Technical Scope & Grounded Staging Status */}
-							<div class="lg:col-span-5 flex flex-col justify-between h-full">
-								<div>
-									<div class="flex items-center gap-2 mb-2.5">
-										<span class="w-2 h-2 rounded-full bg-[#E2C974] animate-pulse" aria-hidden="true"></span>
-										<p class="mono-kicker text-xs text-[#E2C974]">SYS_PIPELINE // ACTIVE DEVELOPMENT &amp; STAGING</p>
-									</div>
-									<h3 class="text-xl sm:text-2xl font-semibold text-[#F4F4F6] mb-3.5 leading-snug">
-										Engineering Systems in Active Laboratory Development
-									</h3>
-									<p class="text-sm text-[#A1A1AA] leading-relaxed mb-4">
-										Hardware prototypes and technical case studies across microcontroller firmware, mixed-signal sensor acquisition, and applied AI software tools are currently undergoing structured verification and documentation review.
-									</p>
-									<p class="text-xs text-[#71717A] leading-relaxed mb-6 font-mono">
-										As project milestones pass technical review, complete architectural schematics, firmware repositories, and telemetry traces will be published directly to this index.
-									</p>
+		<!-- SECTION 3: PAYLOAD INTEGRATION & HARDWARE ARCHITECTURE -->
+		<section class="monograph-section min-h-[90vh] flex flex-col justify-between py-16 sm:py-24 relative" id="projects" aria-labelledby="projects-title">
+			<div class="shell max-w-7xl mx-auto px-4 sm:px-6 w-full">
+				<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+					<!-- Left 5 Columns: Title, Subsystem Spec Readout & Direct Case Study Links -->
+					<div class="lg:col-span-5 max-w-md z-10" data-reveal>
+						<p class="kicker-cyan mb-2">Payload Integration</p>
+						<h2 id="projects-title" class="font-display font-semibold text-3xl sm:text-4xl lg:text-[42px] tracking-[-0.03em] leading-[1.08] text-white mb-4">
+							Payload Integration &amp; Hardware Architecture
+						</h2>
+						<p class="text-sm text-slate-400 leading-relaxed mb-6 font-light">
+							End-to-end qualification of mixed-signal sensor acquisition, bus controllers, and deterministic firmware for physical deployment.
+						</p>
 
-									{/* Recessed Status Block */}
-									<div class="space-y-2 font-mono text-xs chassis-well p-3.5 rounded-sm mb-6">
-										<div class="flex items-center justify-between text-[#71717A]">
-											<span>FOCUS DOMAIN</span>
-											<span class="text-[#F4F4F6]">System Architecture &amp; Interfaces</span>
-										</div>
-										<div class="flex items-center justify-between text-[#71717A] border-t border-white/[0.04] pt-1.5">
-											<span>DOCUMENTATION</span>
-											<span class="text-[#F4F4F6]">Schematic &amp; Interface Planning</span>
-										</div>
-										<div class="flex items-center justify-between text-[#71717A] border-t border-white/[0.04] pt-1.5">
-											<span>VERIFICATION</span>
-											<span class="text-[#38BDF8]">Simulated &amp; Laboratory Review</span>
-										</div>
-									</div>
-								</div>
-
-								<div class="flex flex-wrap items-center gap-3">
-									<a class="button button-primary text-xs" href="#contact">
-										Direct Technical Inquiry <span class="arrow-right" aria-hidden="true">→</span>
-									</a>
-									<a class="button button-secondary text-xs" href="https://github.com/jagannath-badi?tab=repositories" target="_blank" rel="noopener noreferrer">
-										GitHub Repositories <span class="arrow-up-right" aria-hidden="true">↗</span>
-									</a>
-								</div>
-							</div>
-
-							{/* Right Column (7 cols): Generic Staging Architecture Flow */}
-							<div class="lg:col-span-7">
-								<GenericStagingDiagram />
-								<p class="text-[11px] text-[#71717A] mt-2.5 font-mono text-right">
-									FIG 01 // Illustrative Mixed-Signal Processing &amp; Control Architecture Flow
-								</p>
-							</div>
+						<!-- Dynamic Subsystem Readout based on Stepper -->
+						<div id="step-readout" class="p-4 bg-[#070c14]/85 border border-white/10 rounded-sm font-mono text-xs space-y-1.5 backdrop-blur-md">
+							<p id="step-title" class="text-[#00A3FF] font-semibold">01 // ARCHITECTURE &amp; DESIGN</p>
+							<p id="step-desc" class="text-slate-300">Mixed-signal schematic capture, power distribution budgeting, and sensor interfacing.</p>
 						</div>
-					</div>
-				) : (
-					<div class="space-y-8">
-						{/* FEATURED PROJECTS (Split Card Layout) */}
-						{featuredProjects.map((p, pIdx) => {
-							const doc = parseCaseStudy(p.description, p.summary, p.project_type);
-							const isCustomImage = doc.metadata.diagram_type === 'image' && Boolean(doc.metadata.diagram_url);
-							const projectNum = String(pIdx + 1).padStart(2, '0');
-							const statusBadge = doc.metadata.status_label || (p.project_type === 'concept' ? 'CONCEPTUAL DESIGN' : 'PROTOTYPE DESIGN');
 
-							return (
-								<article class="atelier-panel border border-white/[0.08] p-5 sm:p-7 rounded-sm grid grid-cols-1 lg:grid-cols-12 gap-8 items-center interactive-surface card-elevated" data-reveal style={pIdx > 0 ? `--reveal-delay: ${pIdx * 80}ms` : undefined}>
-									{/* Left 5 Columns: Summary & Specification Matrix */}
-									<div class="lg:col-span-5 flex flex-col items-start order-1 lg:order-1">
-										<div class="flex flex-wrap items-center gap-2 mb-2.5">
-											<span class="mono-kicker text-xs text-[#E2C974] bg-[#E2C974]/10 border border-[#E2C974]/30 px-2 py-0.5 rounded-xs">
-												PROJECT {projectNum} // {p.project_type.toUpperCase()}
-											</span>
-											<span class="mono-kicker text-[10px] text-[#38BDF8] bg-[#38BDF8]/10 border border-[#38BDF8]/30 px-2 py-0.5 rounded-xs">
-												{statusBadge}
-											</span>
-										</div>
-										<h3 class="text-xl sm:text-2xl font-semibold text-[#F4F4F6] mb-3 leading-snug">
-											{p.title}
-										</h3>
-
-										{/* Mobile order: diagram preview shown right below title on mobile */}
-										<div class="w-full lg:hidden my-4 order-3">
-											<div class="bg-[#0A0D14] border border-[#1E2330] rounded-sm overflow-hidden p-2">
-												{isCustomImage ? (
-													<div class="p-2 border border-white/[0.08] bg-[#080A0F] rounded-sm">
-														<img src={doc.metadata.diagram_url} alt={p.title} class="w-full h-auto rounded-sm object-contain max-h-[300px]" />
-													</div>
-												) : (
-													<ArtifactPlaceholder title={doc.metadata.diagram_caption || p.title} description="System block diagram and architecture specification." />
-												)}
-											</div>
-										</div>
-
-										<p class="text-sm text-[#A1A1AA] leading-relaxed mb-4 order-2 lg:order-2">
-											{p.summary}
-										</p>
-
-										{/* 2x2 Segmented Datasheet Matrix */}
-										<div class="grid grid-cols-2 gap-px bg-[#1E2330] border border-[#1E2330] rounded-sm overflow-hidden mb-5 font-mono text-xs w-full order-3 lg:order-3">
-											<div class="bg-[#080A0F] p-2.5">
-												<p class="text-[9.5px] text-[#71717A] tracking-wider mb-0.5">CORE PLATFORM</p>
-												<p class="text-[#F4F4F6] text-xs font-medium truncate">{doc.metadata.core_platform || (p.technologies?.[0] ?? 'Embedded Systems')}</p>
-											</div>
-											<div class="bg-[#080A0F] p-2.5">
-												<p class="text-[9.5px] text-[#71717A] tracking-wider mb-0.5">SYSTEM ROLE</p>
-												<p class="text-[#F4F4F6] text-xs font-medium truncate">{doc.metadata.system_role || 'Hardware & Systems'}</p>
-											</div>
-											<div class="bg-[#080A0F] p-2.5">
-												<p class="text-[9.5px] text-[#71717A] tracking-wider mb-0.5">EVIDENCE</p>
-												<p class="text-[#38BDF8] text-xs font-medium truncate">{doc.metadata.evidence_tier || 'Laboratory Trace'}</p>
-											</div>
-											<div class="bg-[#080A0F] p-2.5">
-												<p class="text-[9.5px] text-[#71717A] tracking-wider mb-0.5">VALIDATION</p>
-												<p class="text-[#10B981] text-xs font-medium truncate">{statusBadge}</p>
-											</div>
-										</div>
-
-										{p.technologies && p.technologies.length > 0 && (
-											<div class="flex flex-wrap gap-1.5 mb-5 order-4">
-												{p.technologies.map((t) => (
-													<span class="spec-tag">{t}</span>
-												))}
-											</div>
-										)}
-
-										<div class="flex flex-wrap items-center gap-3 order-5">
-											<a class="button button-primary" href={`/projects/${p.slug}`}>
-												Read Case Study <span class="arrow-right" aria-hidden="true">→</span>
-											</a>
-											{p.github_url && (
-												<a class="button button-secondary" href={p.github_url} target="_blank" rel="noopener noreferrer">
-													Code <span class="arrow-up-right" aria-hidden="true">↗</span>
-												</a>
-											)}
-										</div>
-									</div>
-
-									{/* Right 7 Columns: Technical Artifact Frame (Desktop) */}
-									<div class="hidden lg:block lg:col-span-7 order-2 lg:order-2">
-										<div class="bg-[#0A0D14] border border-[#1E2330] rounded-sm overflow-hidden shadow-2xl">
-											<div class="flex items-center justify-between border-b border-[#1E2330] px-3.5 py-2 bg-[#0D1017] text-xs font-mono">
-												<div class="flex items-center gap-2">
-													<span class="w-1.5 h-1.5 rounded-full bg-[#38BDF8] animate-pulse" aria-hidden="true"></span>
-													<span class="text-[#A1A1AA] text-[11px]">SYS.TELEMETRY // {p.slug.toUpperCase().slice(0, 24)}</span>
-												</div>
-												<span class="text-[#71717A] text-[10px]">DIAGRAM_VIEW ↗</span>
-											</div>
-											<div class="p-3">
-												{isCustomImage ? (
-													<div class="p-2 border border-white/[0.08] bg-[#080A0F] rounded-sm">
-														<img src={doc.metadata.diagram_url} alt={p.title} class="w-full h-auto rounded-sm object-contain max-h-[420px]" />
-													</div>
-												) : (
-													<ArtifactPlaceholder title={doc.metadata.diagram_caption || p.title} description="System block diagram and architecture specification." />
-												)}
-											</div>
-											{doc.metadata.diagram_caption && (
-												<div class="border-t border-[#1E2330] px-3.5 py-1.5 bg-[#080A0F]">
-													<p class="text-[11px] text-[#71717A] font-mono text-right truncate">
-														{doc.metadata.diagram_caption}
-													</p>
-												</div>
-											)}
-										</div>
-									</div>
-								</article>
-							);
-						})}
-
-						{/* Secondary Published Projects Grid */}
-						{secondaryProjects.length > 0 && (
-							<div class="pt-6 border-t border-white/[0.06]">
-								<p class="mono-label text-xs text-[#71717A] mb-4">ADDITIONAL PUBLISHED PROJECTS //</p>
-								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-									{secondaryProjects.map((p) => (
-										<article class="atelier-panel border border-white/[0.08] p-4 rounded-sm flex flex-col justify-between interactive-surface card-elevated">
-											<div>
-												<div class="flex items-center justify-between mb-2">
-													<span class="spec-tag">{p.project_type.toUpperCase()}</span>
-													<span class="mono-kicker text-[10px] text-[#71717A]">DOCUMENTED</span>
-												</div>
-												<h4 class="text-base font-semibold text-[#F4F4F6] mb-2">{p.title}</h4>
-												<p class="text-xs text-[#A1A1AA] line-clamp-3 mb-3">{p.summary}</p>
-											</div>
-											<div class="pt-3 border-t border-white/[0.04] flex items-center justify-between">
-												<div class="flex flex-wrap gap-1">
-													{p.technologies?.slice(0, 3).map((t) => (
-														<span class="spec-tag text-[10px]">{t}</span>
-													))}
-												</div>
-												<a class="mono-label text-xs text-[#F4F4F6] hover:text-[#38BDF8]" href={`/projects/${p.slug}`}>
-													VIEW <span class="arrow-right" aria-hidden="true">→</span>
-												</a>
-											</div>
-										</article>
-									))}
-								</div>
+						{featuredProjects.length > 0 && (
+							<div class="mt-6 flex flex-wrap gap-3">
+								{featuredProjects.slice(0, 2).map((p) => (
+									<a class="enduro-btn text-[11px]" href={`/projects/${p.slug}`}>
+										<span>{p.title}</span>
+										<span class="badge-icon" aria-hidden="true">↗</span>
+									</a>
+								))}
 							</div>
 						)}
 					</div>
-				)}
+
+					<!-- Right 7 Columns: Completely unobstructed for 3D Satellite & Isometric Grid -->
+					<div class="lg:col-span-7 min-h-[420px] pointer-events-none" aria-hidden="true">
+						<!-- Spatial corridor for EnduroSat satellite pivot -->
+					</div>
+				</div>
+			</div>
+
+			<!-- Bottom Pinned Pipeline Stepper -->
+			<div class="shell max-w-7xl mx-auto px-4 sm:px-6 w-full mt-12 flex justify-center">
+				<div class="progress-stepper" role="tablist" aria-label="Payload Subsystem Pipeline">
+					<button class="progress-step active" type="button" data-step="0">DESIGN</button>
+					<button class="progress-step" type="button" data-step="1">AIT</button>
+					<button class="progress-step" type="button" data-step="2">FIRMWARE</button>
+					<button class="progress-step" type="button" data-step="3">OPS</button>
+				</div>
 			</div>
 		</section>
 
-		<!-- 02 // TECHNICAL FOCUS & CAPABILITIES -->
-		<section class="monograph-section" id="capabilities" aria-labelledby="capabilities-title">
-			<div class="shell">
-				<div class="section-index-header border-b border-white/[0.06] pb-4 mb-8">
-					<div>
-						<p class="mono-label text-xs text-[#71717A] mb-1">02 // TECHNICAL FOCUS &amp; CAPABILITIES</p>
-						<h2 id="capabilities-title" class="text-2xl sm:text-3xl font-semibold text-[#F4F4F6]">
-							Engineering Domains &amp; Competencies
-						</h2>
-					</div>
-					<p class="text-xs sm:text-sm text-[#A1A1AA] max-w-md font-mono">
-						Core areas of study and hands-on prototyping across electronics, embedded firmware, and software tools.
-					</p>
+		<!-- SECTION 4: CORE SUBSYSTEM SPECIFICATIONS -->
+		<section class="monograph-section py-20 sm:py-32 relative" id="specs" aria-labelledby="specs-title">
+			<div class="shell max-w-7xl mx-auto px-4 sm:px-6">
+				<div class="max-w-4xl mb-12 sm:mb-16">
+					<p class="kicker-orange mb-3">Subsystem Matrix</p>
+					<h2 id="specs-title" class="font-display font-semibold text-3xl sm:text-5xl lg:text-[46px] tracking-[-0.03em] leading-[1.08] text-white">
+						Core Subsystem Specifications
+					</h2>
 				</div>
 
-				<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-					<!-- Domain 01: Embedded Hardware -->
-					<div class="atelier-panel border border-white/[0.08] p-5 sm:p-6 rounded-sm flex flex-col justify-between interactive-surface card-elevated" data-reveal>
+				<!-- 4-Column Technical Specification Matrix -->
+				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+					<!-- Subsystem 01: Core Logic -->
+					<div class="enduro-card p-6 flex flex-col justify-between" data-reveal>
 						<div>
-							<div class="flex items-center justify-between mb-3">
-								<p class="mono-kicker text-[10px] text-[#E2C974]">SUBSYSTEM 01 // HARDWARE</p>
-								<span class="text-[10px] font-mono text-[#71717A]">DEV_UNIT</span>
+							<div class="flex items-center justify-between mb-4 pb-2.5 border-b border-white/[0.08]">
+								<span class="font-mono text-[10px] text-[#00A3FF] font-semibold">BUS 01 // COMPUTING</span>
+								<span class="font-mono text-[10px] text-slate-500">MCU</span>
 							</div>
-							<h3 class="text-lg font-semibold text-[#F4F4F6] mb-2.5">Embedded Systems &amp; Hardware</h3>
-							<p class="text-xs text-[#A1A1AA] leading-relaxed mb-4">
-								Microcontroller development, GPIO and ADC peripheral interfacing, sensor signal acquisition, and actuation logic.
+							<h3 class="font-display font-semibold text-lg text-white tracking-tight mb-2">Processing &amp; Core Logic</h3>
+							<p class="text-xs text-slate-400 mb-5 leading-relaxed font-light">
+								Microcontroller platform architecture, memory mapping, interrupt handlers, and hardware timers.
 							</p>
 						</div>
-						<div class="chassis-well p-3 rounded-sm space-y-1.5 font-mono text-[11px] text-[#A1A1AA]">
-							<div class="flex items-center justify-between">
-								<span class="text-[#71717A]">PLATFORM</span>
-								<span class="text-[#F4F4F6]">ESP32 / Microcontrollers</span>
-							</div>
-							<div class="flex items-center justify-between">
-								<span class="text-[#71717A]">SENSING</span>
-								<span class="text-[#F4F4F6]">Analog ADC &amp; Sensor Conditioning</span>
-							</div>
-							<div class="flex items-center justify-between">
-								<span class="text-[#71717A]">DRIVERS</span>
-								<span class="text-[#F4F4F6]">Power Switching &amp; Actuation Stages</span>
-							</div>
-							<div class="flex items-center justify-between">
-								<span class="text-[#71717A]">FIRMWARE</span>
-								<span class="text-[#38BDF8]">C++ State Machines</span>
-							</div>
+						<div class="font-mono text-xs space-y-2 bg-[#020408]/60 p-3.5 border border-white/[0.06] rounded-sm">
+							<div class="flex justify-between"><span class="text-slate-500">MCU</span><span class="text-white">ESP32 Dual Xtensa</span></div>
+							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">ARCH</span><span class="text-white">ARM Cortex-M</span></div>
+							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">OS</span><span class="text-[#00A3FF]">FreeRTOS Kernel</span></div>
+							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">TIMER</span><span class="text-white">Hardware PWM/ISR</span></div>
 						</div>
 					</div>
 
-					<!-- Domain 02: Circuits & Telecommunication -->
-					<div class="atelier-panel border border-white/[0.08] p-5 sm:p-6 rounded-sm flex flex-col justify-between interactive-surface card-elevated" data-reveal style="--reveal-delay: 60ms">
+					<!-- Subsystem 02: Signal Conditioning & RF -->
+					<div class="enduro-card p-6 flex flex-col justify-between" data-reveal style="--reveal-delay: 80ms">
 						<div>
-							<div class="flex items-center justify-between mb-3">
-								<p class="mono-kicker text-[10px] text-[#E2C974]">SUBSYSTEM 02 // CIRCUITS</p>
-								<span class="text-[10px] font-mono text-[#71717A]">DEV_UNIT</span>
+							<div class="flex items-center justify-between mb-4 pb-2.5 border-b border-white/[0.08]">
+								<span class="font-mono text-[10px] text-[#FF5C00] font-semibold">BUS 02 // SENSORS</span>
+								<span class="font-mono text-[10px] text-slate-500">ANALOG</span>
 							</div>
-							<h3 class="text-lg font-semibold text-[#F4F4F6] mb-2.5">Electronics &amp; Telecommunication</h3>
-							<p class="text-xs text-[#A1A1AA] leading-relaxed mb-4">
-								Circuit principles, signals and systems fundamentals, laboratory instrumentation, and communication protocols.
+							<h3 class="font-display font-semibold text-lg text-white tracking-tight mb-2">Signal Conditioning &amp; RF</h3>
+							<p class="text-xs text-slate-400 mb-5 leading-relaxed font-light">
+								Operational amplifier filtering, sensor impedance matching, multi-ADC sampling, and comms.
 							</p>
 						</div>
-						<div class="chassis-well p-3 rounded-sm space-y-1.5 font-mono text-[11px] text-[#A1A1AA]">
-							<div class="flex items-center justify-between">
-								<span class="text-[#71717A]">ANALYSIS</span>
-								<span class="text-[#F4F4F6]">Signals &amp; Systems</span>
-							</div>
-							<div class="flex items-center justify-between">
-								<span class="text-[#71717A]">TEST BENCH</span>
-								<span class="text-[#F4F4F6]">Breadboard &amp; Multimeter (DMM)</span>
-							</div>
-							<div class="flex items-center justify-between">
-								<span class="text-[#71717A]">ISOLATION</span>
-								<span class="text-[#F4F4F6]">Signal Conditioning</span>
-							</div>
-							<div class="flex items-center justify-between">
-								<span class="text-[#71717A]">PROTOCOLS</span>
-								<span class="text-[#38BDF8]">UART / I2C / SPI</span>
-							</div>
+						<div class="font-mono text-xs space-y-2 bg-[#020408]/60 p-3.5 border border-white/[0.06] rounded-sm">
+							<div class="flex justify-between"><span class="text-slate-500">OP-AMP</span><span class="text-white">Active Filters / Gain</span></div>
+							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">ADC</span><span class="text-white">12-Bit Multi-Ch</span></div>
+							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">BUS</span><span class="text-[#FF5C00]">I2C / SPI / UART</span></div>
+							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">RF</span><span class="text-white">ISM Band / Wi-Fi</span></div>
 						</div>
 					</div>
 
-					<!-- Domain 03: Engineering Software & AI -->
-					<div class="atelier-panel border border-white/[0.08] p-5 sm:p-6 rounded-sm flex flex-col justify-between interactive-surface card-elevated" data-reveal style="--reveal-delay: 120ms">
+					<!-- Subsystem 03: Power & Actuation -->
+					<div class="enduro-card p-6 flex flex-col justify-between" data-reveal style="--reveal-delay: 160ms">
 						<div>
-							<div class="flex items-center justify-between mb-3">
-								<p class="mono-kicker text-[10px] text-[#E2C974]">SUBSYSTEM 03 // SOFTWARE</p>
-								<span class="text-[10px] font-mono text-[#71717A]">DEV_UNIT</span>
+							<div class="flex items-center justify-between mb-4 pb-2.5 border-b border-white/[0.08]">
+								<span class="font-mono text-[10px] text-[#00A3FF] font-semibold">BUS 03 // POWER</span>
+								<span class="font-mono text-[10px] text-slate-500">SWITCH</span>
 							</div>
-							<h3 class="text-lg font-semibold text-[#F4F4F6] mb-2.5">Engineering Software &amp; AI</h3>
-							<p class="text-xs text-[#A1A1AA] leading-relaxed mb-4">
-								Python tooling for laboratory assistance, responsive interactive web applications, and multi-model AI API integrations.
+							<h3 class="font-display font-semibold text-lg text-white tracking-tight mb-2">Power &amp; Actuation</h3>
+							<p class="text-xs text-slate-400 mb-5 leading-relaxed font-light">
+								Isolated switching stages, high-current relay drivers, solenoid valves, and regulated DC rails.
 							</p>
 						</div>
-						<div class="chassis-well p-3 rounded-sm space-y-1.5 font-mono text-[11px] text-[#A1A1AA]">
-							<div class="flex items-center justify-between">
-								<span class="text-[#71717A]">SCRIPTING</span>
-								<span class="text-[#F4F4F6]">Python &amp; Scientific Tools</span>
+						<div class="font-mono text-xs space-y-2 bg-[#020408]/60 p-3.5 border border-white/[0.06] rounded-sm">
+							<div class="flex justify-between"><span class="text-slate-500">DRIVE</span><span class="text-white">Opto-Isolated Relays</span></div>
+							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">VALVE</span><span class="text-white">12V Solenoid Logic</span></div>
+							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">SUPPLY</span><span class="text-[#00A3FF]">LDO / Buck 3.3V-12V</span></div>
+							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">SAFETY</span><span class="text-white">Flyback &amp; TVS Diode</span></div>
+						</div>
+					</div>
+
+					<!-- Subsystem 04: Software & AI Telemetry -->
+					<div class="enduro-card p-6 flex flex-col justify-between" data-reveal style="--reveal-delay: 240ms">
+						<div>
+							<div class="flex items-center justify-between mb-4 pb-2.5 border-b border-white/[0.08]">
+								<span class="font-mono text-[10px] text-[#FF5C00] font-semibold">BUS 04 // SOFTWARE</span>
+								<span class="font-mono text-[10px] text-slate-500">AI / WEB</span>
 							</div>
-							<div class="flex items-center justify-between">
-								<span class="text-[#71717A]">WORKSPACE</span>
-								<span class="text-[#F4F4F6]">Python &amp; Technical Tooling</span>
-							</div>
-							<div class="flex items-center justify-between">
-								<span class="text-[#71717A]">AI APIs</span>
-								<span class="text-[#F4F4F6]">Multi-Model Integration</span>
-							</div>
-							<div class="flex items-center justify-between">
-								<span class="text-[#71717A]">WEB STACK</span>
-								<span class="text-[#38BDF8]">Astro &amp; TypeScript</span>
-							</div>
+							<h3 class="font-display font-semibold text-lg text-white tracking-tight mb-2">Software &amp; AI Telemetry</h3>
+							<p class="text-xs text-slate-400 mb-5 leading-relaxed font-light">
+								Data capture pipelines, interactive WebGL interfaces, multi-model AI APIs, and full telemetry.
+							</p>
+						</div>
+						<div class="font-mono text-xs space-y-2 bg-[#020408]/60 p-3.5 border border-white/[0.06] rounded-sm">
+							<div class="flex justify-between"><span class="text-slate-500">TOOLING</span><span class="text-white">Python / NumPy</span></div>
+							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">UI</span><span class="text-white">Streamlit / Astro</span></div>
+							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">AI</span><span class="text-[#FF5C00]">Multi-Model Vision</span></div>
+							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">3D</span><span class="text-white">Three.js / WebGL</span></div>
 						</div>
 					</div>
 				</div>
 			</div>
 		</section>
 
-		<!-- 03 // ABOUT & ACADEMIC BACKGROUND -->
-		<section class="monograph-section" id="about" aria-labelledby="about-title">
-			<div class="shell">
-				<!-- Section Index Header -->
-				<div class="section-index-header border-b border-white/[0.06] pb-4 mb-8">
-					<div>
-						<p class="mono-label text-xs text-[#71717A] mb-1">03 // ABOUT &amp; ACADEMIC BACKGROUND</p>
-						<h2 id="about-title" class="text-2xl sm:text-3xl font-semibold text-[#F4F4F6]">
-							Academic Background &amp; Engineering Focus
-						</h2>
-					</div>
-					<p class="text-xs sm:text-sm text-[#A1A1AA] max-w-md font-mono">
-						Undergraduate studies, practical laboratory work, and foundational engineering philosophy.
-					</p>
+		<!-- SECTION 5: MISSION UPLINK (CONTACT) -->
+		<section class="monograph-section py-20 sm:py-32 relative" id="contact" aria-labelledby="contact-title">
+			<div class="shell max-w-7xl mx-auto px-4 sm:px-6">
+				<div class="max-w-4xl mb-12 sm:mb-16">
+					<p class="kicker-cyan mb-3">Mission Uplink</p>
+					<h2 id="contact-title" class="font-display font-semibold text-3xl sm:text-5xl lg:text-[46px] tracking-[-0.03em] leading-[1.08] text-white">
+						Initiate Direct Transmission
+					</h2>
 				</div>
 
 				<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start" data-reveal>
-					<!-- Left 7 Columns: Narrative Context -->
-					<div class="lg:col-span-7 space-y-4">
-						<p class="mb-4 text-sm sm:text-base leading-relaxed text-[#D4D4D8]">
-							I am a second-year undergraduate student pursuing a B.Tech in Electronics and
-							Telecommunication Engineering at Indira Gandhi Institute of Technology (IGIT), Sarang, Odisha.
-						</p>
-						<p class="mb-4 text-sm sm:text-base leading-relaxed text-[#D4D4D8]">
-							My academic coursework covers analog circuit analysis, operational amplifier feedback
-							networks, signals and systems, and digital electronics fundamentals. I focus
-							on building a first-principles understanding of circuit behavior and physical signal conditioning
-							rather than simply memorizing formulas.
-						</p>
-						<p class="text-sm sm:text-base leading-relaxed text-[#D4D4D8]">
-							Alongside my coursework, I work with microcontrollers like the ESP32, interfacing
-							sensors with digital logic and maintaining structured engineering documentation.
-							My goal is to design reliable, verifiable physical-digital systems combining circuit fundamentals,
-							embedded controllers, and software tooling.
-						</p>
-					</div>
-
-					<!-- Right 5 Columns: Academic & Technical Interests Panel -->
-					<div class="lg:col-span-5 atelier-panel border border-white/[0.08] p-5 sm:p-6 rounded-sm card-elevated interactive-surface">
-						<div class="flex items-center justify-between border-b border-white/[0.06] pb-2.5 mb-4">
-							<p class="mono-kicker text-xs text-[#E2C974]">ACADEMIC &amp; TECHNICAL INTERESTS</p>
-							<span class="mono-label text-[10px] text-[#71717A]">CURRICULUM</span>
-						</div>
-						<div class="flex flex-wrap gap-2 mb-5">
-							<span class="spec-tag text-xs py-1 px-2.5">Signals &amp; Systems</span>
-							<span class="spec-tag text-xs py-1 px-2.5">Embedded Control</span>
-							<span class="spec-tag text-xs py-1 px-2.5">Sensor Interfacing</span>
-							<span class="spec-tag text-xs py-1 px-2.5">Physical Computing</span>
-							<span class="spec-tag text-xs py-1 px-2.5">Applied AI Software</span>
-						</div>
-						<div class="chassis-well p-3.5 rounded-sm font-mono text-xs text-[#A1A1AA] space-y-2 border border-white/[0.04]">
-							<div class="flex items-center justify-between">
-								<span class="text-[#71717A]">INSTITUTION</span>
-								<span class="text-[#F4F4F6]">IGIT Sarang, Odisha</span>
-							</div>
-							<div class="flex items-center justify-between border-t border-white/[0.04] pt-2">
-								<span class="text-[#71717A]">CURRENT YEAR</span>
-								<span class="text-[#F4F4F6]">Year 2 // ETC</span>
-							</div>
-							<div class="flex items-start justify-between border-t border-white/[0.04] pt-2 gap-2">
-								<span class="text-[#71717A] shrink-0">CORE FOCUS</span>
-								<span class="text-[#F4F4F6] text-right max-w-[65%]">Analog Circuits, Op-Amps, Signals &amp; Systems</span>
-							</div>
-							<div class="flex items-start justify-between border-t border-white/[0.04] pt-2 gap-2">
-								<span class="text-[#71717A] shrink-0">LAB TOOLING</span>
-								<span class="text-[#38BDF8] text-right max-w-[65%]">ESP32, MCU Peripherals, Git</span>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- 04 // CONTACT & COLLABORATION -->
-		<section class="monograph-section" id="contact" aria-labelledby="contact-title">
-			<div class="shell">
-				<!-- Section Index Header -->
-				<div class="section-index-header border-b border-white/[0.06] pb-4 mb-8">
-					<div>
-						<p class="mono-label text-xs text-[#71717A] mb-1">04 // CONTACT &amp; COLLABORATION</p>
-						<h2 id="contact-title" class="text-2xl sm:text-3xl font-semibold text-[#F4F4F6]">
-							Technical Communication &amp; Inquiries
-						</h2>
-					</div>
-					<p class="text-xs sm:text-sm text-[#A1A1AA] max-w-md font-mono">
-						Direct communication for engineering questions, project collaboration, or feedback.
-					</p>
-				</div>
-
-				<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start" data-reveal>
-					<!-- Left 4 Columns: Communication Context -->
-					<div class="lg:col-span-4 space-y-4">
-						<h3 class="text-lg font-semibold text-[#F4F4F6]">
-							Get in Touch
+					<!-- Left 4 Columns: Communication Telemetry Specs -->
+					<div class="lg:col-span-4 space-y-6">
+						<h3 class="font-display font-semibold text-xl text-white tracking-tight">
+							Ground Station &amp; Contact Telemetry
 						</h3>
-						<p class="text-sm text-[#A1A1AA] leading-relaxed">
-							Have an engineering question, technical feedback, or an embedded hardware/software project to discuss? Transmit a message directly via this form.
+						<p class="text-sm text-slate-300 leading-relaxed font-light">
+							Have an engineering question, technical feedback, or an embedded hardware/software project to discuss? Transmit a packet directly to my inbox.
 						</p>
-						<div class="chassis-well p-4 rounded-sm font-mono text-xs text-[#A1A1AA] space-y-2.5 border border-white/[0.04]">
+						<div class="space-y-3 font-mono text-xs bg-[#070c14]/90 p-5 border border-white/[0.08] rounded-sm">
 							<div class="flex items-center justify-between">
-								<span class="text-[#71717A]">RESPONSE TIME</span>
-								<span class="text-[#10B981]">Within 24–48 Hours</span>
+								<span class="text-slate-500">OPERATOR</span>
+								<span class="text-white font-semibold">Jagan (B.Tech ECE, Sri Sri University)</span>
 							</div>
 							<div class="flex items-center justify-between border-t border-white/[0.04] pt-2">
-								<span class="text-[#71717A]">DELIVERY</span>
-								<span class="text-[#38BDF8]">Direct to Developer Inbox</span>
+								<span class="text-slate-500">RESPONSE WINDOW</span>
+								<span class="text-[#10B981] font-semibold">Within 24–48 Hours</span>
 							</div>
 							<div class="flex items-center justify-between border-t border-white/[0.04] pt-2">
-								<span class="text-[#71717A]">SECURITY</span>
-								<span class="text-[#E2C974]">Encrypted / Rate-Limited</span>
+								<span class="text-slate-500">PROTOCOL</span>
+								<span class="text-[#00A3FF]">Direct TLS Telemetry</span>
+							</div>
+							<div class="flex items-center justify-between border-t border-white/[0.04] pt-2">
+								<span class="text-slate-500">SECURITY</span>
+								<span class="text-[#FF5C00]">Rate-Limited Anti-Spam</span>
 							</div>
 						</div>
 					</div>
 
 					<!-- Right 8 Columns: Contact Form (Directly wired to /api/contact) -->
-					<div class="lg:col-span-8 atelier-panel border border-white/[0.08] p-5 sm:p-8 rounded-sm card-elevated">
-						<form id="contact-form" method="post" action="/api/contact" class="space-y-4">
-							<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div class="lg:col-span-8 enduro-card p-6 sm:p-10">
+						<form id="contact-form" method="post" action="/api/contact" class="space-y-5">
+							<div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
 								<div>
-									<label for="contact-name" class="mono-label text-[11px] block mb-1 text-[#A1A1AA]">
-										NAME <span class="text-[#EF4444]">*</span>
+									<label for="contact-name" class="font-mono text-xs block mb-2 text-slate-300">
+										OPERATOR NAME <span class="text-[#FF5C00]">*</span>
 									</label>
-									<input id="contact-name" name="name" type="text" autocomplete="name" minlength="2" maxlength="100" required class="form-input w-full p-2.5 rounded-sm font-mono text-xs" placeholder="Your name" />
+									<input id="contact-name" name="name" type="text" autocomplete="name" minlength="2" maxlength="100" required class="form-input w-full p-3 font-mono text-xs" placeholder="Identify operator or name" />
 								</div>
 								<div>
-									<label for="contact-email" class="mono-label text-[11px] block mb-1 text-[#A1A1AA]">
-										EMAIL <span class="text-[#EF4444]">*</span>
+									<label for="contact-email" class="font-mono text-xs block mb-2 text-slate-300">
+										TRANSMISSION EMAIL <span class="text-[#FF5C00]">*</span>
 									</label>
-									<input id="contact-email" name="email" type="email" autocomplete="email" maxlength="254" required class="form-input w-full p-2.5 rounded-sm font-mono text-xs" placeholder="your.email@domain.com" />
+									<input id="contact-email" name="email" type="email" autocomplete="email" maxlength="254" required class="form-input w-full p-3 font-mono text-xs" placeholder="operator@domain.com" />
 								</div>
 							</div>
 
 							<div>
-								<label for="contact-subject" class="mono-label text-[11px] block mb-1 text-[#A1A1AA]">
-									SUBJECT <span class="text-[#EF4444]">*</span>
+								<label for="contact-subject" class="font-mono text-xs block mb-2 text-slate-300">
+									MISSION SUBJECT <span class="text-[#FF5C00]">*</span>
 								</label>
-								<input id="contact-subject" name="subject" type="text" maxlength="150" required class="form-input w-full p-2.5 rounded-sm font-mono text-xs" placeholder="Inquiry or project title" />
+								<input id="contact-subject" name="subject" type="text" maxlength="150" required class="form-input w-full p-3 font-mono text-xs" placeholder="Inquiry, payload design, or feedback topic" />
 							</div>
 
 							<div>
-								<label for="contact-message" class="mono-label text-[11px] block mb-1 text-[#A1A1AA]">
-									MESSAGE <span class="text-[#EF4444]">*</span>
+								<label for="contact-message" class="font-mono text-xs block mb-2 text-slate-300">
+									PAYLOAD PACKET / MESSAGE <span class="text-[#FF5C00]">*</span>
 								</label>
-								<textarea id="contact-message" name="message" minlength="10" maxlength="5000" rows="5" required class="form-textarea w-full p-2.5 rounded-sm font-mono text-xs" placeholder="Detail your question or project context…"></textarea>
+								<textarea id="contact-message" name="message" minlength="10" maxlength="5000" rows="5" required class="form-textarea w-full p-3 font-mono text-xs" placeholder="Specify technical parameters, system requirements, or inquiries…"></textarea>
 							</div>
 
 							<!-- Honeypot anti-spam field -->
@@ -630,11 +345,12 @@ const activeProjectNames = allPublishedProjects.length > 0
 								<input id="contact-website" name="website" type="text" tabindex="-1" autocomplete="off" />
 							</div>
 
-							<div class="pt-2 flex flex-wrap items-center justify-between gap-3">
-								<button type="submit" class="button button-primary">
-									<span>Send Message</span> <span class="arrow-right" aria-hidden="true">→</span>
+							<div class="pt-3 flex flex-wrap items-center justify-between gap-4">
+								<button type="submit" class="enduro-btn">
+									<span>TRANSMIT PACKET</span>
+									<span class="badge-icon" aria-hidden="true">↗</span>
 								</button>
-								<p id="contact-status" class="mono-data text-xs" role="status" aria-live="polite"></p>
+								<p id="contact-status" class="font-mono text-xs" role="status" aria-live="polite"></p>
 							</div>
 						</form>
 					</div>
@@ -643,19 +359,19 @@ const activeProjectNames = allPublishedProjects.length > 0
 		</section>
 	</main>
 
-	<!-- Architectural Atelier Footer -->
-	<footer class="site-footer bg-[#080A0F] border-t border-white/[0.06] py-8 mt-16">
-		<div class="shell flex flex-wrap items-center justify-between gap-4 font-mono text-xs text-[#71717A]">
+	<!-- EnduroSat Aerospace Footer -->
+	<footer class="site-footer bg-[#020408] border-t border-white/[0.08] py-10 relative z-10">
+		<div class="shell max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-4 font-mono text-xs text-slate-500">
 			<div>
-				<span>© {new Date().getFullYear()} JAGAN</span>
-				<span class="mx-2 text-[#262C38]">|</span>
-				<span>ELECTRONICS &amp; TELECOMMUNICATION ENGINEERING</span>
+				<span class="text-white font-semibold">© {new Date().getFullYear()} JAGAN</span>
+				<span class="mx-3 text-white/20">|</span>
+				<span>ELECTRONICS &amp; COMMUNICATION ENGINEERING</span>
 			</div>
-			<div class="flex items-center gap-4">
-				<a href="https://github.com/jagannath-badi" target="_blank" rel="noopener noreferrer" class="hover:text-[#38BDF8] transition-colors">
+			<div class="flex items-center gap-6">
+				<a href="https://github.com/jagannath-badi" target="_blank" rel="noopener noreferrer" class="hover:text-[#00A3FF] transition-colors">
 					GITHUB // @JAGANNATH-BADI ↗
 				</a>
-				<a href="/admin" class="hover:text-[#E2C974] transition-colors">
+				<a href="/admin" class="hover:text-white transition-colors">
 					ADMIN [OP]
 				</a>
 			</div>
@@ -700,10 +416,10 @@ const activeProjectNames = allPublishedProjects.length > 0
 			.sort((a, b) => Number(a.dataset.heroItem) - Number(b.dataset.heroItem));
 
 		if (heroItems.length && !prefersReducedMotion) {
-			const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.55 } });
+			const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.6 } });
 			heroItems.forEach((el, i) => {
-				const delay = [0, 0.07, 0.14, 0.20][i] ?? i * 0.07;
-				tl.from(el, { opacity: 0, y: 12, clearProps: 'all' }, delay);
+				const delay = [0, 0.08, 0.16][i] ?? i * 0.08;
+				tl.from(el, { opacity: 0, y: 16, clearProps: 'all' }, delay);
 			});
 		} else if (heroItems.length) {
 			heroItems.forEach((el) => { el.style.opacity = '1'; el.style.transform = 'none'; });
@@ -724,10 +440,10 @@ const activeProjectNames = allPublishedProjects.length > 0
 		}
 	} catch (_) {}
 
-	// Homepage Section Scroll-Spy & Active Navigation
+	// Section Scroll-Spy & Active Navigation
 	try {
 		const navLinks = document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]');
-		const sectionIds = ['projects', 'capabilities', 'about', 'contact'];
+		const sectionIds = ['challenge', 'projects', 'specs', 'contact'];
 		const sections = sectionIds.map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
 
 		if (navLinks.length && sections.length) {
@@ -738,7 +454,7 @@ const activeProjectNames = allPublishedProjects.length > 0
 				navLinks.forEach((a) => {
 					const href = a.getAttribute('href')?.replace('#', '');
 					const isActive = href === id;
-					a.dataset.active = isActive ? 'true' : 'false';
+					a.style.color = isActive ? '#00A3FF' : '';
 					if (isActive) {
 						a.setAttribute('aria-current', 'page');
 					} else {
@@ -760,34 +476,55 @@ const activeProjectNames = allPublishedProjects.length > 0
 						if (entry.isIntersecting) setActive((entry.target as HTMLElement).id);
 					});
 				},
-				{ rootMargin: '-30% 0px -60% 0px', threshold: 0 }
+				{ rootMargin: '-25% 0px -55% 0px', threshold: 0 }
 			);
 			sections.forEach((s) => spyObserver.observe(s));
 		}
 	} catch (_) {}
 
-	// Interactive Surface Pointer Spotlight
+	// Pipeline Stepper Interaction & 3D Satellite Pivot
 	try {
-		if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-			const surfaces = document.querySelectorAll<HTMLElement>('.interactive-surface');
-			if (surfaces.length) {
-				let rafId = 0;
-				const handler = (e: MouseEvent) => {
-					cancelAnimationFrame(rafId);
-					rafId = requestAnimationFrame(() => {
-						surfaces.forEach((el) => {
-							const rect = el.getBoundingClientRect();
-							el.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-							el.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-						});
-					});
-				};
-				document.addEventListener('pointermove', handler, { passive: true });
+		const stepBtns = document.querySelectorAll<HTMLButtonElement>('.progress-step');
+		const stepTitle = document.getElementById('step-title');
+		const stepDesc = document.getElementById('step-desc');
+
+		const stepData = [
+			{
+				title: '01 // ARCHITECTURE & DESIGN',
+				desc: 'Mixed-signal schematic capture, power distribution budgeting, and sensor interfacing.'
+			},
+			{
+				title: '02 // ASSEMBLY, INTEGRATION & TEST (AIT)',
+				desc: 'Breadboard bringup, signal integrity measurement, and sensor calibration across operating conditions.'
+			},
+			{
+				title: '03 // EMBEDDED FIRMWARE & DRIVERS',
+				desc: 'Low-jitter FreeRTOS scheduling, DMA peripheral handling, and deterministic state machine control.'
+			},
+			{
+				title: '04 // FLIGHT OPS & TELEMETRY',
+				desc: 'Hardware-in-the-loop validation, automated data logging, and Python analytics pipelines.'
 			}
-		}
+		];
+
+		stepBtns.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const stepIdx = parseInt(btn.dataset.step || '0', 10);
+				stepBtns.forEach((b) => b.classList.toggle('active', b === btn));
+
+				if (stepTitle && stepDesc && stepData[stepIdx]) {
+					stepTitle.textContent = stepData[stepIdx].title;
+					stepDesc.textContent = stepData[stepIdx].desc;
+				}
+
+				if (typeof (window as any).setSatelliteStep === 'function') {
+					(window as any).setSatelliteStep(stepIdx);
+				}
+			});
+		});
 	} catch (_) {}
 
-	// Mobile nav toggle with synchronized aria-expanded
+	// Mobile nav toggle
 	const menuToggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
 	const navList = document.querySelector<HTMLUListElement>('#primary-navigation');
 
@@ -835,8 +572,8 @@ const activeProjectNames = allPublishedProjects.length > 0
 
 		contactSubmit.disabled = true;
 		contactForm.setAttribute('aria-busy', 'true');
-		contactStatus.className = 'mono-data text-xs text-[#A1A1AA]';
-		contactStatus.textContent = 'Transmitting message…';
+		contactStatus.className = 'font-mono text-xs text-[#00A3FF]';
+		contactStatus.textContent = 'Transmitting packet…';
 
 		try {
 			const response = await fetch(contactForm.action, {
@@ -847,19 +584,19 @@ const activeProjectNames = allPublishedProjects.length > 0
 			const result = (await response.json().catch(() => null)) as { code?: string; message?: string } | null;
 
 			if (response.ok && result?.code === 'notification_failed') {
-				contactStatus.className = 'mono-data text-xs status-error-text';
-				contactStatus.textContent = 'Message saved, but notification delivery was delayed. Please try again later if unacknowledged.';
+				contactStatus.className = 'font-mono text-xs text-[#FF5C00]';
+				contactStatus.textContent = 'Packet logged, but notification delivery was delayed. Please try again later if unacknowledged.';
 			} else if (response.ok && result?.code === 'sent') {
-				contactStatus.className = 'mono-data text-xs status-success-text';
-				contactStatus.textContent = 'Message sent successfully. Thank you.';
+				contactStatus.className = 'font-mono text-xs text-[#10B981]';
+				contactStatus.textContent = 'Transmission acknowledged. Packet delivered successfully.';
 				contactForm.reset();
 			} else {
-				contactStatus.className = 'mono-data text-xs status-error-text';
-				contactStatus.textContent = 'Unable to transmit message right now. Please try again.';
+				contactStatus.className = 'font-mono text-xs text-[#EF4444]';
+				contactStatus.textContent = 'Transmission error. Unable to establish downlink right now.';
 			}
 		} catch {
-			contactStatus.className = 'mono-data text-xs status-error-text';
-			contactStatus.textContent = 'Network error. Please try again.';
+			contactStatus.className = 'font-mono text-xs text-[#EF4444]';
+			contactStatus.textContent = 'Network link failure. Please retry.';
 		} finally {
 			contactSubmit.disabled = false;
 			contactForm.removeAttribute('aria-busy');
@@ -898,16 +635,16 @@ const activeProjectNames = allPublishedProjects.length > 0
 			position: absolute;
 			top: calc(100% + 0.5rem);
 			right: 1rem;
-			background: var(--bg-surface, #0D1017);
-			border: 1px solid var(--border-subtle, #1E2330);
-			padding: 0.875rem 1.25rem;
+			background: #070c14;
+			border: 1px solid rgba(255, 255, 255, 0.12);
+			padding: 1rem 1.5rem;
 			flex-direction: column;
 			align-items: flex-start;
-			gap: 0.875rem;
-			border-radius: var(--radius-sm, 2px);
-			box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
+			gap: 1rem;
+			border-radius: 4px;
+			box-shadow: 0 12px 32px rgba(0, 0, 0, 0.85);
 			z-index: 50;
-			min-width: 150px;
+			min-width: 180px;
 		}
 		.nav-list.open {
 			display: flex;
