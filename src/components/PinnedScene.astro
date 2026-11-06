@@ -75,7 +75,7 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
         <button
           type="button"
           class:list={[
-            'mobile-chapter-tab px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all min-h-[36px] whitespace-nowrap',
+            'mobile-chapter-tab px-3.5 py-2 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all min-h-[44px] whitespace-nowrap inline-flex items-center justify-center',
             i === 0 ? 'bg-[#00C2EE] text-black font-bold active' : 'text-slate-400 hover:text-white',
           ]}
           data-tab-index={i}
@@ -86,7 +86,7 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
     </div>
 
     <!-- Chapter Content & 3D Stage -->
-    <div class="mx-auto flex flex-col-reverse lg:grid lg:grid-cols-2 h-full max-w-7xl content-center items-center gap-6 sm:gap-8 px-4 sm:px-6 md:px-12 lg:gap-16 lg:pb-16 lg:pt-16">
+    <div class="mx-auto flex flex-col lg:grid lg:grid-cols-2 h-full max-w-7xl content-center items-center gap-6 sm:gap-8 px-4 sm:px-6 md:px-12 lg:gap-16 lg:pb-16 lg:pt-16">
       <!-- Left Column / Bottom on Mobile: Chapter Copies (Always 100% crisp without blur) -->
       <div class="grid min-w-0 w-full relative">
         {chapters.map((chapter, i) => {
@@ -439,6 +439,34 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
         });
       });
 
+      // Touch swipe gestures for mobile
+      let touchStartX = 0;
+      let touchStartY = 0;
+      section.addEventListener('touchstart', (e) => {
+        if (!isMobile()) return;
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+      }, { passive: true });
+
+      section.addEventListener('touchend', (e) => {
+        if (!isMobile()) return;
+        const diffX = e.changedTouches[0].screenX - touchStartX;
+        const diffY = e.changedTouches[0].screenY - touchStartY;
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 45) {
+          if (diffX < 0 && activeIndex < last) {
+            const nextIndex = activeIndex + 1;
+            activeIndex = nextIndex;
+            target = current = nextIndex / last;
+            paint(target);
+          } else if (diffX > 0 && activeIndex > 0) {
+            const prevIndex = activeIndex - 1;
+            activeIndex = prevIndex;
+            target = current = prevIndex / last;
+            paint(target);
+          }
+        }
+      }, { passive: true });
+
       // Desktop dot click handler for smooth glide
       dots.forEach((dot) => {
         dot.addEventListener('click', () => {
@@ -460,5 +488,10 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
     });
   }
 
-  document.addEventListener('astro:page-load', initPinnedScenes);
+  if (document.readyState === 'loading') {
+    document.addEventListener('astro:page-load', initPinnedScenes);
+    document.addEventListener('DOMContentLoaded', initPinnedScenes);
+  } else {
+    initPinnedScenes();
+  }
 </script>

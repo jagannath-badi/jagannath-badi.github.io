@@ -265,16 +265,16 @@ const SUBSYSTEM_CHAPTERS: SceneChapter[] = [
 
         <!-- Filter tabs (Horizontally swipeable on mobile) -->
         <div class="flex items-center gap-2 p-1.5 rounded-xl bg-[#0B0D14] border border-white/10 overflow-x-auto max-w-full pb-2 sm:pb-1.5" id="project-filters">
-          <button type="button" data-filter="all" class="proj-filter-btn active px-3.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider bg-[#00C2EE] text-black font-semibold transition-all whitespace-nowrap shrink-0">
+          <button type="button" data-filter="all" class="proj-filter-btn active px-3.5 py-2 rounded-lg font-mono text-xs uppercase tracking-wider bg-[#00C2EE] text-black font-semibold transition-all whitespace-nowrap shrink-0 min-h-[44px] inline-flex items-center justify-center">
             All Systems
           </button>
-          <button type="button" data-filter="rf" class="proj-filter-btn px-3.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider text-slate-400 hover:text-white transition-all whitespace-nowrap shrink-0">
+          <button type="button" data-filter="rf" class="proj-filter-btn px-3.5 py-2 rounded-lg font-mono text-xs uppercase tracking-wider text-slate-400 hover:text-white transition-all whitespace-nowrap shrink-0 min-h-[44px] inline-flex items-center justify-center">
             RF / Wireless
           </button>
-          <button type="button" data-filter="embedded" class="proj-filter-btn px-3.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider text-slate-400 hover:text-white transition-all whitespace-nowrap shrink-0">
+          <button type="button" data-filter="embedded" class="proj-filter-btn px-3.5 py-2 rounded-lg font-mono text-xs uppercase tracking-wider text-slate-400 hover:text-white transition-all whitespace-nowrap shrink-0 min-h-[44px] inline-flex items-center justify-center">
             Embedded
           </button>
-          <button type="button" data-filter="dsp" class="proj-filter-btn px-3.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider text-slate-400 hover:text-white transition-all whitespace-nowrap shrink-0">
+          <button type="button" data-filter="dsp" class="proj-filter-btn px-3.5 py-2 rounded-lg font-mono text-xs uppercase tracking-wider text-slate-400 hover:text-white transition-all whitespace-nowrap shrink-0 min-h-[44px] inline-flex items-center justify-center">
             DSP &amp; Signal
           </button>
         </div>
@@ -362,7 +362,7 @@ const SUBSYSTEM_CHAPTERS: SceneChapter[] = [
               type="text"
               required
               placeholder="e.g. Lead Systems Engineer"
-              class="w-full bg-[#040508] border border-white/15 rounded-xl px-4 py-3 text-white text-sm focus:border-[#00C2EE] focus-visible:ring-2 focus-visible:ring-[#00C2EE]/40 focus:outline-none transition-all placeholder:text-slate-600"
+              class="w-full bg-[#040508] border border-white/15 rounded-xl px-4 py-3 text-white text-base sm:text-sm focus:border-[#00C2EE] focus-visible:ring-2 focus-visible:ring-[#00C2EE]/40 focus:outline-none transition-all placeholder:text-slate-600"
             />
           </div>
 
@@ -376,7 +376,7 @@ const SUBSYSTEM_CHAPTERS: SceneChapter[] = [
               type="email"
               required
               placeholder="operator@station.io"
-              class="w-full bg-[#040508] border border-white/15 rounded-xl px-4 py-3 text-white text-sm focus:border-[#00C2EE] focus-visible:ring-2 focus-visible:ring-[#00C2EE]/40 focus:outline-none transition-all placeholder:text-slate-600"
+              class="w-full bg-[#040508] border border-white/15 rounded-xl px-4 py-3 text-white text-base sm:text-sm focus:border-[#00C2EE] focus-visible:ring-2 focus-visible:ring-[#00C2EE]/40 focus:outline-none transition-all placeholder:text-slate-600"
             />
           </div>
         </div>
@@ -391,7 +391,7 @@ const SUBSYSTEM_CHAPTERS: SceneChapter[] = [
             type="text"
             required
             placeholder="RF Bring-up / Firmware Collaboration"
-            class="w-full bg-[#040508] border border-white/15 rounded-xl px-4 py-3 text-white text-sm focus:border-[#A47BFF] focus-visible:ring-2 focus-visible:ring-[#A47BFF]/40 focus:outline-none transition-all placeholder:text-slate-600"
+            class="w-full bg-[#040508] border border-white/15 rounded-xl px-4 py-3 text-white text-base sm:text-sm focus:border-[#A47BFF] focus-visible:ring-2 focus-visible:ring-[#A47BFF]/40 focus:outline-none transition-all placeholder:text-slate-600"
           />
         </div>
 
@@ -405,7 +405,7 @@ const SUBSYSTEM_CHAPTERS: SceneChapter[] = [
             rows="4"
             required
             placeholder="Describe your hardware project, frequency band, or engineering inquiry..."
-            class="w-full bg-[#040508] border border-white/15 rounded-xl px-4 py-3 text-white text-sm focus:border-[#FF2D95] focus-visible:ring-2 focus-visible:ring-[#FF2D95]/40 focus:outline-none transition-all placeholder:text-slate-600 resize-none"
+            class="w-full bg-[#040508] border border-white/15 rounded-xl px-4 py-3 text-white text-base sm:text-sm focus:border-[#FF2D95] focus-visible:ring-2 focus-visible:ring-[#FF2D95]/40 focus:outline-none transition-all placeholder:text-slate-600 resize-none"
           ></textarea>
         </div>
 
@@ -427,17 +427,17 @@ const SUBSYSTEM_CHAPTERS: SceneChapter[] = [
   </main>
 
   <footer class="border-t border-white/10 bg-[#040508] py-10 px-6 mt-16">
-    <div class="shell flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-slate-500">
-      <div>
+    <div class="shell flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-slate-500 text-center sm:text-left flex-wrap">
+      <div class="max-w-full break-words">
         <span>© {new Date().getFullYear()} JAGAN // ECE</span>
         <span class="mx-2 text-white/20">|</span>
         <span class="text-slate-400">ELECTRONICS &amp; TELECOMMUNICATION ENGINEERING</span>
       </div>
       <div class="flex items-center gap-6">
-        <a href="https://github.com/jagannath-badi" target="_blank" rel="noopener noreferrer" class="hover:text-[#00C2EE] transition-colors">
+        <a href="https://github.com/jagannath-badi" target="_blank" rel="noopener noreferrer" class="hover:text-[#00C2EE] transition-colors py-2 min-h-[44px] inline-flex items-center">
           GITHUB // @JAGANNATH-BADI ↗
         </a>
-        <a href="/admin" class="hover:text-[#A47BFF] transition-colors">
+        <a href="/admin" class="hover:text-[#A47BFF] transition-colors py-2 min-h-[44px] inline-flex items-center">
           ADMIN [OP]
         </a>
       </div>
