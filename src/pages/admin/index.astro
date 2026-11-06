@@ -44,16 +44,26 @@ const operatorEmail = authorization.user.email ?? 'Verified Operator';
 ---
 
 <Layout title="Control Panel — Admin — Jagan">
-	<main class="dashboard-shell" id="main-content">
+	<!-- Ambient Background Orbs (Electric Cyan, Amethyst Violet, Neon Rose) -->
+	<div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+		<div class="absolute -left-40 top-10 w-[550px] h-[550px] rounded-full blur-[140px] opacity-25 bg-[#00C2EE]"></div>
+		<div class="absolute -right-40 top-1/3 w-[600px] h-[600px] rounded-full blur-[160px] opacity-20 bg-[#8B3DFF]"></div>
+		<div class="absolute left-1/4 bottom-10 w-[500px] h-[500px] rounded-full blur-[150px] opacity-15 bg-[#FF2D95]"></div>
+		<div class="absolute inset-0 opacity-[0.05]" style="background-image: linear-gradient(rgb(255 255 255 / 0.4) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / 0.4) 1px, transparent 1px); background-size: 56px 56px;"></div>
+	</div>
+
+	<main class="dashboard-shell relative" id="main-content">
 		<!-- Header & Operator Telemetry Bar -->
 		<header class="dashboard-header border-b border-white/[0.08] pb-6 mb-8 flex flex-wrap items-end justify-between gap-4">
 			<div class="header-identity">
-				<div class="identity-badge flex items-center gap-2 font-mono text-xs text-[#E2C974] mb-2">
-					<span class="inline-block w-2 h-2 rounded-full bg-[#10B981] animate-pulse" aria-hidden="true"></span>
-					<span class="bg-[#E2C974]/10 border border-[#E2C974]/30 px-2 py-0.5 rounded-xs">SYS_ADMIN // MISSION CONTROL</span>
+				<div class="identity-badge flex items-center gap-2 font-mono text-xs text-[#00C2EE] mb-2">
+					<span class="inline-block w-2 h-2 rounded-full bg-[#00FF9C] animate-pulse" aria-hidden="true"></span>
+					<span class="bg-[#00C2EE]/10 border border-[#00C2EE]/30 px-2 py-0.5 rounded-xs font-semibold">SYS_ADMIN // MISSION CONTROL</span>
 				</div>
-				<h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-[#F4F4F6] mb-1">Operational Workspace</h1>
-				<p class="operator-meta text-xs font-mono text-[#A1A1AA]">Active operator node: <code class="text-[#38BDF8] bg-[#38BDF8]/10 px-1.5 py-0.5 rounded-xs border border-[#38BDF8]/20">{operatorEmail}</code></p>
+				<h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-1">
+					Operational <span class="font-serif italic font-normal text-[#A47BFF]">Workspace.</span>
+				</h1>
+				<p class="operator-meta text-xs font-mono text-slate-400">Active operator node: <code class="text-[#00C2EE] bg-[#00C2EE]/10 px-1.5 py-0.5 rounded-xs border border-[#00C2EE]/25">{operatorEmail}</code></p>
 			</div>
 
 			<div class="header-actions flex flex-wrap items-center gap-3">
@@ -86,88 +96,87 @@ const operatorEmail = authorization.user.email ?? 'Verified Operator';
 
 		<!-- Primary Telemetry Metric Grid -->
 		<section class="telemetry-grid grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8" aria-label="Workspace metrics">
-			<article class="metric-card admin-panel p-5 rounded-sm flex flex-col justify-between">
-				<div class="flex items-center justify-between font-mono text-[11px] text-[#A1A1AA] mb-2">
-					<span>SYS.REGISTRY // TOTAL</span>
-					<span class="text-[#38BDF8]">01</span>
+			<article class="metric-card admin-panel p-5 rounded-xl flex flex-col justify-between hover:border-[#00C2EE]/50 hover:shadow-[0_0_30px_rgba(0,194,238,0.2)] transition-all group">
+				<div class="flex items-center justify-between font-mono text-[11px] text-slate-400 mb-2">
+					<span class="group-hover:text-[#00C2EE] transition-colors font-semibold">SYS.REGISTRY // TOTAL</span>
+					<span class="text-[#00C2EE] font-bold">01</span>
 				</div>
-				<div class="text-3xl font-mono font-bold text-[#F4F4F6] my-1">{totalProjects}</div>
-				<div class="text-xs font-mono text-[#71717A] mt-2 border-t border-white/[0.04] pt-2 flex justify-between">
-					<span>LIVE: <strong class="text-[#10B981]">{publishedProjects}</strong></span>
-					<span>DRAFTS: <strong class="text-[#F59E0B]">{draftProjects}</strong></span>
-				</div>
-			</article>
-
-			<article class="metric-card admin-panel p-5 rounded-sm flex flex-col justify-between">
-				<div class="flex items-center justify-between font-mono text-[11px] text-[#A1A1AA] mb-2">
-					<span>COMM.DISPATCH // INBOX</span>
-					<span class="text-[#E2C974]">02</span>
-				</div>
-				<div class="text-3xl font-mono font-bold text-[#F4F4F6] my-1">{totalMessages}</div>
-				<div class="text-xs font-mono text-[#71717A] mt-2 border-t border-white/[0.04] pt-2 flex justify-between">
-					<span>UNREAD: <strong class="text-[#38BDF8]">{unreadMessages}</strong></span>
-					<span>PROCESSED: <strong class="text-[#A1A1AA]">{totalMessages - unreadMessages}</strong></span>
+				<div class="text-3xl font-mono font-bold text-white my-1">{totalProjects}</div>
+				<div class="text-xs font-mono text-slate-400 mt-2 border-t border-white/[0.06] pt-2 flex justify-between">
+					<span>LIVE: <strong class="text-[#00FF9C]">{publishedProjects}</strong></span>
+					<span>DRAFTS: <strong class="text-[#A47BFF]">{draftProjects}</strong></span>
 				</div>
 			</article>
 
-			<article class="metric-card admin-panel p-5 rounded-sm flex flex-col justify-between">
-				<div class="flex items-center justify-between font-mono text-[11px] text-[#A1A1AA] mb-2">
-					<span>PRESENTATION // FEATURED</span>
-					<span class="text-[#10B981]">03</span>
+			<article class="metric-card admin-panel p-5 rounded-xl flex flex-col justify-between hover:border-[#A47BFF]/50 hover:shadow-[0_0_30px_rgba(164,123,255,0.2)] transition-all group">
+				<div class="flex items-center justify-between font-mono text-[11px] text-slate-400 mb-2">
+					<span class="group-hover:text-[#A47BFF] transition-colors font-semibold">COMM.DISPATCH // INBOX</span>
+					<span class="text-[#A47BFF] font-bold">02</span>
 				</div>
-				<div class="text-3xl font-mono font-bold text-[#F4F4F6] my-1">{featuredProjects}</div>
-				<div class="text-xs font-mono text-[#71717A] mt-2 border-t border-white/[0.04] pt-2">
+				<div class="text-3xl font-mono font-bold text-white my-1">{totalMessages}</div>
+				<div class="text-xs font-mono text-slate-400 mt-2 border-t border-white/[0.06] pt-2 flex justify-between">
+					<span>UNREAD: <strong class="text-[#00C2EE]">{unreadMessages}</strong></span>
+					<span>PROCESSED: <strong class="text-slate-400">{totalMessages - unreadMessages}</strong></span>
+				</div>
+			</article>
+
+			<article class="metric-card admin-panel p-5 rounded-xl flex flex-col justify-between hover:border-[#FF2D95]/50 hover:shadow-[0_0_30px_rgba(255,45,149,0.2)] transition-all group">
+				<div class="flex items-center justify-between font-mono text-[11px] text-slate-400 mb-2">
+					<span class="group-hover:text-[#FF2D95] transition-colors font-semibold">PRESENTATION // FEATURED</span>
+					<span class="text-[#FF2D95] font-bold">03</span>
+				</div>
+				<div class="text-3xl font-mono font-bold text-white my-1">{featuredProjects}</div>
+				<div class="text-xs font-mono text-slate-400 mt-2 border-t border-white/[0.06] pt-2">
 					<span>SPLIT LAYOUT HIGHLIGHTS</span>
 				</div>
 			</article>
 		</section>
 
 		<!-- Workflow Pipeline Visualizer -->
-		<section class="pipeline-section admin-panel p-6 rounded-sm mb-8" aria-label="Editorial workflow">
-			<div class="pipeline-header flex items-center justify-between mb-4 border-b border-white/[0.04] pb-2">
-				<span class="section-tag font-mono text-xs font-semibold text-[#E2C974]">PIPELINE // PUBLICATION MONITOR</span>
-				<span class="section-desc font-mono text-[11px] text-[#71717A]">Strict 2-stage database state tracking</span>
+		<section class="pipeline-section admin-panel p-6 rounded-2xl mb-8" aria-label="Editorial workflow">
+			<div class="pipeline-header flex items-center justify-between mb-4 border-b border-white/[0.06] pb-2">
+				<span class="section-tag font-mono text-xs font-semibold text-[#00C2EE]">PIPELINE // PUBLICATION MONITOR</span>
+				<span class="section-desc font-mono text-[11px] text-slate-400">Strict 2-stage database state tracking</span>
 			</div>
 			<div class="pipeline-flow grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
-				<div class="pipeline-stage admin-well p-4 rounded-sm border border-white/[0.06] flex flex-col justify-between">
+				<div class="pipeline-stage admin-well p-4 rounded-xl border border-white/[0.08] flex flex-col justify-between hover:border-[#A47BFF]/40 transition-colors">
 					<div>
 						<div class="flex items-center justify-between gap-2 mb-2">
-							<span class="stage-badge font-mono text-xs text-[#F59E0B] font-semibold tracking-wider">STAGE 01 // DRAFT SPECIFICATION</span>
-							<span class="font-mono text-xs text-[#F59E0B] bg-[#F59E0B]/10 px-2 py-0.5 rounded-xs whitespace-nowrap shrink-0">{draftProjects} RECORD{draftProjects === 1 ? '' : 'S'}</span>
+							<span class="stage-badge font-mono text-xs text-[#A47BFF] font-semibold tracking-wider">STAGE 01 // DRAFT SPECIFICATION</span>
+							<span class="font-mono text-xs text-[#A47BFF] bg-[#A47BFF]/10 px-2 py-0.5 rounded-full border border-[#A47BFF]/25 whitespace-nowrap shrink-0">{draftProjects} RECORD{draftProjects === 1 ? '' : 'S'}</span>
 						</div>
-						<p class="stage-caption text-xs text-[#A1A1AA] leading-relaxed">Authored in private workspace. Accessible only to authenticated administrators via preview token.</p>
+						<p class="stage-caption text-xs text-slate-400 leading-relaxed">Authored in private workspace. Accessible only to authenticated administrators via preview token.</p>
 					</div>
 				</div>
-				<div class="pipeline-stage admin-well p-4 rounded-sm border border-white/[0.06] flex flex-col justify-between">
+				<div class="pipeline-stage admin-well p-4 rounded-xl border border-white/[0.08] flex flex-col justify-between hover:border-[#00FF9C]/40 transition-colors">
 					<div>
 						<div class="flex items-center justify-between gap-2 mb-2">
-							<span class="stage-badge font-mono text-xs text-[#10B981] font-semibold tracking-wider">STAGE 02 // PUBLISHED LIVE</span>
-							<span class="font-mono text-xs text-[#10B981] bg-[#10B981]/10 px-2 py-0.5 rounded-xs whitespace-nowrap shrink-0">{publishedProjects} RECORD{publishedProjects === 1 ? '' : 'S'}</span>
+							<span class="stage-badge font-mono text-xs text-[#00FF9C] font-semibold tracking-wider">STAGE 02 // PUBLISHED LIVE</span>
+							<span class="font-mono text-xs text-[#00FF9C] bg-[#00FF9C]/10 px-2 py-0.5 rounded-full border border-[#00FF9C]/25 whitespace-nowrap shrink-0">{publishedProjects} RECORD{publishedProjects === 1 ? '' : 'S'}</span>
 						</div>
-						<p class="stage-caption text-xs text-[#A1A1AA] leading-relaxed">Verified and live on the public homepage feed with active monograph routing.</p>
+						<p class="stage-caption text-xs text-slate-400 leading-relaxed">Verified and live on the public homepage feed with active monograph routing.</p>
 					</div>
 				</div>
 			</div>
 		</section>
 
 		<!-- Two-Column Operations Grid -->
-		<!-- Two-Column Operations Grid -->
 		<div class="operations-grid grid grid-cols-1 lg:grid-cols-2 gap-6">
 			<!-- Recent Projects Column -->
-			<section class="operations-panel admin-panel p-6 rounded-sm border border-white/[0.08]" aria-labelledby="recent-projects-title">
+			<section class="operations-panel admin-panel p-6 rounded-2xl" aria-labelledby="recent-projects-title">
 				<div class="panel-header flex items-center justify-between border-b border-white/[0.08] pb-3 mb-4">
 					<div>
-						<h2 id="recent-projects-title" class="text-lg font-semibold text-[#F4F4F6] mb-0.5">Recent System Records</h2>
-						<p class="panel-sub text-xs font-mono text-[#71717A]">Latest systems authored in the workspace</p>
+						<h2 id="recent-projects-title" class="text-lg font-bold text-white mb-0.5">Recent System Records</h2>
+						<p class="panel-sub text-xs font-mono text-slate-400">Latest systems authored in the workspace</p>
 					</div>
-					<a class="button button-secondary text-xs py-1 px-2.5" href="/admin/projects">All Records ({totalProjects}) →</a>
+					<a class="button button-secondary text-xs py-1 px-2.5 rounded-lg" href="/admin/projects">All Records ({totalProjects}) →</a>
 				</div>
 
 				{recentProjects.length > 0 ? (
-					<div class="table-wrap">
+					<div class="table-wrap overflow-x-auto">
 						<table class="dense-table w-full text-left text-xs">
 							<thead>
-								<tr class="border-b border-white/[0.06] text-[#71717A] font-mono text-[10px]">
+								<tr class="border-b border-white/[0.06] text-slate-400 font-mono text-[10px]">
 									<th class="py-2">Order</th>
 									<th class="py-2">System Title</th>
 									<th class="py-2">Type</th>
@@ -177,20 +186,20 @@ const operatorEmail = authorization.user.email ?? 'Verified Operator';
 							</thead>
 							<tbody>
 								{recentProjects.map((project) => (
-									<tr class="border-b border-white/[0.03] hover:bg-white/[0.02]">
-										<td class="mono-cell py-2.5 text-[#71717A] font-mono">#{project.sort_order}</td>
+									<tr class="border-b border-white/[0.03] hover:bg-white/[0.03] transition-colors">
+										<td class="mono-cell py-2.5 text-slate-400 font-mono">#{project.sort_order}</td>
 										<td class="py-2.5">
-											<span class="table-title font-semibold text-[#F4F4F6] block">{project.title}</span>
-											<span class="table-slug font-mono text-[10px] text-[#71717A] block">/{project.slug}</span>
+											<span class="table-title font-semibold text-white block">{project.title}</span>
+											<span class="table-slug font-mono text-[10px] text-slate-400 block">/{project.slug}</span>
 										</td>
-										<td class="mono-cell uppercase py-2.5 text-[10px] font-mono text-[#E2C974]">{project.project_type}</td>
+										<td class="mono-cell uppercase py-2.5 text-[10px] font-mono text-[#00C2EE] font-semibold">{project.project_type}</td>
 										<td class="py-2.5">
-											<span class:list={['badge font-mono text-[10px] uppercase px-1.5 py-0.5 rounded-xs', project.is_published ? 'text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/30' : 'text-[#F59E0B] bg-[#F59E0B]/10 border border-[#F59E0B]/30']}>
+											<span class:list={['badge font-mono text-[10px] uppercase px-2 py-0.5 rounded-full', project.is_published ? 'text-[#00FF9C] bg-[#00FF9C]/10 border border-[#00FF9C]/30' : 'text-[#A47BFF] bg-[#A47BFF]/10 border border-[#A47BFF]/30']}>
 												{project.is_published ? '● Live' : '○ Draft'}
 											</span>
 										</td>
 										<td class="py-2.5 text-right">
-											<a class="table-link text-[#38BDF8] hover:underline font-mono text-xs" href={`/admin/projects/${project.id}`}>Edit →</a>
+											<a class="table-link text-[#00C2EE] hover:underline font-mono text-xs font-semibold" href={`/admin/projects/${project.id}`}>Edit →</a>
 										</td>
 									</tr>
 								))}
@@ -198,41 +207,41 @@ const operatorEmail = authorization.user.email ?? 'Verified Operator';
 						</table>
 					</div>
 				) : (
-					<div class="empty-notice admin-well p-8 rounded-sm text-center border border-dashed border-white/[0.08]">
-						<div class="font-mono text-xs text-[#E2C974] mb-1">REGISTRY // CLEAN STATE</div>
-						<p class="text-sm text-[#A1A1AA] mb-4">No system records currently exist in the database.</p>
+					<div class="empty-notice admin-well p-8 rounded-xl text-center border border-dashed border-white/[0.08]">
+						<div class="font-mono text-xs text-[#00C2EE] mb-1 font-semibold">REGISTRY // CLEAN STATE</div>
+						<p class="text-sm text-slate-400 mb-4">No system records currently exist in the database.</p>
 						<a class="button button-secondary text-xs" href="/admin/projects/new">+ Create First System Record</a>
 					</div>
 				)}
 			</section>
 
 			<!-- Recent Inquiries Column -->
-			<section class="operations-panel admin-panel p-6 rounded-sm border border-white/[0.08]" aria-labelledby="recent-messages-title">
+			<section class="operations-panel admin-panel p-6 rounded-2xl" aria-labelledby="recent-messages-title">
 				<div class="panel-header flex items-center justify-between border-b border-white/[0.08] pb-3 mb-4">
 					<div>
-						<h2 id="recent-messages-title" class="text-lg font-semibold text-[#F4F4F6] mb-0.5">Inbound Inquiries</h2>
-						<p class="panel-sub text-xs font-mono text-[#71717A]">Transmissions submitted via contact form</p>
+						<h2 id="recent-messages-title" class="text-lg font-bold text-white mb-0.5">Inbound Inquiries</h2>
+						<p class="panel-sub text-xs font-mono text-slate-400">Transmissions submitted via contact form</p>
 					</div>
-					<a class="button button-secondary text-xs py-1 px-2.5" href="/admin/messages">Inbox ({unreadMessages} unread) →</a>
+					<a class="button button-secondary text-xs py-1 px-2.5 rounded-lg" href="/admin/messages">Inbox ({unreadMessages} unread) →</a>
 				</div>
 
 				{recentMessages.length > 0 ? (
 					<div class="messages-stack space-y-3">
 						{recentMessages.map((msg) => (
-							<article class:list={['msg-preview-card admin-well p-3.5 rounded-sm border border-white/[0.06] transition-colors', !msg.is_read ? 'is-unread border-[#38BDF8]/40 bg-[#38BDF8]/[0.02]' : '']}>
+							<article class:list={['msg-preview-card admin-well p-3.5 rounded-xl border border-white/[0.06] transition-all hover:border-white/20', !msg.is_read ? 'is-unread border-[#00C2EE]/40 bg-[#00C2EE]/[0.03]' : '']}>
 								<div class="msg-preview-top flex items-center justify-between gap-2 mb-2">
 									<div class="msg-sender-block flex items-center gap-2">
-										<span class:list={['unread-dot w-2 h-2 rounded-full', !msg.is_read ? 'bg-[#38BDF8] animate-pulse' : 'bg-[#71717A]']} aria-hidden="true"></span>
-										<span class="msg-sender-name font-semibold text-xs text-[#F4F4F6]">{msg.name}</span>
-										<span class="msg-sender-email font-mono text-[11px] text-[#A1A1AA]">({msg.email})</span>
+										<span class:list={['unread-dot w-2 h-2 rounded-full', !msg.is_read ? 'bg-[#00C2EE] animate-pulse' : 'bg-slate-600']} aria-hidden="true"></span>
+										<span class="msg-sender-name font-semibold text-xs text-white">{msg.name}</span>
+										<span class="msg-sender-email font-mono text-[11px] text-slate-400">({msg.email})</span>
 									</div>
-									<time class="msg-date font-mono text-[10px] text-[#71717A]" datetime={msg.created_at}>
+									<time class="msg-date font-mono text-[10px] text-slate-400" datetime={msg.created_at}>
 										{new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(msg.created_at))}
 									</time>
 								</div>
 								<div class="msg-subject-row flex items-center justify-between gap-3">
-									<span class="msg-subject text-xs text-[#D4D4D8] truncate">{msg.subject}</span>
-									<span class:list={['badge font-mono text-[10px] uppercase px-1.5 py-0.5 rounded-xs', !msg.is_read ? 'text-[#38BDF8] bg-[#38BDF8]/10 border border-[#38BDF8]/30 font-semibold' : 'text-[#71717A] bg-white/[0.03] border border-white/[0.06]']}>
+									<span class="msg-subject text-xs text-slate-300 truncate">{msg.subject}</span>
+									<span class:list={['badge font-mono text-[10px] uppercase px-2 py-0.5 rounded-full', !msg.is_read ? 'text-[#00C2EE] bg-[#00C2EE]/10 border border-[#00C2EE]/30 font-semibold' : 'text-slate-400 bg-white/[0.03] border border-white/[0.06]']}>
 										{!msg.is_read ? '● UNREAD' : '○ READ'}
 									</span>
 								</div>
@@ -240,10 +249,10 @@ const operatorEmail = authorization.user.email ?? 'Verified Operator';
 						))}
 					</div>
 				) : (
-					<div class="empty-notice admin-well p-8 rounded-sm text-center border border-dashed border-white/[0.08]">
-						<div class="font-mono text-xs text-[#10B981] mb-1">INBOX // ZERO UNREAD</div>
-						<p class="text-sm text-[#A1A1AA] mb-2">No contact messages in the inbox.</p>
-						<span class="mono-meta text-[11px] font-mono text-[#71717A]">INBOX STATUS: CLEAN</span>
+					<div class="empty-notice admin-well p-8 rounded-xl text-center border border-dashed border-white/[0.08]">
+						<div class="font-mono text-xs text-[#00FF9C] mb-1 font-semibold">INBOX // ZERO UNREAD</div>
+						<p class="text-sm text-slate-400 mb-2">No contact messages in the inbox.</p>
+						<span class="mono-meta text-[11px] font-mono text-slate-400">INBOX STATUS: CLEAN</span>
 					</div>
 				)}
 			</section>

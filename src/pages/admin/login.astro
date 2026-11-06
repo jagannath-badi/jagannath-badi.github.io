@@ -2,10 +2,13 @@
 // src/pages/admin/login.astro — Armored Security Gateway Terminal
 import Layout from '../../layouts/Layout.astro';
 
+const errorParam = Astro.url.searchParams.get('error');
 const errorMessage =
-	Astro.url.searchParams.get('error') === 'invalid'
+	errorParam === 'invalid'
 		? 'Authentication failed. Please verify credentials and try again.'
-		: null;
+		: errorParam === 'unauthorized_role'
+			? 'Credentials verified, but your account is not registered in the admin_users table.'
+			: null;
 ---
 
 <Layout title="Workspace Access — Admin — Jagan">

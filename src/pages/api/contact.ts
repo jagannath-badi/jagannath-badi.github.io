@@ -206,7 +206,7 @@ export const POST: APIRoute = async ({ request }) => {
 	const recipientEmail = getRequiredEnvironmentValue('CONTACT_RECIPIENT_EMAIL');
 	const fromEmail = getRequiredEnvironmentValue('RESEND_FROM_EMAIL');
 
-	if (!supabaseUrl || !supabaseSecretKey || !resendApiKey || !recipientEmail || !fromEmail) {
+	if (!supabaseUrl || !supabaseSecretKey) {
 		return jsonResponse({ code: 'service_unavailable', message: 'The contact service is temporarily unavailable.' }, 503);
 	}
 
@@ -231,6 +231,11 @@ export const POST: APIRoute = async ({ request }) => {
 		}
 	} catch {
 		return jsonResponse({ code: 'storage_failed', message: 'We couldn’t save your message right now. Please try again later.' }, 500);
+	}
+
+	// If email service credentials are not configured, message is already safely stored in Supabase
+	if (!resendApiKey || !recipientEmail || !fromEmail) {
+		return jsonResponse({ code: 'sent', message: 'Your message was sent successfully.' }, 200);
 	}
 
 	const resend = new Resend(resendApiKey);

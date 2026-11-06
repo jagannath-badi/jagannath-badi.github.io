@@ -40,9 +40,9 @@ function toAstroCookieOptions(options: CookieOptions) {
 		path: options.path,
 		expires: options.expires,
 		maxAge: options.maxAge,
-		httpOnly: options.httpOnly,
-		sameSite: options.sameSite,
-		secure: options.secure,
+		httpOnly: options.httpOnly ?? true,
+		sameSite: options.sameSite ?? 'lax',
+		secure: options.secure ?? import.meta.env.PROD,
 		encode: options.encode,
 		partitioned: options.partitioned
 	};
@@ -62,7 +62,6 @@ export function createSupabaseServerClient({ request, cookies }: Pick<APIContext
 			}
 		},
 		auth: {
-			autoRefreshToken: false,
 			persistSession: false,
 			detectSessionInUrl: false
 		}

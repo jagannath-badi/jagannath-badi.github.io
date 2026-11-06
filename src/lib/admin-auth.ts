@@ -18,14 +18,16 @@ export async function hasAdminMembership(supabase: SupabaseClient, userId: strin
 }
 
 export function isSameOrigin(request: Request): boolean {
-	const origin = request.headers.get('origin');
+	const originHeader = request.headers.get('origin') || request.headers.get('referer');
 
-	if (!origin) {
+	if (!originHeader) {
 		return false;
 	}
 
 	try {
-		return new URL(origin).origin === new URL(request.url).origin;
+		const requestHost = request.headers.get('x-forwarded-host') || request.headers.get('host') || new URL(request.url).host;
+		const originHost = new URL(originHeader).host;
+		return requestHost === originHost;
 	} catch {
 		return false;
 	}
