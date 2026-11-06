@@ -1,0 +1,389 @@
+---
+// src/components/PinnedScene.astro — Cinematic Scroll-Driven Hardware Stage
+export interface SceneChapter {
+  id: string;
+  anchor?: string;
+  index: string;
+  kicker: string;
+  lines: [string, string];
+  blooms: [string, string];
+  body: string;
+  primary?: { label: string; href: string };
+  secondary?: { label: string; href: string };
+  stats?: { label: string; value: string }[];
+  stage: { src: string; alt: string; tag: string; status: string };
+  rgb: [number, number, number];
+}
+
+interface Props {
+  id: string;
+  label: string;
+  chapters: SceneChapter[];
+  primary?: boolean;
+  priority?: boolean;
+  stageOnMobile?: boolean;
+}
+
+const {
+  id,
+  label,
+  chapters,
+  primary = false,
+  priority = false,
+  stageOnMobile = true,
+} = Astro.props;
+
+const last = chapters.length - 1;
+const heightStyle = `height: ${100 + chapters.length * 110}dvh;`;
+const initialAmb = chapters[0]?.rgb.join(' ') ?? '0 184 212';
+const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
+---
+
+<section
+  id={id}
+  aria-label={label}
+  class="pinned-scene relative"
+  style={`${heightStyle} --p: 0; --t: 0; --amb: ${initialAmb}; --amb2: ${initialAmb2};`}
+  data-chapters={JSON.stringify(chapters.map((c) => ({ id: c.id, rgb: c.rgb, tag: c.stage.tag, status: c.stage.status })))}
+>
+  <div class="sticky top-0 isolate h-dvh overflow-hidden bg-[#05060A]">
+    <!-- Ambient Dynamic Glows (Violet, Cyan, Rose) -->
+    <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+      <div
+        class="ambient-backdrop absolute inset-0 transition-opacity duration-700"
+        style="background: radial-gradient(90% 80% at 15% 25%, rgb(var(--amb) / 0.4), transparent 62%), radial-gradient(80% 70% at 90% 90%, rgb(var(--amb2) / 0.35), transparent 60%);"
+      ></div>
+      <div
+        class="ambient-orb-1 absolute -left-36 top-10 w-[540px] h-[540px] rounded-full blur-[140px] opacity-70"
+        style="background: rgb(var(--amb) / 0.38);"
+      ></div>
+      <div
+        class="ambient-orb-2 absolute -right-36 bottom-0 w-[600px] h-[600px] rounded-full blur-[150px] opacity-65"
+        style="background: rgb(var(--amb2) / 0.32);"
+      ></div>
+      <!-- Subtle PCB Vector Matrix Grid -->
+      <div
+        class="absolute inset-0 opacity-[0.09]"
+        style="background-image: linear-gradient(rgb(255 255 255 / 0.4) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / 0.4) 1px, transparent 1px); background-size: 56px 56px; mask-image: radial-gradient(70% 70% at 50% 50%, black, transparent 80%); -webkit-mask-image: radial-gradient(70% 70% at 50% 50%, black, transparent 80%); transform: translate3d(0, calc(var(--p) * -100px), 0);"
+      ></div>
+      <div class="absolute inset-0 bg-gradient-to-b from-[#05060A]/50 via-transparent to-[#05060A]/70"></div>
+    </div>
+
+    <!-- Chapter Content & 3D Stage -->
+    <div class="mx-auto grid h-full max-w-7xl grid-rows-[auto_auto] content-center items-center gap-4 sm:gap-6 px-4 sm:px-6 pb-20 sm:pb-24 pt-16 sm:pt-20 md:px-12 lg:grid-cols-2 lg:grid-rows-1 lg:gap-16 lg:pb-16 lg:pt-16">
+      <!-- Left Column: Chapter Copies (Always 100% crisp without blur) -->
+      <div class="grid min-w-0 relative">
+        {chapters.map((chapter, i) => {
+          const isFirst = i === 0;
+          return (
+            <div
+              class="chapter-copy col-start-1 row-start-1 min-w-0 will-change-[opacity,transform] transition-[visibility] duration-150"
+              data-index={i}
+              style={`opacity: ${isFirst ? '1' : '0'}; transform: translate3d(0, ${isFirst ? '0' : '44px'}, 0); pointer-events: ${isFirst ? 'auto' : 'none'}; visibility: ${isFirst ? 'visible' : 'hidden'};`}
+            >
+              <p class="mb-2 sm:mb-4 flex items-center gap-2.5 sm:gap-3 text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.35em] sm:tracking-[0.45em] text-white/70 lg:mb-6">
+                <span class="tabular-nums font-bold text-white">{chapter.index}</span>
+                <span aria-hidden="true" class="h-px w-6 sm:w-8 bg-white/40"></span>
+                <span>{chapter.kicker}</span>
+              </p>
+
+              {primary && i === 0 ? (
+                <h1 class="text-[clamp(2.1rem,7.5vw,4.5rem)] font-bold uppercase leading-[0.94] tracking-tight mb-2 sm:mb-4 select-none">
+                  {chapter.lines.map((line, n) => (
+                    <span
+                      class="bloom block"
+                      style={`--bloom: ${chapter.blooms[n]}; text-shadow: 0 0 25px ${chapter.blooms[n]}88, 0 0 60px ${chapter.blooms[n]}44;`}
+                    >
+                      {line}
+                    </span>
+                  ))}
+                </h1>
+              ) : (
+                <h2 class="text-[clamp(1.9rem,5.5vw,4rem)] font-bold uppercase leading-[0.94] tracking-tight mb-2 sm:mb-4 select-none">
+                  {chapter.lines.map((line, n) => (
+                    <span
+                      class="bloom block"
+                      style={`--bloom: ${chapter.blooms[n]}; text-shadow: 0 0 25px ${chapter.blooms[n]}88, 0 0 60px ${chapter.blooms[n]}44;`}
+                    >
+                      {line}
+                    </span>
+                  ))}
+                </h2>
+              )}
+
+              <p class="max-w-md font-serif italic text-base sm:text-2xl lg:text-3xl leading-snug text-slate-200/90 mb-4 sm:mb-6">
+                {chapter.body}
+              </p>
+
+              <!-- Actions with direct anchor targets -->
+              <div class="flex flex-wrap items-center gap-2.5 sm:gap-4 mt-3 sm:mt-6">
+                {chapter.primary && (
+                  <a
+                    href={chapter.primary.href}
+                    class="group inline-flex items-center gap-2.5 sm:gap-3 rounded-full border border-white/20 bg-white/5 px-5 sm:px-6 py-3 sm:py-3.5 text-[11px] sm:text-xs font-mono uppercase tracking-[0.2em] sm:tracking-[0.25em] text-white transition-all hover:bg-white/10 hover:border-white/40 min-h-[44px]"
+                    style="border-color: rgb(var(--amb) / 0.8); box-shadow: 0 0 25px rgb(var(--amb) / 0.3);"
+                  >
+                    <span>{chapter.primary.label}</span>
+                    <span class="transition-transform group-hover:translate-x-1" style="color: rgb(var(--amb));">→</span>
+                  </a>
+                )}
+                {chapter.secondary && (
+                  <a
+                    href={chapter.secondary.href}
+                    class="rounded-full px-4 sm:px-5 py-2.5 sm:py-3 text-[11px] sm:text-xs font-mono uppercase tracking-[0.2em] sm:tracking-[0.25em] text-white/60 transition-colors hover:text-white min-h-[44px] flex items-center"
+                  >
+                    {chapter.secondary.label}
+                  </a>
+                )}
+              </div>
+
+              <!-- Hardware Specs Matrix Ticker -->
+              {chapter.stats && (
+                <dl class="mt-4 sm:mt-8 grid max-w-md grid-cols-3 gap-2 sm:gap-4 border-t border-white/10 pt-3 sm:pt-5 text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.2em] sm:tracking-[0.25em] text-white/50">
+                  {chapter.stats.map((s) => (
+                    <div>
+                      <dt class="text-slate-400">{s.label}</dt>
+                      <dd class="mt-1 text-xs sm:text-base font-semibold tracking-normal text-white">{s.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <!-- Right Column: 3D Perspective Stage Frame -->
+      <div class={`stage-container relative mx-auto aspect-[4/5] w-[min(65vw,calc(32dvh_*_0.8))] lg:w-[min(100%,calc(68dvh_*_0.8),32rem)] ${stageOnMobile ? '' : 'hidden lg:block'}`}>
+        <!-- Ambient Bloom Behind Frame -->
+        <div
+          aria-hidden="true"
+          class="absolute -inset-4 rounded-[2.5rem] blur-2xl opacity-75"
+          style="background: linear-gradient(135deg, rgb(var(--amb) / 0.6), transparent 45%, rgb(var(--amb2) / 0.6));"
+        ></div>
+
+        <!-- 3D Perspective Screen -->
+        <div
+          class="stage-screen relative h-full w-full overflow-hidden rounded-[2rem] border bg-black will-change-transform shadow-2xl"
+          style="border-color: rgb(var(--amb) / 0.4); box-shadow: 0 0 60px rgb(var(--amb) / 0.3), 0 0 80px rgb(var(--amb2) / 0.25); transform: perspective(1400px) rotateY(calc((var(--p) - 0.5) * 10deg)) translate3d(0, calc(var(--p) * -16px), 0);"
+        >
+          <!-- Base Stage Image -->
+          <div class="stage-layer-base absolute inset-0 will-change-transform" style="transform: scale(calc(1 + var(--c1, 0) * 0.08));">
+            <img
+              src={chapters[0].stage.src}
+              alt={chapters[0].stage.alt}
+              loading={priority ? 'eager' : 'lazy'}
+              class="w-full h-full object-cover"
+            />
+          </div>
+
+          <!-- Entering Chapter Stage Images -->
+          {chapters.slice(1).map((chapter, n) => {
+            const k = n + 1;
+            return (
+              <div
+                class="stage-layer-entering absolute inset-0 will-change-[clip-path]"
+                data-layer={k}
+                style={`clip-path: inset(calc((1 - var(--c${k}, 0)) * 100%) 0 0 0);`}
+              >
+                <div
+                  class="absolute inset-0"
+                  style={`transform: scale(calc(1.18 - var(--c${k}, 0) * 0.18));`}
+                >
+                  <img
+                    src={chapter.stage.src}
+                    alt={chapter.stage.alt}
+                    loading="lazy"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            );
+          })}
+
+          <!-- Status Telemetry Overlay Tag -->
+          <div class="absolute bottom-4 left-4 right-4 flex items-center justify-between z-20 pointer-events-none">
+            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/75 border border-white/20 font-mono text-[10px] uppercase tracking-widest text-white backdrop-blur-md">
+              <span class="w-2 h-2 rounded-full bg-[#00FF9C] animate-pulse"></span>
+              <span class="stage-active-tag font-semibold text-slate-100">{chapters[0].stage.tag}</span>
+            </span>
+            <span class="stage-active-status px-2.5 py-1 rounded bg-[#00A6E8]/20 border border-[#00A6E8]/40 font-mono text-[9px] uppercase tracking-widest text-[#00A6E8] backdrop-blur-md font-bold">
+              {chapters[0].stage.status}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chapter Rail Navigation at Bottom -->
+    <nav class="absolute bottom-3 sm:bottom-6 inset-x-0 flex justify-center items-center gap-1.5 sm:gap-3 z-30 pointer-events-auto">
+      {chapters.map((c, i) => (
+        <button
+          type="button"
+          class="chapter-rail-dot flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-black/60 backdrop-blur-md text-[10px] font-mono uppercase text-white/50 hover:text-white hover:border-white/30 transition-all min-h-[36px]"
+          data-target-index={i}
+          aria-label={`Jump to chapter ${c.index}: ${c.kicker}`}
+        >
+          <span class="dot-indicator w-2 h-2 rounded-full bg-white/20 transition-all"></span>
+          <span class="hidden sm:inline tracking-wider">{c.index} // {c.kicker.split('·')[0].trim()}</span>
+        </button>
+      ))}
+    </nav>
+  </div>
+
+  <!-- Internal Anchor Spans for Direct Link Jumping -->
+  {chapters.map((chapter, i) =>
+    chapter.anchor ? (
+      <span
+        id={chapter.anchor}
+        aria-hidden="true"
+        class="pointer-events-none absolute left-0 w-px h-px"
+        style={`top: calc((100% - 100dvh) * ${i / last});`}
+      />
+    ) : null,
+  )}
+</section>
+
+<script>
+  function initPinnedScenes() {
+    const clamp = (v: number, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, v));
+    function smoothstep(edge0: number, edge1: number, x: number) {
+      const t = clamp((x - edge0) / (edge1 - edge0));
+      return t * t * (3 - 2 * t);
+    }
+    function mixRgb(weights: number[], pick: (i: number) => [number, number, number]) {
+      const out = [0, 0, 0];
+      weights.forEach((w, i) => {
+        const c = pick(i);
+        out[0] += c[0] * w;
+        out[1] += c[1] * w;
+        out[2] += c[2] * w;
+      });
+      return out.map(Math.round).join(' ');
+    }
+
+    const scenes = document.querySelectorAll<HTMLElement>('.pinned-scene');
+    scenes.forEach((section) => {
+      const dataAttr = section.getAttribute('data-chapters');
+      if (!dataAttr) return;
+      const chapterData: Array<{ id: string; rgb: [number, number, number]; tag?: string; status?: string }> = JSON.parse(dataAttr);
+      const totalChapters = chapterData.length;
+      const last = totalChapters - 1;
+      if (last <= 0) return;
+
+      const copies = section.querySelectorAll<HTMLElement>('.chapter-copy');
+      const dots = section.querySelectorAll<HTMLElement>('.chapter-rail-dot');
+      const tagEl = section.querySelector<HTMLElement>('.stage-active-tag');
+      const statusEl = section.querySelector<HTMLElement>('.stage-active-status');
+
+      let target = 0;
+      let current = 0;
+      let frame = 0;
+      let activeIndex = 0;
+
+      const readTarget = () => {
+        const travel = section.offsetHeight - window.innerHeight;
+        if (travel <= 0) return 0;
+        return clamp(-section.getBoundingClientRect().top / travel);
+      };
+
+      const paint = (p: number) => {
+        const t = p * last;
+        const w = chapterData.map((_, i) => 1 - smoothstep(0.25, 0.75, Math.abs(t - i)));
+        const sum = w.reduce((a, b) => a + b, 0) || 1;
+        const wn = w.map((v) => v / sum);
+
+        const style = section.style;
+        style.setProperty('--p', p.toFixed(4));
+        style.setProperty('--t', t.toFixed(4));
+
+        // Direct crisp opacity & vertical slide (Zero blur smearing)
+        copies.forEach((copy, i) => {
+          const weight = wn[i] || 0;
+          copy.style.opacity = weight.toFixed(4);
+          copy.style.transform = `translate3d(0, ${((i - t) * 44).toFixed(2)}px, 0)`;
+          copy.style.pointerEvents = weight > 0.4 ? 'auto' : 'none';
+          copy.style.visibility = weight > 0.02 ? 'visible' : 'hidden';
+        });
+
+        for (let k = 1; k <= last; k++) {
+          const c = smoothstep(k - 0.75, k - 0.25, t);
+          style.setProperty(`--c${k}`, c.toFixed(4));
+        }
+
+        style.setProperty('--amb', mixRgb(wn, (i) => chapterData[i].rgb));
+        style.setProperty('--amb2', mixRgb(wn, (i) => chapterData[(i + 1) % totalChapters].rgb));
+
+        const next = Math.round(clamp(t, 0, last));
+        if (next !== activeIndex) {
+          activeIndex = next;
+
+          // Dynamic hardware chip tag updates
+          if (tagEl && chapterData[next]?.tag) {
+            tagEl.textContent = chapterData[next].tag || '';
+          }
+          if (statusEl && chapterData[next]?.status) {
+            statusEl.textContent = chapterData[next].status || '';
+          }
+
+          // Rail navigator active indicator
+          dots.forEach((dot, idx) => {
+            const indicator = dot.querySelector('.dot-indicator');
+            if (indicator) {
+              if (idx === next) {
+                indicator.classList.remove('bg-white/20');
+                indicator.classList.add('bg-[#00FF9C]', 'shadow-[0_0_8px_#00FF9C]');
+                dot.classList.add('text-white', 'border-white/40');
+              } else {
+                indicator.classList.add('bg-white/20');
+                indicator.classList.remove('bg-[#00FF9C]', 'shadow-[0_0_8px_#00FF9C]');
+                dot.classList.remove('text-white', 'border-white/40');
+              }
+            }
+          });
+        }
+      };
+
+      const tick = () => {
+        current += (target - current) * 0.15;
+        if (Math.abs(target - current) < 0.0004) current = target;
+        paint(current);
+        frame = current === target ? 0 : requestAnimationFrame(tick);
+      };
+
+      const schedule = () => {
+        const next = readTarget();
+        if (next === target && !frame) return;
+        target = next;
+        if (!frame) frame = requestAnimationFrame(tick);
+      };
+
+      target = current = readTarget();
+      paint(current);
+
+      window.addEventListener('scroll', schedule, { passive: true });
+      window.addEventListener('resize', schedule);
+
+      // Dot click handler for instant smooth navigation
+      dots.forEach((dot) => {
+        dot.addEventListener('click', () => {
+          const targetIndex = Number(dot.getAttribute('data-target-index') || 0);
+          const travel = section.offsetHeight - window.innerHeight;
+          const top = section.getBoundingClientRect().top + window.scrollY;
+          const targetY = top + travel * (targetIndex / last);
+          const globalLenis = (window as any).__lenis;
+          if (globalLenis) {
+            globalLenis.scrollTo(targetY, { duration: 1.2 });
+          } else {
+            window.scrollTo({
+              top: targetY,
+              behavior: 'smooth',
+            });
+          }
+        });
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', initPinnedScenes);
+</script>

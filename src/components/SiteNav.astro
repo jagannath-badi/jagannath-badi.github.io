@@ -1,0 +1,45 @@
+---
+// src/components/SiteNav.astro — Fixed Glassmorphic Navigation Pill
+const links = [
+  { href: '#hero', label: 'INDEX' },
+  { href: '#subsystems', label: 'SUBSYSTEMS' },
+  { href: '#telemetry-workbench', label: 'DSP LAB' },
+  { href: '#projects', label: 'PROJECTS' },
+  { href: '#uplink', label: 'UPLINK' },
+];
+---
+
+<header class="fixed inset-x-0 top-5 z-50 flex justify-center px-4 pointer-events-none">
+  <nav
+    aria-label="Primary"
+    class="pointer-events-auto flex w-full max-w-4xl items-center justify-between gap-4 rounded-full border border-white/10 bg-[#07090E]/80 px-6 py-3 backdrop-blur-md shadow-[0_10px_40px_rgba(0,0,0,0.8)]"
+  >
+    <a href="#hero" class="flex shrink-0 items-center gap-3 whitespace-nowrap text-xs font-mono tracking-[0.2em] text-white hover:text-[#00C2EE] transition-colors min-h-[44px]">
+      <span class="led inline-block w-2 h-2 rounded-full bg-[#00FF9C]" aria-hidden="true"></span>
+      <span class="font-bold tracking-wider">JAGAN // ECE</span>
+      <span class="sr-only">System status: online</span>
+    </a>
+
+    <ul class="flex items-center gap-3 sm:gap-6 text-[10px] sm:text-xs font-mono uppercase tracking-[0.15em] text-slate-400">
+      {links.map((l) => (
+        <li>
+          <a
+            href={l.href}
+            class="transition-colors hover:text-[#00C2EE] py-2 px-1 inline-flex items-center min-h-[44px]"
+          >
+            {l.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <a
+      href="/admin"
+      class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 font-mono text-[10px] text-[#A47BFF] hover:border-[#8B3DFF] hover:text-white transition-all min-h-[36px]"
+      title="Access Admin CMS"
+    >
+      <span class="w-1.5 h-1.5 rounded-full bg-[#8B3DFF]"></span>
+      <span>[OP]</span>
+    </a>
+  </nav>
+</header>

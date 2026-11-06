@@ -39,9 +39,9 @@ const serializedDoc = JSON.stringify(initialDoc);
 	<input type="hidden" name="description" id="hidden-description-input" value={serializedDoc} />
 
 	<!-- SECTION 01: Core System Identity -->
-	<fieldset class="form-section admin-panel p-6 rounded-sm mb-8 border border-white/[0.08]">
+	<fieldset class="form-section admin-panel p-6 rounded-2xl mb-8 border border-white/[0.08]">
 		<legend class="section-legend">
-			<span class="section-num text-[#38BDF8]">01 //</span>
+			<span class="section-num text-[#00C2EE]">01 //</span>
 			<span class="section-title font-mono text-xs text-[#F4F4F6] font-semibold tracking-wider">HARDWARE & SYSTEM IDENTITY</span>
 		</legend>
 
@@ -86,9 +86,9 @@ const serializedDoc = JSON.stringify(initialDoc);
 	</fieldset>
 
 	<!-- SECTION 02: High-Level Engineering Specifications & Metadata -->
-	<fieldset class="form-section admin-panel p-6 rounded-sm mb-8 border border-white/[0.08]">
+	<fieldset class="form-section admin-panel p-6 rounded-2xl mb-8 border border-white/[0.08]">
 		<legend class="section-legend">
-			<span class="section-num text-[#38BDF8]">02 //</span>
+			<span class="section-num text-[#A47BFF]">02 //</span>
 			<span class="section-title font-mono text-xs text-[#F4F4F6] font-semibold tracking-wider">TOP TELEMETRY & VISUAL PRESENTATION</span>
 		</legend>
 
@@ -183,9 +183,9 @@ const serializedDoc = JSON.stringify(initialDoc);
 	</fieldset>
 
 	<!-- SECTION 03: Executive Summary -->
-	<fieldset class="form-section admin-panel p-6 rounded-sm mb-8 border border-white/[0.08]">
+	<fieldset class="form-section admin-panel p-6 rounded-2xl mb-8 border border-white/[0.08]">
 		<legend class="section-legend">
-			<span class="section-num text-[#38BDF8]">03 //</span>
+			<span class="section-num text-[#00C2EE]">03 //</span>
 			<span class="section-title font-mono text-xs text-[#F4F4F6] font-semibold tracking-wider">EXECUTIVE SUMMARY</span>
 		</legend>
 
@@ -206,9 +206,9 @@ const serializedDoc = JSON.stringify(initialDoc);
 	</fieldset>
 
 	<!-- SECTION 04: Dynamic Case-Study Sections Builder -->
-	<fieldset class="form-section admin-panel p-6 rounded-sm mb-8 border border-white/[0.08]">
+	<fieldset class="form-section admin-panel p-6 rounded-2xl mb-8 border border-white/[0.08]">
 		<legend class="section-legend">
-			<span class="section-num text-[#38BDF8]">04 //</span>
+			<span class="section-num text-[#FF2D95]">04 //</span>
 			<span class="section-title font-mono text-xs text-[#F4F4F6] font-semibold tracking-wider">MODULAR CASE-STUDY SECTIONS</span>
 		</legend>
 
@@ -228,9 +228,9 @@ const serializedDoc = JSON.stringify(initialDoc);
 	</fieldset>
 
 	<!-- SECTION 05: Technologies & Repositories -->
-	<fieldset class="form-section admin-panel p-6 rounded-sm mb-8 border border-white/[0.08]">
+	<fieldset class="form-section admin-panel p-6 rounded-2xl mb-8 border border-white/[0.08]">
 		<legend class="section-legend">
-			<span class="section-num text-[#38BDF8]">05 //</span>
+			<span class="section-num text-[#A47BFF]">05 //</span>
 			<span class="section-title font-mono text-xs text-[#F4F4F6] font-semibold tracking-wider">TECHNOLOGIES & REPOSITORIES</span>
 		</legend>
 
@@ -276,9 +276,9 @@ const serializedDoc = JSON.stringify(initialDoc);
 	</fieldset>
 
 	<!-- SECTION 06: Sequencing & Publication Gate -->
-	<fieldset class="form-section admin-panel p-6 rounded-sm mb-8 border border-white/[0.08]">
+	<fieldset class="form-section admin-panel p-6 rounded-2xl mb-8 border border-white/[0.08]">
 		<legend class="section-legend">
-			<span class="section-num text-[#38BDF8]">06 //</span>
+			<span class="section-num text-[#00FF9C]">06 //</span>
 			<span class="section-title font-mono text-xs text-[#F4F4F6] font-semibold tracking-wider">SEQUENCING & PUBLICATION GATE</span>
 		</legend>
 
@@ -349,6 +349,7 @@ const serializedDoc = JSON.stringify(initialDoc);
 </form>
 
 <script is:inline define:vars={{ initialDoc, DEFAULT_ENGINEERING_TEMPLATE }}>
+(() => {
 	// Client-side interactive sections builder
 	let currentDoc = initialDoc || JSON.parse(JSON.stringify(DEFAULT_ENGINEERING_TEMPLATE));
 
@@ -398,7 +399,7 @@ const serializedDoc = JSON.stringify(initialDoc);
 			card.innerHTML = `
 				<div class="section-item-header flex items-center justify-between pb-3 mb-4 border-b border-white/[0.06]">
 					<div class="section-item-title flex items-center gap-2">
-						<span class="font-mono text-xs text-[#38BDF8] font-semibold">SECTION ${String(idx + 1).padStart(2, '0')} //</span>
+						<span class="font-mono text-xs text-[#00C2EE] font-semibold">SECTION ${String(idx + 1).padStart(2, '0')} //</span>
 						<span class="font-mono text-xs uppercase text-[#F4F4F6] font-semibold tracking-wider section-title-preview">${escapeHtml(sec.heading || 'UNTITLED SECTION')}</span>
 					</div>
 					<div class="section-item-controls flex items-center gap-1.5">
@@ -626,6 +627,7 @@ const serializedDoc = JSON.stringify(initialDoc);
 
 	// Initialize UI
 	renderSections();
+})();
 </script>
 
 <style>
@@ -919,8 +921,9 @@ const serializedDoc = JSON.stringify(initialDoc);
 	:global(.section-card textarea:focus),
 	:global(.section-card select:focus) {
 		outline: none;
-		border-color: #38BDF8;
-		background: #121620;
+		border-color: #00C2EE;
+		box-shadow: 0 0 15px rgba(0, 194, 238, 0.25);
+		background: #0d111a;
 	}
 
 	.section-card:hover {

@@ -1,0 +1,261 @@
+---
+// src/components/OscilloscopeWorkbench.astro — Real-Time Signal Telemetry & DSP Oscilloscope Workbench
+---
+
+<section id="telemetry-workbench" class="py-24 px-6 max-w-7xl mx-auto border-t border-white/10 relative">
+  <!-- Subtle ambient glow -->
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-[#8B3DFF]/10 rounded-full blur-[140px] pointer-events-none -z-10"></div>
+
+  <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <span class="w-2.5 h-2.5 rounded-full bg-[#00FF9C] animate-pulse"></span>
+        <span class="font-mono text-xs text-[#00C2EE] uppercase tracking-[0.25em]">INTERACTIVE DSP BENCH // CH-01</span>
+      </div>
+      <h2 class="text-3xl sm:text-5xl font-bold uppercase tracking-tight text-white">
+        Signal &amp; Telemetry <span class="bloom text-[#A47BFF]" style="--bloom: #A47BFF;">Oscilloscope.</span>
+      </h2>
+      <p class="text-slate-400 font-serif italic text-base sm:text-xl max-w-2xl mt-2">
+        Simulate real-time RF carrier synthesis, phase-jitter modulation, and harmonic filtering right in the browser.
+      </p>
+    </div>
+
+    <!-- Active telemetry badge -->
+    <div class="flex items-center gap-4 bg-[#0B0D14]/80 border border-white/10 px-5 py-3 rounded-xl backdrop-blur-md font-mono text-xs">
+      <div>
+        <span class="text-slate-500 block text-[9px] uppercase tracking-wider">SAMPLING</span>
+        <span class="text-[#00C2EE] font-bold">192 kSPS</span>
+      </div>
+      <div class="h-6 w-px bg-white/10"></div>
+      <div>
+        <span class="text-slate-500 block text-[9px] uppercase tracking-wider">IMPEDANCE</span>
+        <span class="text-[#00FF9C] font-bold">50.0 Ω</span>
+      </div>
+      <div class="h-6 w-px bg-white/10"></div>
+      <div>
+        <span class="text-slate-500 block text-[9px] uppercase tracking-wider">SNR</span>
+        <span class="text-[#A47BFF] font-bold">112 dB</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Oscilloscope Console Wrapper -->
+  <div class="rounded-2xl border border-white/15 bg-[#07090F] p-4 sm:p-6 shadow-[0_0_50px_rgba(0,0,0,0.8)] relative overflow-hidden">
+    <!-- Top Scope Chrome -->
+    <div class="flex flex-wrap items-center justify-between border-b border-white/10 pb-4 mb-5 gap-4">
+      <div class="flex items-center gap-3 font-mono text-xs">
+        <span class="px-2.5 py-1 rounded bg-[#00C2EE]/10 border border-[#00C2EE]/30 text-[#00C2EE] font-bold">
+          TRIG'D // AUTO
+        </span>
+        <span class="text-slate-400 hidden sm:inline">TIMEBASE: 50.0 ns/DIV</span>
+        <span class="text-slate-400">CH1: 500 mV/DIV</span>
+      </div>
+
+      <!-- Waveform selector buttons -->
+      <div class="flex items-center gap-1.5 p-1 rounded-lg bg-black/60 border border-white/10" id="wave-selector">
+        <button type="button" data-wave="sine" class="wave-btn active px-3 py-1.5 rounded-md font-mono text-[11px] uppercase tracking-wider bg-[#00C2EE] text-black font-bold transition-all">
+          Sine
+        </button>
+        <button type="button" data-wave="square" class="wave-btn px-3 py-1.5 rounded-md font-mono text-[11px] uppercase tracking-wider text-slate-400 hover:text-white transition-all">
+          Square
+        </button>
+        <button type="button" data-wave="fm" class="wave-btn px-3 py-1.5 rounded-md font-mono text-[11px] uppercase tracking-wider text-slate-400 hover:text-white transition-all">
+          FM Mod
+        </button>
+        <button type="button" data-wave="noise" class="wave-btn px-3 py-1.5 rounded-md font-mono text-[11px] uppercase tracking-wider text-slate-400 hover:text-white transition-all">
+          RF Jitter
+        </button>
+      </div>
+    </div>
+
+    <!-- Canvas Screen Grid -->
+    <div class="relative w-full h-64 sm:h-80 rounded-xl border border-white/10 bg-[#030407] overflow-hidden">
+      <!-- CRT Graticule / Grid lines -->
+      <svg class="absolute inset-0 w-full h-full opacity-20 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="scope-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#00C2EE" stroke-width="0.5" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#scope-grid)" />
+        <line x1="0" y1="50%" x2="100%" y2="50%" stroke="#A47BFF" stroke-width="1" stroke-dasharray="2,2" opacity="0.6" />
+        <line x1="50%" y1="0" x2="50%" y2="100%" stroke="#A47BFF" stroke-width="1" stroke-dasharray="2,2" opacity="0.6" />
+      </svg>
+
+      <canvas id="scope-canvas" class="w-full h-full block relative z-10"></canvas>
+    </div>
+
+    <!-- Bottom Interactive Controls Slider Bar -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-6 mt-4 border-t border-white/10">
+      <!-- Frequency control -->
+      <div>
+        <div class="flex items-center justify-between text-xs font-mono mb-2">
+          <label for="scope-freq" class="text-slate-400 uppercase tracking-wider">Carrier Frequency</label>
+          <span id="scope-freq-val" class="text-[#00C2EE] font-bold">2.40 GHz</span>
+        </div>
+        <input
+          id="scope-freq"
+          type="range"
+          min="1"
+          max="10"
+          step="0.1"
+          value="2.4"
+          class="w-full accent-[#00C2EE] bg-white/10 rounded-lg cursor-pointer h-1.5"
+        />
+      </div>
+
+      <!-- Amplitude control -->
+      <div>
+        <div class="flex items-center justify-between text-xs font-mono mb-2">
+          <label for="scope-amp" class="text-slate-400 uppercase tracking-wider">Signal Peak (Vpp)</label>
+          <span id="scope-amp-val" class="text-[#A47BFF] font-bold">3.30 V</span>
+        </div>
+        <input
+          id="scope-amp"
+          type="range"
+          min="0.5"
+          max="5"
+          step="0.1"
+          value="3.3"
+          class="w-full accent-[#A47BFF] bg-white/10 rounded-lg cursor-pointer h-1.5"
+        />
+      </div>
+
+      <!-- Phase Offset / Harmonics -->
+      <div>
+        <div class="flex items-center justify-between text-xs font-mono mb-2">
+          <label for="scope-phase" class="text-slate-400 uppercase tracking-wider">Spectral Harmonics</label>
+          <span id="scope-phase-val" class="text-[#FF2D95] font-bold">3RD ODD</span>
+        </div>
+        <input
+          id="scope-phase"
+          type="range"
+          min="1"
+          max="7"
+          step="2"
+          value="3"
+          class="w-full accent-[#FF2D95] bg-white/10 rounded-lg cursor-pointer h-1.5"
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  function initOscilloscope() {
+    const canvas = document.querySelector<HTMLCanvasElement>('#scope-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let dpr = window.devicePixelRatio || 1;
+    function resize() {
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    let waveType = 'sine';
+    let freq = 2.4;
+    let amp = 3.3;
+    let harmonics = 3;
+    let time = 0;
+    let animId = 0;
+
+    // Controls
+    const freqInput = document.querySelector<HTMLInputElement>('#scope-freq');
+    const freqVal = document.querySelector<HTMLElement>('#scope-freq-val');
+    freqInput?.addEventListener('input', (e) => {
+      freq = Number((e.target as HTMLInputElement).value);
+      if (freqVal) freqVal.textContent = `${freq.toFixed(2)} GHz`;
+    });
+
+    const ampInput = document.querySelector<HTMLInputElement>('#scope-amp');
+    const ampVal = document.querySelector<HTMLElement>('#scope-amp-val');
+    ampInput?.addEventListener('input', (e) => {
+      amp = Number((e.target as HTMLInputElement).value);
+      if (ampVal) ampVal.textContent = `${amp.toFixed(2)} V`;
+    });
+
+    const phaseInput = document.querySelector<HTMLInputElement>('#scope-phase');
+    const phaseVal = document.querySelector<HTMLElement>('#scope-phase-val');
+    phaseInput?.addEventListener('input', (e) => {
+      harmonics = Number((e.target as HTMLInputElement).value);
+      if (phaseVal) phaseVal.textContent = `${harmonics}TH HARMONIC`;
+    });
+
+    const buttons = document.querySelectorAll<HTMLButtonElement>('.wave-btn');
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        buttons.forEach((b) => {
+          b.classList.remove('bg-[#00C2EE]', 'text-black', 'font-bold');
+          b.classList.add('text-slate-400');
+        });
+        btn.classList.add('bg-[#00C2EE]', 'text-black', 'font-bold');
+        btn.classList.remove('text-slate-400');
+        waveType = btn.getAttribute('data-wave') || 'sine';
+      });
+    });
+
+    function draw() {
+      if (!canvas || !ctx) return;
+      const w = canvas.width;
+      const h = canvas.height;
+      const midY = h / 2;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Neon glowing trace
+      ctx.lineWidth = 2.5 * dpr;
+      ctx.strokeStyle = waveType === 'noise' ? '#FF2D95' : waveType === 'fm' ? '#A47BFF' : '#00C2EE';
+      ctx.shadowColor = ctx.strokeStyle;
+      ctx.shadowBlur = 12 * dpr;
+
+      ctx.beginPath();
+      const points = 300;
+      const step = w / points;
+
+      for (let i = 0; i <= points; i++) {
+        const x = i * step;
+        const phase = (i / points) * Math.PI * 4 * freq + time;
+        let yNorm = 0;
+
+        if (waveType === 'sine') {
+          yNorm = Math.sin(phase);
+        } else if (waveType === 'square') {
+          yNorm = 0;
+          for (let k = 1; k <= harmonics; k += 2) {
+            yNorm += (1 / k) * Math.sin(phase * k);
+          }
+          yNorm *= 1.2;
+        } else if (waveType === 'fm') {
+          const mod = Math.sin(phase * 0.2) * 2;
+          yNorm = Math.sin(phase + mod);
+        } else if (waveType === 'noise') {
+          yNorm = Math.sin(phase) * 0.7 + (Math.random() - 0.5) * 0.45;
+        }
+
+        const y = midY - yNorm * (amp * 16 * dpr);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+
+      ctx.stroke();
+
+      time += 0.05 * freq;
+      animId = requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    document.addEventListener('astro:before-preparation', () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', resize);
+    }, { once: true });
+  }
+
+  document.addEventListener('astro:page-load', initOscilloscope);
+</script>

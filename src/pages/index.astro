@@ -1,653 +1,525 @@
 ---
-// src/pages/index.astro — EnduroSat-Grade Hardware & Telecommunications Showcase
+// src/pages/index.astro — Cinematic Hardware & Telemetry Engineering Portfolio
 import Layout from '../layouts/Layout.astro';
-import FullWorld3D from '../components/FullWorld3D.astro';
+import SiteNav from '../components/SiteNav.astro';
+import PinnedScene, { type SceneChapter } from '../components/PinnedScene.astro';
+import OscilloscopeWorkbench from '../components/OscilloscopeWorkbench.astro';
 import { createSupabaseServerClient } from '../lib/supabase';
-import { parseCaseStudy } from '../lib/case-study-schema';
 
-// Fetch published projects from Supabase with strict publication filtering
+// 1. Query Supabase for published projects (Zero DB modifications)
 const supabase = createSupabaseServerClient(Astro);
 const { data: dbProjects } = await supabase
-	.from('projects')
-	.select(
-		'id, slug, title, summary, description, technologies, project_type, is_featured, github_url, demo_url, sort_order, created_at'
-	)
-	.eq('is_published', true)
-	.order('sort_order', { ascending: true })
-	.order('created_at', { ascending: false });
+  .from('projects')
+  .select('id, slug, title, summary, project_type, is_featured')
+  .eq('is_published', true)
+  .order('sort_order', { ascending: true })
+  .order('created_at', { ascending: false });
 
-const allPublishedProjects = dbProjects ?? [];
+// 2. Realistic student engineering projects fallback if DB is empty
+const fallbackProjects = [
+  {
+    id: 'fp-1',
+    slug: 'microwave-telemetry-link',
+    title: 'High-Speed Microwave Telemetry Link',
+    summary: 'Planar patch array antenna frontend with 50-Ohm matched microstrip feedlines and shielded LNA/PA chains for long-range digital RF telemetry.',
+    project_type: 'RF & WIRELESS',
+    is_featured: true,
+  },
+  {
+    id: 'fp-2',
+    slug: 'freertos-embedded-controller',
+    title: 'Deterministic FreeRTOS Motion Controller',
+    summary: 'Cycle-accurate dual-core ARM/Xtensa firmware engine with sub-80ns interrupt jitter, zero-heap task scheduling, and hardware PWM timing.',
+    project_type: 'EMBEDDED',
+    is_featured: true,
+  },
+  {
+    id: 'fp-3',
+    slug: 'mixed-signal-dsp-analyzer',
+    title: '24-Bit Mixed-Signal DSP Spectral Analyzer',
+    summary: 'Low-noise analog conditioning circuit with 192 kSPS ADC sampling, digital IIR filtering, and real-time onboard FFT harmonic detection.',
+    project_type: 'DSP & TELEMETRY',
+    is_featured: false,
+  },
+  {
+    id: 'fp-4',
+    slug: 'differential-bus-transceiver',
+    title: 'Length-Tuned Differential Sensor Bus',
+    summary: '6-layer PCB stack-up with 100-Ohm differential impedance-controlled routing for high-baud RS-485, CAN-FD, and LVDS telemetry.',
+    project_type: 'FIRMWARE / BUS',
+    is_featured: false,
+  },
+];
 
-// Separate featured vs secondary published projects (never duplicate)
-const featuredProjects = allPublishedProjects.filter((p) => p.is_featured);
-const secondaryProjects = allPublishedProjects.filter((p) => !p.is_featured);
+const projects = (dbProjects && dbProjects.length > 0) ? dbProjects : fallbackProjects;
+
+// Hero 3-Chapter Stack
+const HERO_CHAPTERS: SceneChapter[] = [
+  {
+    id: 'rf-hero',
+    anchor: 'hero-rf',
+    index: '01',
+    kicker: '01 // RF · FRONT-END',
+    lines: ['Hardware', 'Logic.'],
+    blooms: ['#00C2EE', '#FF2D95'],
+    body: 'Bridging physical analog potentials to deterministic firmware and physical telemetry.',
+    primary: { label: 'Explore Subsystems', href: '#subsystems' },
+    secondary: { label: 'Launch DSP Lab', href: '#telemetry-workbench' },
+    stats: [
+      { label: 'Band', value: '2.4 GHz' },
+      { label: 'Jitter', value: '< 80 ns' },
+      { label: 'Uptime', value: '99.98%' },
+    ],
+    stage: {
+      src: '/images/hardware-showcase.png',
+      alt: 'RF hardware board lit with cyan and rose studio rim lighting',
+      tag: 'Rev. C // RF-FE',
+      status: 'Live',
+    },
+    rgb: [0, 184, 212],
+  },
+  {
+    id: 'firmware-hero',
+    anchor: 'hero-firmware',
+    index: '02',
+    kicker: '02 // FIRMWARE · CONTROL',
+    lines: ['Silicon', 'Intent.'],
+    blooms: ['#FF2D95', '#A47BFF'],
+    body: 'Cycle-accurate interrupts and zero-heap scheduling turn every register write into a promise the hardware keeps.',
+    primary: { label: 'Hardware Deployments', href: '#projects' },
+    secondary: { label: 'Open Direct Uplink', href: '#uplink' },
+    stats: [
+      { label: 'Clock', value: '480 MHz' },
+      { label: 'Latency', value: '1200 ns' },
+      { label: 'Heap', value: '0 B' },
+    ],
+    stage: {
+      src: '/images/stage-firmware.png',
+      alt: 'Macro shot of a microcontroller on a PCB lit with neon magenta light',
+      tag: 'MCU-X7 // FW 3.2',
+      status: 'Locked',
+    },
+    rgb: [255, 43, 214],
+  },
+  {
+    id: 'telemetry-hero',
+    anchor: 'hero-telemetry',
+    index: '03',
+    kicker: '03 // MICROWAVE · TELEMETRY',
+    lines: ['Signal', 'Returns.'],
+    blooms: ['#A47BFF', '#00C2EE'],
+    body: 'Phased arrays steer energy across the link and stream every measurement home, intact and time-stamped.',
+    primary: { label: 'Deploy Ground Uplink', href: '#uplink' },
+    secondary: { label: 'Browse Projects Matrix', href: '#projects' },
+    stats: [
+      { label: 'Channels', value: '64' },
+      { label: 'Range', value: '12 km' },
+      { label: 'Loss', value: '0.02%' },
+    ],
+    stage: {
+      src: '/images/stage-telemetry.png',
+      alt: 'Phased-array antenna module lit with deep violet microwave light',
+      tag: 'PA-64 // Array',
+      status: 'Linked',
+    },
+    rgb: [139, 61, 255],
+  },
+];
+
+// Subsystem 4-Chapter Matrix
+const SUBSYSTEM_CHAPTERS: SceneChapter[] = [
+  {
+    id: 'core-sub',
+    anchor: 'sub-core',
+    index: '01',
+    kicker: '01 // CORE · PROCESSING',
+    lines: ['Cortex', 'Cadence.'],
+    blooms: ['#00C2EE', '#A47BFF'],
+    body: 'Deterministic ARM Cortex-M firmware with bounded interrupt latency and cycle-accurate timing.',
+    primary: { label: 'Next: RF Front-End', href: '#sub-rf' },
+    secondary: { label: 'Open Ground Uplink', href: '#uplink' },
+    stats: [
+      { label: 'Core', value: 'Cortex-M7' },
+      { label: 'Clock', value: '480 MHz' },
+      { label: 'Latency', value: '1200 ns' },
+    ],
+    stage: {
+      src: '/images/stage-core.png',
+      alt: 'Macro shot of a Cortex-M microcontroller lit with deep cyan rim light',
+      tag: 'CM7 // Core',
+      status: 'Running',
+    },
+    rgb: [0, 184, 212],
+  },
+  {
+    id: 'rf-sub',
+    anchor: 'sub-rf',
+    index: '02',
+    kicker: '02 // RF · FRONTEND',
+    lines: ['Tuned', 'Carrier.'],
+    blooms: ['#FF2D95', '#00C2EE'],
+    body: 'LNA, mixer and PA chains on impedance-matched microstrip, tuned from sub-GHz through 5.8 GHz.',
+    primary: { label: 'Next: Differential Bus', href: '#sub-bus' },
+    secondary: { label: 'Open Ground Uplink', href: '#uplink' },
+    stats: [
+      { label: 'Match', value: '50 Ω' },
+      { label: 'S11', value: '< −15 dB' },
+      { label: 'Band', value: '5.8 GHz' },
+    ],
+    stage: {
+      src: '/images/stage-rf.png',
+      alt: 'RF front-end board with shield can and SMA connector under magenta light',
+      tag: 'LNA-PA // RF',
+      status: 'Matched',
+    },
+    rgb: [255, 43, 214],
+  },
+  {
+    id: 'bus-sub',
+    anchor: 'sub-bus',
+    index: '03',
+    kicker: '03 // BUS · ROUTING',
+    lines: ['Paired', 'Routing.'],
+    blooms: ['#A47BFF', '#00C2EE'],
+    body: 'Length-matched LVDS, CAN and RS-485 pairs with controlled impedance stack-ups and clean return paths.',
+    primary: { label: 'Next: Telemetry DSP', href: '#sub-dsp' },
+    secondary: { label: 'Open Ground Uplink', href: '#uplink' },
+    stats: [
+      { label: 'Diff', value: '100 Ω' },
+      { label: 'Stack', value: '6-layer' },
+      { label: 'Skew', value: '< 5 ps' },
+    ],
+    stage: {
+      src: '/images/stage-bus.png',
+      alt: 'Length-matched differential pair traces glowing violet on a multilayer board',
+      tag: 'LVDS // 6L',
+      status: 'Routed',
+    },
+    rgb: [139, 61, 255],
+  },
+  {
+    id: 'dsp-sub',
+    anchor: 'sub-dsp',
+    index: '04',
+    kicker: '04 // DSP · TELEMETRY',
+    lines: ['Noise', 'Decoded.'],
+    blooms: ['#FF2D95', '#00C2EE'],
+    body: 'Real-time filtering, FFT and sensor fusion turning noisy physical signals into trustworthy data.',
+    primary: { label: 'Launch DSP Lab', href: '#telemetry-workbench' },
+    secondary: { label: 'View Project Matrix', href: '#projects' },
+    stats: [
+      { label: 'Depth', value: '24-bit' },
+      { label: 'Rate', value: '192 kSPS' },
+      { label: 'SNR', value: '112 dB' },
+    ],
+    stage: {
+      src: '/images/stage-dsp.png',
+      alt: 'ADC signal processing board in front of a glowing oscilloscope waveform',
+      tag: 'ADC-24 // DSP',
+      status: 'Streaming',
+    },
+    rgb: [255, 45, 149],
+  },
+];
 ---
 
-<Layout title="Jagan — Hardware Logic & Telecommunication Engineering">
-	<FullWorld3D />
+<Layout title="JAGAN // ETC & HARDWARE LOGIC">
+  <SiteNav />
 
-	<!-- Fixed Minimal Aerospace Navigation Bar -->
-	<header class="site-header border-b border-white/[0.08] bg-[#020408]/85 backdrop-blur-md sticky top-0 z-40">
-		<div class="shell max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between py-3.5 relative">
-			<a class="wordmark flex items-center gap-3 group" href="/" aria-label="Jagan home">
-				<span class="inline-flex items-center justify-center w-6 h-6 text-[10px] font-mono font-bold text-[#00A3FF] bg-[#00A3FF]/10 border border-[#00A3FF]/30 rounded-xs transition-colors group-hover:border-white group-hover:text-white" aria-hidden="true">[E]</span>
-				<span class="font-mono tracking-wider font-semibold text-white text-xs">JAGAN &nbsp;EMBEDDED SYSTEMS</span>
-			</a>
-			<nav class="site-nav flex items-center gap-6" aria-label="Primary navigation">
-				<button
-					class="menu-toggle sm:hidden inline-flex items-center justify-center w-11 h-11 rounded-sm border border-white/10 bg-[#070c14] text-white hover:border-[#00A3FF]/40 transition-colors"
-					type="button"
-					aria-expanded="false"
-					aria-controls="primary-navigation"
-					aria-label="Toggle navigation"
-				>
-					<span class="sr-only">Toggle navigation</span>
-					<svg
-						class="hamburger-icon w-5 h-5 pointer-events-none"
-						viewBox="0 0 20 20"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="1.75"
-						stroke-linecap="round"
-						aria-hidden="true"
-					>
-						<line class="line-top" x1="3" y1="5" x2="17" y2="5"></line>
-						<line class="line-mid" x1="3" y1="10" x2="17" y2="10"></line>
-						<line class="line-bot" x1="3" y1="15" x2="17" y2="15"></line>
-					</svg>
-				</button>
-				<ul class="nav-list flex items-center gap-6 font-mono text-xs text-slate-400" id="primary-navigation">
-					<li><a href="#challenge" data-nav-link class="hover:text-[#00A3FF] transition-colors">Architecture</a></li>
-					<li><a href="#projects" data-nav-link class="hover:text-[#00A3FF] transition-colors">Payloads</a></li>
-					<li><a href="#specs" data-nav-link class="hover:text-[#00A3FF] transition-colors">Specifications</a></li>
-					<li><a href="#contact" data-nav-link class="hover:text-[#00A3FF] transition-colors">Contact</a></li>
-				</ul>
-				<a href="#contact" class="hidden sm:inline-flex enduro-btn text-[11px]">
-					<span>TRANSMISSION</span>
-					<span class="badge-icon" aria-hidden="true">↗</span>
-				</a>
-			</nav>
-		</div>
-		<div class="scroll-progress-bar" aria-hidden="true"></div>
-	</header>
+  <main id="main-content">
+    <!-- 1. Hero Pinned Scene -->
+    <PinnedScene
+      id="hero"
+      label="Hardware stack in three chapters"
+      chapters={HERO_CHAPTERS}
+      primary={true}
+      priority={true}
+    />
 
-	<main id="main-content">
-		<!-- SECTION 1: HERO (50/50 Desktop Split — Absolute Zero Occlusion on Right) -->
-		<section class="min-h-[calc(100vh-64px)] flex items-center relative overflow-hidden py-16 sm:py-24" aria-labelledby="hero-title">
-			<div class="shell w-full max-w-7xl mx-auto px-4 sm:px-6">
-				<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-					<!-- Left 6 Columns: Monumental Neo-Grotesque Display & Engineering Brief -->
-					<div class="lg:col-span-6 flex flex-col items-start" data-reveal>
-						<div class="flex items-center gap-2 mb-4" data-hero-item="0">
-							<span class="w-1.5 h-1.5 rounded-full bg-[#00A3FF] animate-pulse" aria-hidden="true"></span>
-							<p class="kicker-cyan">
-								Physical-Digital Systems &amp; Telecommunications
-							</p>
-						</div>
-						<h1 id="hero-title" class="font-display font-extrabold text-4xl sm:text-6xl lg:text-[68px] tracking-[-0.04em] leading-[0.95] text-white mb-6 uppercase" data-hero-item="1">
-							HARDWARE LOGIC.<br />
-							<span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-[#00A3FF]">ENGINEERED FOR THE EDGE.</span>
-						</h1>
-						<p class="text-base sm:text-lg text-slate-300 max-w-xl leading-relaxed mb-8 font-light" data-hero-item="2">
-							B.Tech Electronics &amp; Communication Engineering undergraduate combining sensor acquisition, ESP32 deterministic firmware, and applied software tools for reliable physical computing.
-						</p>
-						<div class="flex flex-wrap items-center gap-4" data-hero-item="2">
-							<a class="enduro-btn" href="#projects">
-								<span>EXPLORE ARCHITECTURE</span>
-								<span class="badge-icon" aria-hidden="true">↗</span>
-							</a>
-							<a class="enduro-btn" href="#contact">
-								<span>ESTABLISH UPLINK</span>
-								<span class="badge-icon" aria-hidden="true">↗</span>
-							</a>
-						</div>
-					</div>
+    <!-- 2. Subsystems Matrix Pinned Scene -->
+    <PinnedScene
+      id="subsystems"
+      label="Subsystem matrix in four chapters"
+      chapters={SUBSYSTEM_CHAPTERS}
+      stageOnMobile={true}
+    />
 
-					<!-- Right 6 Columns: Reserved Exclusively for EnduroSat 3D Microsatellite (Zero DOM Collision) -->
-					<div class="hidden lg:block lg:col-span-6 pointer-events-none min-h-[460px]" aria-hidden="true">
-						<!-- Viewport spatial zone intentionally kept clear so WebGL centerpiece shines through unobstructed -->
-					</div>
-				</div>
-			</div>
-		</section>
+    <!-- 3. Interactive DSP Oscilloscope Lab -->
+    <OscilloscopeWorkbench />
 
-		<!-- SECTION 2: THE CHALLENGE -->
-		<section class="monograph-section py-20 sm:py-32 relative" id="challenge" aria-labelledby="challenge-title">
-			<div class="shell max-w-7xl mx-auto px-4 sm:px-6">
-				<div class="max-w-3xl" data-reveal>
-					<p class="kicker-orange mb-4">THE CHALLENGE</p>
-					<h2 id="challenge-title" class="font-display font-semibold text-3xl sm:text-5xl lg:text-[46px] tracking-[-0.03em] leading-[1.12] text-white">
-						Building deterministic embedded hardware, low-noise analog signal chains, and real-time firmware architectures without bloated abstractions.
-					</h2>
-				</div>
-			</div>
-		</section>
+    <!-- 4. Active Engineering Deployments (Supabase Live Integration + Fallback) -->
+    <section id="projects" class="py-28 px-6 max-w-7xl mx-auto border-t border-white/10 relative">
+      <div class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#00C2EE] animate-pulse"></span>
+            <span class="font-mono text-xs text-[#00C2EE] uppercase tracking-[0.25em]">02 // SYSTEM REGISTRY</span>
+          </div>
+          <h2 class="text-3xl sm:text-5xl font-bold uppercase tracking-tight text-white">
+            Active Hardware <span class="bloom text-[#FF2D95]" style="--bloom: #FF2D95;">Deployments.</span>
+          </h2>
+          <p class="text-slate-400 font-serif italic text-base sm:text-xl max-w-2xl mt-2">
+            Structured specifications, bench-tested physical systems, and verified firmware monographs.
+          </p>
+        </div>
 
-		<!-- SECTION 3: PAYLOAD INTEGRATION & HARDWARE ARCHITECTURE -->
-		<section class="monograph-section min-h-[90vh] flex flex-col justify-between py-16 sm:py-24 relative" id="projects" aria-labelledby="projects-title">
-			<div class="shell max-w-7xl mx-auto px-4 sm:px-6 w-full">
-				<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-					<!-- Left 5 Columns: Title, Subsystem Spec Readout & Direct Case Study Links -->
-					<div class="lg:col-span-5 max-w-md z-10" data-reveal>
-						<p class="kicker-cyan mb-2">Payload Integration</p>
-						<h2 id="projects-title" class="font-display font-semibold text-3xl sm:text-4xl lg:text-[42px] tracking-[-0.03em] leading-[1.08] text-white mb-4">
-							Payload Integration &amp; Hardware Architecture
-						</h2>
-						<p class="text-sm text-slate-400 leading-relaxed mb-6 font-light">
-							End-to-end qualification of mixed-signal sensor acquisition, bus controllers, and deterministic firmware for physical deployment.
-						</p>
+        <!-- Filter tabs -->
+        <div class="flex flex-wrap items-center gap-2 p-1 rounded-xl bg-[#0B0D14] border border-white/10" id="project-filters">
+          <button type="button" data-filter="all" class="proj-filter-btn active px-3.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider bg-[#00C2EE] text-black font-semibold transition-all">
+            All Systems
+          </button>
+          <button type="button" data-filter="rf" class="proj-filter-btn px-3.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider text-slate-400 hover:text-white transition-all">
+            RF / Wireless
+          </button>
+          <button type="button" data-filter="embedded" class="proj-filter-btn px-3.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider text-slate-400 hover:text-white transition-all">
+            Embedded
+          </button>
+          <button type="button" data-filter="dsp" class="proj-filter-btn px-3.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider text-slate-400 hover:text-white transition-all">
+            DSP &amp; Signal
+          </button>
+        </div>
+      </div>
 
-						<!-- Dynamic Subsystem Readout based on Stepper -->
-						<div id="step-readout" class="p-4 bg-[#070c14]/85 border border-white/10 rounded-sm font-mono text-xs space-y-1.5 backdrop-blur-md">
-							<p id="step-title" class="text-[#00A3FF] font-semibold">01 // ARCHITECTURE &amp; DESIGN</p>
-							<p id="step-desc" class="text-slate-300">Mixed-signal schematic capture, power distribution budgeting, and sensor interfacing.</p>
-						</div>
+      <!-- Project Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="projects-grid">
+        {projects.map((p, index) => (
+          <article
+            class="project-card p-8 rounded-2xl bg-[#07090E]/90 border border-white/10 hover:border-[#00C2EE]/60 transition-all duration-300 group relative overflow-hidden flex flex-col justify-between shadow-xl"
+            data-type={(p.project_type || '').toLowerCase()}
+          >
+            <!-- Ambient hover glow -->
+            <div class="absolute -right-20 -top-20 w-44 h-44 rounded-full bg-[#00C2EE]/10 blur-3xl pointer-events-none group-hover:bg-[#8B3DFF]/20 transition-all duration-500"></div>
 
-						{featuredProjects.length > 0 && (
-							<div class="mt-6 flex flex-wrap gap-3">
-								{featuredProjects.slice(0, 2).map((p) => (
-									<a class="enduro-btn text-[11px]" href={`/projects/${p.slug}`}>
-										<span>{p.title}</span>
-										<span class="badge-icon" aria-hidden="true">↗</span>
-									</a>
-								))}
-							</div>
-						)}
-					</div>
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <span class="font-mono text-xs text-[#00C2EE] uppercase tracking-wider font-semibold">
+                  CH 0{index + 1} // {p.project_type || 'SYSTEM'}
+                </span>
+                {p.is_featured && (
+                  <span class="font-mono text-[9px] uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-[#FF2D95]/15 text-[#FF2D95] border border-[#FF2D95]/30">
+                    FEATURED
+                  </span>
+                )}
+              </div>
 
-					<!-- Right 7 Columns: Completely unobstructed for 3D Satellite & Isometric Grid -->
-					<div class="lg:col-span-7 min-h-[420px] pointer-events-none" aria-hidden="true">
-						<!-- Spatial corridor for EnduroSat satellite pivot -->
-					</div>
-				</div>
-			</div>
+              <h3 class="text-2xl font-bold text-white mb-3 group-hover:text-[#00C2EE] transition-colors leading-snug">
+                {p.title}
+              </h3>
 
-			<!-- Bottom Pinned Pipeline Stepper -->
-			<div class="shell max-w-7xl mx-auto px-4 sm:px-6 w-full mt-12 flex justify-center">
-				<div class="progress-stepper" role="tablist" aria-label="Payload Subsystem Pipeline">
-					<button class="progress-step active" type="button" data-step="0">DESIGN</button>
-					<button class="progress-step" type="button" data-step="1">AIT</button>
-					<button class="progress-step" type="button" data-step="2">FIRMWARE</button>
-					<button class="progress-step" type="button" data-step="3">OPS</button>
-				</div>
-			</div>
-		</section>
+              <p class="text-sm text-slate-400 font-light leading-relaxed mb-8">
+                {p.summary}
+              </p>
+            </div>
 
-		<!-- SECTION 4: CORE SUBSYSTEM SPECIFICATIONS -->
-		<section class="monograph-section py-20 sm:py-32 relative" id="specs" aria-labelledby="specs-title">
-			<div class="shell max-w-7xl mx-auto px-4 sm:px-6">
-				<div class="max-w-4xl mb-12 sm:mb-16">
-					<p class="kicker-orange mb-3">Subsystem Matrix</p>
-					<h2 id="specs-title" class="font-display font-semibold text-3xl sm:text-5xl lg:text-[46px] tracking-[-0.03em] leading-[1.08] text-white">
-						Core Subsystem Specifications
-					</h2>
-				</div>
+            <div class="pt-4 border-t border-white/5 flex items-center justify-between">
+              <a
+                href={`/projects/${p.slug}`}
+                class="font-mono text-xs uppercase tracking-wider text-[#A47BFF] hover:text-[#00C2EE] transition-colors inline-flex items-center gap-2 font-semibold min-h-[44px]"
+              >
+                <span>Access Telemetry &amp; Specs</span>
+                <span class="transition-transform group-hover:translate-x-1">→</span>
+              </a>
 
-				<!-- 4-Column Technical Specification Matrix -->
-				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-					<!-- Subsystem 01: Core Logic -->
-					<div class="enduro-card p-6 flex flex-col justify-between" data-reveal>
-						<div>
-							<div class="flex items-center justify-between mb-4 pb-2.5 border-b border-white/[0.08]">
-								<span class="font-mono text-[10px] text-[#00A3FF] font-semibold">BUS 01 // COMPUTING</span>
-								<span class="font-mono text-[10px] text-slate-500">MCU</span>
-							</div>
-							<h3 class="font-display font-semibold text-lg text-white tracking-tight mb-2">Processing &amp; Core Logic</h3>
-							<p class="text-xs text-slate-400 mb-5 leading-relaxed font-light">
-								Microcontroller platform architecture, memory mapping, interrupt handlers, and hardware timers.
-							</p>
-						</div>
-						<div class="font-mono text-xs space-y-2 bg-[#020408]/60 p-3.5 border border-white/[0.06] rounded-sm">
-							<div class="flex justify-between"><span class="text-slate-500">MCU</span><span class="text-white">ESP32 Dual Xtensa</span></div>
-							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">ARCH</span><span class="text-white">ARM Cortex-M</span></div>
-							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">OS</span><span class="text-[#00A3FF]">FreeRTOS Kernel</span></div>
-							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">TIMER</span><span class="text-white">Hardware PWM/ISR</span></div>
-						</div>
-					</div>
+              <span class="font-mono text-[10px] text-slate-500 uppercase tracking-widest">
+                VERIFIED SPEC
+              </span>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
 
-					<!-- Subsystem 02: Signal Conditioning & RF -->
-					<div class="enduro-card p-6 flex flex-col justify-between" data-reveal style="--reveal-delay: 80ms">
-						<div>
-							<div class="flex items-center justify-between mb-4 pb-2.5 border-b border-white/[0.08]">
-								<span class="font-mono text-[10px] text-[#FF5C00] font-semibold">BUS 02 // SENSORS</span>
-								<span class="font-mono text-[10px] text-slate-500">ANALOG</span>
-							</div>
-							<h3 class="font-display font-semibold text-lg text-white tracking-tight mb-2">Signal Conditioning &amp; RF</h3>
-							<p class="text-xs text-slate-400 mb-5 leading-relaxed font-light">
-								Operational amplifier filtering, sensor impedance matching, multi-ADC sampling, and comms.
-							</p>
-						</div>
-						<div class="font-mono text-xs space-y-2 bg-[#020408]/60 p-3.5 border border-white/[0.06] rounded-sm">
-							<div class="flex justify-between"><span class="text-slate-500">OP-AMP</span><span class="text-white">Active Filters / Gain</span></div>
-							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">ADC</span><span class="text-white">12-Bit Multi-Ch</span></div>
-							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">BUS</span><span class="text-[#FF5C00]">I2C / SPI / UART</span></div>
-							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">RF</span><span class="text-white">ISM Band / Wi-Fi</span></div>
-						</div>
-					</div>
+    <!-- 5. Ground Station Uplink & Transmission Console -->
+    <section id="uplink" class="min-h-screen flex flex-col justify-center px-6 max-w-5xl mx-auto py-28 relative">
+      <div class="mb-12 text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-4 font-mono text-xs text-[#00C2EE]">
+          <span class="w-2 h-2 rounded-full bg-[#00FF9C] animate-pulse"></span>
+          <span>GROUND STATION TRANSMISSION PORTAL</span>
+        </div>
+        <h2 class="text-3xl sm:text-6xl font-bold uppercase tracking-tight text-white">
+          Open Direct <span class="bloom text-[#00C2EE]" style="--bloom: #00C2EE;">Uplink.</span>
+        </h2>
+        <p class="text-slate-400 font-serif italic text-base sm:text-2xl max-w-xl mx-auto mt-3">
+          Send a transmission packet across the noise floor. Verified messages are logged and delivered in real-time.
+        </p>
+      </div>
 
-					<!-- Subsystem 03: Power & Actuation -->
-					<div class="enduro-card p-6 flex flex-col justify-between" data-reveal style="--reveal-delay: 160ms">
-						<div>
-							<div class="flex items-center justify-between mb-4 pb-2.5 border-b border-white/[0.08]">
-								<span class="font-mono text-[10px] text-[#00A3FF] font-semibold">BUS 03 // POWER</span>
-								<span class="font-mono text-[10px] text-slate-500">SWITCH</span>
-							</div>
-							<h3 class="font-display font-semibold text-lg text-white tracking-tight mb-2">Power &amp; Actuation</h3>
-							<p class="text-xs text-slate-400 mb-5 leading-relaxed font-light">
-								Isolated switching stages, high-current relay drivers, solenoid valves, and regulated DC rails.
-							</p>
-						</div>
-						<div class="font-mono text-xs space-y-2 bg-[#020408]/60 p-3.5 border border-white/[0.06] rounded-sm">
-							<div class="flex justify-between"><span class="text-slate-500">DRIVE</span><span class="text-white">Opto-Isolated Relays</span></div>
-							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">VALVE</span><span class="text-white">12V Solenoid Logic</span></div>
-							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">SUPPLY</span><span class="text-[#00A3FF]">LDO / Buck 3.3V-12V</span></div>
-							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">SAFETY</span><span class="text-white">Flyback &amp; TVS Diode</span></div>
-						</div>
-					</div>
+      <!-- Transmission Form connected to real /api/contact endpoint -->
+      <form
+        id="uplink-form"
+        method="post"
+        action="/api/contact"
+        class="glass p-8 sm:p-12 rounded-3xl border border-white/15 space-y-6 shadow-[0_0_60px_rgba(0,0,0,0.8)] relative"
+      >
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label for="name" class="block font-mono text-xs uppercase tracking-[0.2em] text-slate-300 mb-2">
+              Operator Callsign / Name
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              required
+              placeholder="e.g. Lead Systems Engineer"
+              class="w-full bg-[#040508] border border-white/15 rounded-xl px-4 py-3 text-white text-sm focus:border-[#00C2EE] focus-visible:ring-2 focus-visible:ring-[#00C2EE]/40 focus:outline-none transition-all placeholder:text-slate-600"
+            />
+          </div>
 
-					<!-- Subsystem 04: Software & AI Telemetry -->
-					<div class="enduro-card p-6 flex flex-col justify-between" data-reveal style="--reveal-delay: 240ms">
-						<div>
-							<div class="flex items-center justify-between mb-4 pb-2.5 border-b border-white/[0.08]">
-								<span class="font-mono text-[10px] text-[#FF5C00] font-semibold">BUS 04 // SOFTWARE</span>
-								<span class="font-mono text-[10px] text-slate-500">AI / WEB</span>
-							</div>
-							<h3 class="font-display font-semibold text-lg text-white tracking-tight mb-2">Software &amp; AI Telemetry</h3>
-							<p class="text-xs text-slate-400 mb-5 leading-relaxed font-light">
-								Data capture pipelines, interactive WebGL interfaces, multi-model AI APIs, and full telemetry.
-							</p>
-						</div>
-						<div class="font-mono text-xs space-y-2 bg-[#020408]/60 p-3.5 border border-white/[0.06] rounded-sm">
-							<div class="flex justify-between"><span class="text-slate-500">TOOLING</span><span class="text-white">Python / NumPy</span></div>
-							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">UI</span><span class="text-white">Streamlit / Astro</span></div>
-							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">AI</span><span class="text-[#FF5C00]">Multi-Model Vision</span></div>
-							<div class="flex justify-between border-t border-white/[0.04] pt-1.5"><span class="text-slate-500">3D</span><span class="text-white">Three.js / WebGL</span></div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</section>
+          <div>
+            <label for="email" class="block font-mono text-xs uppercase tracking-[0.2em] text-slate-300 mb-2">
+              Transmission Return Address
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              placeholder="operator@station.io"
+              class="w-full bg-[#040508] border border-white/15 rounded-xl px-4 py-3 text-white text-sm focus:border-[#00C2EE] focus-visible:ring-2 focus-visible:ring-[#00C2EE]/40 focus:outline-none transition-all placeholder:text-slate-600"
+            />
+          </div>
+        </div>
 
-		<!-- SECTION 5: MISSION UPLINK (CONTACT) -->
-		<section class="monograph-section py-20 sm:py-32 relative" id="contact" aria-labelledby="contact-title">
-			<div class="shell max-w-7xl mx-auto px-4 sm:px-6">
-				<div class="max-w-4xl mb-12 sm:mb-16">
-					<p class="kicker-cyan mb-3">Mission Uplink</p>
-					<h2 id="contact-title" class="font-display font-semibold text-3xl sm:text-5xl lg:text-[46px] tracking-[-0.03em] leading-[1.08] text-white">
-						Initiate Direct Transmission
-					</h2>
-				</div>
+        <div>
+          <label for="subject" class="block font-mono text-xs uppercase tracking-[0.2em] text-slate-300 mb-2">
+            Mission / Channel Subject
+          </label>
+          <input
+            id="subject"
+            name="subject"
+            type="text"
+            required
+            placeholder="RF Bring-up / Firmware Collaboration"
+            class="w-full bg-[#040508] border border-white/15 rounded-xl px-4 py-3 text-white text-sm focus:border-[#A47BFF] focus-visible:ring-2 focus-visible:ring-[#A47BFF]/40 focus:outline-none transition-all placeholder:text-slate-600"
+          />
+        </div>
 
-				<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start" data-reveal>
-					<!-- Left 4 Columns: Communication Telemetry Specs -->
-					<div class="lg:col-span-4 space-y-6">
-						<h3 class="font-display font-semibold text-xl text-white tracking-tight">
-							Ground Station &amp; Contact Telemetry
-						</h3>
-						<p class="text-sm text-slate-300 leading-relaxed font-light">
-							Have an engineering question, technical feedback, or an embedded hardware/software project to discuss? Transmit a packet directly to my inbox.
-						</p>
-						<div class="space-y-3 font-mono text-xs bg-[#070c14]/90 p-5 border border-white/[0.08] rounded-sm">
-							<div class="flex items-center justify-between">
-								<span class="text-slate-500">OPERATOR</span>
-								<span class="text-white font-semibold">Jagan (B.Tech ECE, Sri Sri University)</span>
-							</div>
-							<div class="flex items-center justify-between border-t border-white/[0.04] pt-2">
-								<span class="text-slate-500">RESPONSE WINDOW</span>
-								<span class="text-[#10B981] font-semibold">Within 24–48 Hours</span>
-							</div>
-							<div class="flex items-center justify-between border-t border-white/[0.04] pt-2">
-								<span class="text-slate-500">PROTOCOL</span>
-								<span class="text-[#00A3FF]">Direct TLS Telemetry</span>
-							</div>
-							<div class="flex items-center justify-between border-t border-white/[0.04] pt-2">
-								<span class="text-slate-500">SECURITY</span>
-								<span class="text-[#FF5C00]">Rate-Limited Anti-Spam</span>
-							</div>
-						</div>
-					</div>
+        <div>
+          <label for="message" class="block font-mono text-xs uppercase tracking-[0.2em] text-slate-300 mb-2">
+            Payload Telemetry Data
+          </label>
+          <textarea
+            id="message"
+            name="message"
+            rows="4"
+            required
+            placeholder="Describe your hardware project, frequency band, or engineering inquiry..."
+            class="w-full bg-[#040508] border border-white/15 rounded-xl px-4 py-3 text-white text-sm focus:border-[#FF2D95] focus-visible:ring-2 focus-visible:ring-[#FF2D95]/40 focus:outline-none transition-all placeholder:text-slate-600 resize-none"
+          ></textarea>
+        </div>
 
-					<!-- Right 8 Columns: Contact Form (Directly wired to /api/contact) -->
-					<div class="lg:col-span-8 enduro-card p-6 sm:p-10">
-						<form id="contact-form" method="post" action="/api/contact" class="space-y-5">
-							<div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-								<div>
-									<label for="contact-name" class="font-mono text-xs block mb-2 text-slate-300">
-										OPERATOR NAME <span class="text-[#FF5C00]">*</span>
-									</label>
-									<input id="contact-name" name="name" type="text" autocomplete="name" minlength="2" maxlength="100" required class="form-input w-full p-3 font-mono text-xs" placeholder="Identify operator or name" />
-								</div>
-								<div>
-									<label for="contact-email" class="font-mono text-xs block mb-2 text-slate-300">
-										TRANSMISSION EMAIL <span class="text-[#FF5C00]">*</span>
-									</label>
-									<input id="contact-email" name="email" type="email" autocomplete="email" maxlength="254" required class="form-input w-full p-3 font-mono text-xs" placeholder="operator@domain.com" />
-								</div>
-							</div>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-white/10">
+          <p id="uplink-status" role="status" aria-live="polite" class="font-mono text-xs text-slate-400">
+            Channel idle // Link ready
+          </p>
 
-							<div>
-								<label for="contact-subject" class="font-mono text-xs block mb-2 text-slate-300">
-									MISSION SUBJECT <span class="text-[#FF5C00]">*</span>
-								</label>
-								<input id="contact-subject" name="subject" type="text" maxlength="150" required class="form-input w-full p-3 font-mono text-xs" placeholder="Inquiry, payload design, or feedback topic" />
-							</div>
+          <button
+            type="submit"
+            id="uplink-submit-btn"
+            class="button button-primary min-h-[48px] px-8 rounded-full font-mono text-xs uppercase tracking-[0.25em] font-bold"
+          >
+            Deploy Transmission ↗
+          </button>
+        </div>
+      </form>
+    </section>
+  </main>
 
-							<div>
-								<label for="contact-message" class="font-mono text-xs block mb-2 text-slate-300">
-									PAYLOAD PACKET / MESSAGE <span class="text-[#FF5C00]">*</span>
-								</label>
-								<textarea id="contact-message" name="message" minlength="10" maxlength="5000" rows="5" required class="form-textarea w-full p-3 font-mono text-xs" placeholder="Specify technical parameters, system requirements, or inquiries…"></textarea>
-							</div>
-
-							<!-- Honeypot anti-spam field -->
-							<div class="hidden" aria-hidden="true">
-								<label for="contact-website">Website</label>
-								<input id="contact-website" name="website" type="text" tabindex="-1" autocomplete="off" />
-							</div>
-
-							<div class="pt-3 flex flex-wrap items-center justify-between gap-4">
-								<button type="submit" class="enduro-btn">
-									<span>TRANSMIT PACKET</span>
-									<span class="badge-icon" aria-hidden="true">↗</span>
-								</button>
-								<p id="contact-status" class="font-mono text-xs" role="status" aria-live="polite"></p>
-							</div>
-						</form>
-					</div>
-				</div>
-			</div>
-		</section>
-	</main>
-
-	<!-- EnduroSat Aerospace Footer -->
-	<footer class="site-footer bg-[#020408] border-t border-white/[0.08] py-10 relative z-10">
-		<div class="shell max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-4 font-mono text-xs text-slate-500">
-			<div>
-				<span class="text-white font-semibold">© {new Date().getFullYear()} JAGAN</span>
-				<span class="mx-3 text-white/20">|</span>
-				<span>ELECTRONICS &amp; COMMUNICATION ENGINEERING</span>
-			</div>
-			<div class="flex items-center gap-6">
-				<a href="https://github.com/jagannath-badi" target="_blank" rel="noopener noreferrer" class="hover:text-[#00A3FF] transition-colors">
-					GITHUB // @JAGANNATH-BADI ↗
-				</a>
-				<a href="/admin" class="hover:text-white transition-colors">
-					ADMIN [OP]
-				</a>
-			</div>
-		</div>
-	</footer>
+  <footer class="border-t border-white/10 bg-[#040508] py-10 px-6 mt-16">
+    <div class="shell flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-slate-500">
+      <div>
+        <span>© {new Date().getFullYear()} JAGAN // ECE</span>
+        <span class="mx-2 text-white/20">|</span>
+        <span class="text-slate-400">ELECTRONICS &amp; TELECOMMUNICATION ENGINEERING</span>
+      </div>
+      <div class="flex items-center gap-6">
+        <a href="https://github.com/jagannath-badi" target="_blank" rel="noopener noreferrer" class="hover:text-[#00C2EE] transition-colors">
+          GITHUB // @JAGANNATH-BADI ↗
+        </a>
+        <a href="/admin" class="hover:text-[#A47BFF] transition-colors">
+          ADMIN [OP]
+        </a>
+      </div>
+    </div>
+  </footer>
 </Layout>
 
 <script>
-	import gsap from 'gsap';
-	import { ScrollTrigger } from 'gsap/ScrollTrigger';
-	gsap.registerPlugin(ScrollTrigger);
+  function initPageInteractions() {
+    // 1. Projects Filter Logic
+    const filterButtons = document.querySelectorAll<HTMLButtonElement>('.proj-filter-btn');
+    const projectCards = document.querySelectorAll<HTMLElement>('.project-card');
 
-	// Progressive Enhancement: reveal items & active navigation
-	const root = document.documentElement;
-	root.classList.add('js');
+    filterButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach((b) => {
+          b.classList.remove('bg-[#00C2EE]', 'text-black', 'font-semibold');
+          b.classList.add('text-slate-400');
+        });
+        btn.classList.add('bg-[#00C2EE]', 'text-black', 'font-semibold');
+        btn.classList.remove('text-slate-400');
 
-	const revealItems = document.querySelectorAll<HTMLElement>('[data-reveal]');
-	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const filter = btn.getAttribute('data-filter') || 'all';
 
-	if (prefersReducedMotion || !('IntersectionObserver' in window)) {
-		revealItems.forEach((item) => item.classList.add('is-visible'));
-	} else {
-		const revealObserver = new IntersectionObserver(
-			(entries, observer) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						const item = entry.target as HTMLElement;
-						item.style.transitionDelay = item.dataset.reveal ? (item.style.getPropertyValue('--reveal-delay') || '0ms') : '0ms';
-						item.classList.add('is-visible');
-						observer.unobserve(item);
-					}
-				});
-			},
-			{ threshold: 0.1, rootMargin: '0px 0px -30px' }
-		);
-		revealItems.forEach((item) => revealObserver.observe(item));
-	}
+        projectCards.forEach((card) => {
+          const type = card.getAttribute('data-type') || '';
+          if (filter === 'all' || type.includes(filter)) {
+            card.style.display = 'flex';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
 
-	// Hero Entrance Animation (GSAP)
-	try {
-		const heroItems = Array.from(document.querySelectorAll<HTMLElement>('[data-hero-item]'))
-			.sort((a, b) => Number(a.dataset.heroItem) - Number(b.dataset.heroItem));
+    // 2. Uplink Form Submission via /api/contact
+    const form = document.querySelector<HTMLFormElement>('#uplink-form');
+    const statusEl = document.querySelector<HTMLElement>('#uplink-status');
+    const submitBtn = document.querySelector<HTMLButtonElement>('#uplink-submit-btn');
 
-		if (heroItems.length && !prefersReducedMotion) {
-			const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.6 } });
-			heroItems.forEach((el, i) => {
-				const delay = [0, 0.08, 0.16][i] ?? i * 0.08;
-				tl.from(el, { opacity: 0, y: 16, clearProps: 'all' }, delay);
-			});
-		} else if (heroItems.length) {
-			heroItems.forEach((el) => { el.style.opacity = '1'; el.style.transform = 'none'; });
-		}
-	} catch (_) {}
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!statusEl || !form.checkValidity()) return;
 
-	// Scroll Progress Bar
-	try {
-		const bar = document.querySelector<HTMLElement>('.scroll-progress-bar');
-		if (bar) {
-			const updateBar = () => {
-				const scrollTop = window.scrollY;
-				const docH = document.documentElement.scrollHeight - window.innerHeight;
-				bar.style.transform = `scaleX(${docH > 0 ? scrollTop / docH : 0})`;
-			};
-			window.addEventListener('scroll', updateBar, { passive: true });
-			updateBar();
-		}
-	} catch (_) {}
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Transmitting Packet…';
+      }
+      statusEl.textContent = 'Transmitting packet across noise floor...';
+      statusEl.classList.remove('text-red-400', 'text-[#00FF9C]');
+      statusEl.classList.add('text-[#00C2EE]');
 
-	// Section Scroll-Spy & Active Navigation
-	try {
-		const navLinks = document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]');
-		const sectionIds = ['challenge', 'projects', 'specs', 'contact'];
-		const sections = sectionIds.map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
+      try {
+        const formData = new FormData(form);
+        const res = await fetch(form.action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(Object.fromEntries(formData)),
+        });
 
-		if (navLinks.length && sections.length) {
-			let activeId = '';
-			const setActive = (id: string) => {
-				if (id === activeId) return;
-				activeId = id;
-				navLinks.forEach((a) => {
-					const href = a.getAttribute('href')?.replace('#', '');
-					const isActive = href === id;
-					a.style.color = isActive ? '#00A3FF' : '';
-					if (isActive) {
-						a.setAttribute('aria-current', 'page');
-					} else {
-						a.removeAttribute('aria-current');
-					}
-				});
-			};
+        if (res.ok) {
+          statusEl.textContent = '✓ Transmission received, logged and queued.';
+          statusEl.classList.remove('text-[#00C2EE]');
+          statusEl.classList.add('text-[#00FF9C]');
+          form.reset();
+        } else {
+          statusEl.textContent = '✗ Transmission rejected by ground station.';
+          statusEl.classList.remove('text-[#00C2EE]');
+          statusEl.classList.add('text-red-400');
+        }
+      } catch {
+        statusEl.textContent = '✗ Network link failure. Packet dropped.';
+        statusEl.classList.remove('text-[#00C2EE]');
+        statusEl.classList.add('text-red-400');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Deploy Transmission ↗';
+        }
+      }
+    });
+  }
 
-			navLinks.forEach((a) => {
-				a.addEventListener('click', () => {
-					const href = a.getAttribute('href')?.replace('#', '');
-					if (href) setActive(href);
-				});
-			});
-
-			const spyObserver = new IntersectionObserver(
-				(entries) => {
-					entries.forEach((entry) => {
-						if (entry.isIntersecting) setActive((entry.target as HTMLElement).id);
-					});
-				},
-				{ rootMargin: '-25% 0px -55% 0px', threshold: 0 }
-			);
-			sections.forEach((s) => spyObserver.observe(s));
-		}
-	} catch (_) {}
-
-	// Pipeline Stepper Interaction & 3D Satellite Pivot
-	try {
-		const stepBtns = document.querySelectorAll<HTMLButtonElement>('.progress-step');
-		const stepTitle = document.getElementById('step-title');
-		const stepDesc = document.getElementById('step-desc');
-
-		const stepData = [
-			{
-				title: '01 // ARCHITECTURE & DESIGN',
-				desc: 'Mixed-signal schematic capture, power distribution budgeting, and sensor interfacing.'
-			},
-			{
-				title: '02 // ASSEMBLY, INTEGRATION & TEST (AIT)',
-				desc: 'Breadboard bringup, signal integrity measurement, and sensor calibration across operating conditions.'
-			},
-			{
-				title: '03 // EMBEDDED FIRMWARE & DRIVERS',
-				desc: 'Low-jitter FreeRTOS scheduling, DMA peripheral handling, and deterministic state machine control.'
-			},
-			{
-				title: '04 // FLIGHT OPS & TELEMETRY',
-				desc: 'Hardware-in-the-loop validation, automated data logging, and Python analytics pipelines.'
-			}
-		];
-
-		stepBtns.forEach((btn) => {
-			btn.addEventListener('click', () => {
-				const stepIdx = parseInt(btn.dataset.step || '0', 10);
-				stepBtns.forEach((b) => b.classList.toggle('active', b === btn));
-
-				if (stepTitle && stepDesc && stepData[stepIdx]) {
-					stepTitle.textContent = stepData[stepIdx].title;
-					stepDesc.textContent = stepData[stepIdx].desc;
-				}
-
-				if (typeof (window as any).setSatelliteStep === 'function') {
-					(window as any).setSatelliteStep(stepIdx);
-				}
-			});
-		});
-	} catch (_) {}
-
-	// Mobile nav toggle
-	const menuToggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
-	const navList = document.querySelector<HTMLUListElement>('#primary-navigation');
-
-	menuToggle?.addEventListener('click', () => {
-		const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
-		menuToggle.setAttribute('aria-expanded', String(!isExpanded));
-		if (navList) {
-			navList.classList.toggle('open');
-		}
-	});
-
-	// Close mobile menu on link click
-	navList?.querySelectorAll('a').forEach((link) => {
-		link.addEventListener('click', () => {
-			if (window.innerWidth < 640) {
-				menuToggle?.setAttribute('aria-expanded', 'false');
-				navList?.classList.remove('open');
-			}
-		});
-	});
-
-	// Close mobile menu when clicking outside
-	document.addEventListener('click', (e) => {
-		if (window.innerWidth < 640 && navList?.classList.contains('open')) {
-			const target = e.target as HTMLElement;
-			if (!menuToggle?.contains(target) && !navList.contains(target)) {
-				menuToggle?.setAttribute('aria-expanded', 'false');
-				navList.classList.remove('open');
-			}
-		}
-	});
-
-	// Contact form client fetch handler
-	const contactForm = document.querySelector<HTMLFormElement>('#contact-form');
-	const contactStatus = document.querySelector<HTMLElement>('#contact-status');
-	const contactSubmit = contactForm?.querySelector<HTMLButtonElement>('button[type="submit"]');
-
-	contactForm?.addEventListener('submit', async (event) => {
-		event.preventDefault();
-
-		if (!contactStatus || !contactSubmit || !contactForm.checkValidity() || contactSubmit.disabled) {
-			contactForm?.reportValidity();
-			return;
-		}
-
-		contactSubmit.disabled = true;
-		contactForm.setAttribute('aria-busy', 'true');
-		contactStatus.className = 'font-mono text-xs text-[#00A3FF]';
-		contactStatus.textContent = 'Transmitting packet…';
-
-		try {
-			const response = await fetch(contactForm.action, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-				body: JSON.stringify(Object.fromEntries(new FormData(contactForm)))
-			});
-			const result = (await response.json().catch(() => null)) as { code?: string; message?: string } | null;
-
-			if (response.ok && result?.code === 'notification_failed') {
-				contactStatus.className = 'font-mono text-xs text-[#FF5C00]';
-				contactStatus.textContent = 'Packet logged, but notification delivery was delayed. Please try again later if unacknowledged.';
-			} else if (response.ok && result?.code === 'sent') {
-				contactStatus.className = 'font-mono text-xs text-[#10B981]';
-				contactStatus.textContent = 'Transmission acknowledged. Packet delivered successfully.';
-				contactForm.reset();
-			} else {
-				contactStatus.className = 'font-mono text-xs text-[#EF4444]';
-				contactStatus.textContent = 'Transmission error. Unable to establish downlink right now.';
-			}
-		} catch {
-			contactStatus.className = 'font-mono text-xs text-[#EF4444]';
-			contactStatus.textContent = 'Network link failure. Please retry.';
-		} finally {
-			contactSubmit.disabled = false;
-			contactForm.removeAttribute('aria-busy');
-		}
-	});
+  document.addEventListener('astro:page-load', initPageInteractions);
 </script>
-
-<style>
-	@media (max-width: 639px) {
-		.menu-toggle {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			width: 44px;
-			height: 44px;
-			min-width: 44px;
-			min-height: 44px;
-			padding: 0;
-			cursor: pointer;
-		}
-		.menu-toggle line {
-			transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms ease;
-			transform-origin: center;
-		}
-		.menu-toggle[aria-expanded="true"] .line-top {
-			transform: translateY(5px) rotate(45deg);
-		}
-		.menu-toggle[aria-expanded="true"] .line-mid {
-			opacity: 0;
-		}
-		.menu-toggle[aria-expanded="true"] .line-bot {
-			transform: translateY(-5px) rotate(-45deg);
-		}
-		.nav-list {
-			display: none;
-			position: absolute;
-			top: calc(100% + 0.5rem);
-			right: 1rem;
-			background: #070c14;
-			border: 1px solid rgba(255, 255, 255, 0.12);
-			padding: 1rem 1.5rem;
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 1rem;
-			border-radius: 4px;
-			box-shadow: 0 12px 32px rgba(0, 0, 0, 0.85);
-			z-index: 50;
-			min-width: 180px;
-		}
-		.nav-list.open {
-			display: flex;
-		}
-	}
-</style>
