@@ -1,64 +1,108 @@
 ---
+// src/layouts/Layout.astro
+import '@fontsource/space-grotesk/500.css';
+import '@fontsource/space-grotesk/700.css';
+import '@fontsource/instrument-serif/400-italic.css';
+import '@fontsource/geist-mono/400.css';
+import '@fontsource/geist-mono/600.css';
 import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
 
 interface Props {
-	title?: string;
-	description?: string;
+  title?: string;
+  description?: string;
 }
 
 const {
-	title = 'Jagan — Electronics & Telecommunication Engineering',
-	description = 'The portfolio of Jagan, an Electronics and Telecommunication Engineering student exploring electronics, software, and physical systems.',
+  title = 'JAGAN // HARDWARE LOGIC',
+  description = 'The engineering portfolio of Jagan — RF Hardware, Deterministic Embedded Firmware, and Physical Telemetry.',
 } = Astro.props;
-
-const isPublic = !Astro.url.pathname.startsWith('/admin');
 ---
 
 <!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="generator" content={Astro.generator} />
-		<meta name="description" content={description} />
-		<title>{title}</title>
-		<ClientRouter />
-	</head>
-	<body class:list={[isPublic && 'public-atelier', !isPublic && 'admin-workspace']}>
-		<a class="skip-link" href="#main-content">Skip to main content</a>
-		{isPublic && (
-			<div class="atelier-guidelines pointer-events-none fixed inset-0 z-0 mx-auto max-w-[1200px] border-x border-white/[0.04]" aria-hidden="true" />
-		)}
-		<slot />
-	</body>
+<html lang="en" class="bg-[#05060A] text-slate-100 antialiased selection:bg-[#8B3DFF]/30 selection:text-white">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <ClientRouter />
+  </head>
+  <body class="min-h-screen bg-[#05060A] overflow-x-hidden font-sans">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-[#00C2EE] focus:text-black focus:font-mono focus:text-xs focus:rounded focus:outline-none shadow-lg">
+      Skip to main content
+    </a>
+    <slot />
+  </body>
 </html>
 
 <script>
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-gsap.registerPlugin(ScrollTrigger);
+  import Lenis from 'lenis';
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-let ctx: ReturnType<typeof gsap.context> | null = null;
+  gsap.registerPlugin(ScrollTrigger);
 
-function teardown() {
-	if (ctx) {
-		ctx.revert();
-		ctx = null;
-	}
-	ScrollTrigger.getAll().forEach((t) => t.kill());
-}
+  let lenis: Lenis | null = null;
 
-function init() {
-	teardown();
-	ctx = gsap.context(() => {});
-}
+  function teardown() {
+    if (lenis) {
+      lenis.destroy();
+      lenis = null;
+      (window as any).__lenis = null;
+    }
+    ScrollTrigger.getAll().forEach((t) => t.kill());
+  }
 
-document.addEventListener('astro:page-load', init);
-document.addEventListener('astro:before-preparation', teardown);
+  function setupSmoothScroll() {
+    teardown();
 
-// Initial load
-init();
+    // Respect user OS preference for reduced motion
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    // Calibrated for high-refresh 60-120fps displays
+    lenis = new Lenis({
+      lerp: 0.08,             // Weighted deceleration for smooth glide
+      wheelMultiplier: 0.95,   // Smooth wheel step
+      smoothWheel: true,
+      syncTouch: false        // Preserve native mobile scrolling responsiveness
+    });
+
+    (window as any).__lenis = lenis;
+
+    // Synchronize Lenis scroll positions into GSAP ScrollTrigger
+    lenis.on('scroll', ScrollTrigger.update);
+
+    // Single unified RAF loop
+    gsap.ticker.add((time) => {
+      lenis?.raf(time * 1000);
+    });
+
+    // Disable lag smoothing to prevent sudden jumps
+    gsap.ticker.lagSmoothing(0);
+
+    // Global internal anchor click interceptor for Lenis smooth navigation
+    document.addEventListener('click', (e) => {
+      const anchor = (e.target as HTMLElement)?.closest('a');
+      if (!anchor) return;
+      const href = anchor.getAttribute('href');
+      if (href && href.startsWith('#') && href.length > 1) {
+        const target = document.querySelector(href);
+        if (target) {
+          e.preventDefault();
+          if (lenis) {
+            lenis.scrollTo(target, { offset: 0, duration: 1.2 });
+          } else {
+            target.scrollIntoView({ behavior: 'smooth' });
+          }
+          history.pushState(null, '', href);
+        }
+      }
+    });
+  }
+
+  document.addEventListener('astro:page-load', setupSmoothScroll);
+  document.addEventListener('astro:before-preparation', teardown);
 </script>
