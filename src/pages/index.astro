@@ -248,8 +248,8 @@ const SUBSYSTEM_CHAPTERS: SceneChapter[] = [
     <OscilloscopeWorkbench />
 
     <!-- 4. Active Engineering Deployments (Supabase Live Integration + Fallback) -->
-    <section id="projects" class="py-28 px-6 max-w-7xl mx-auto border-t border-white/10 relative">
-      <div class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <section id="projects" class="py-16 sm:py-28 px-4 sm:px-6 max-w-7xl mx-auto border-t border-white/10 relative">
+      <div class="mb-8 sm:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <div class="flex items-center gap-2 mb-3">
             <span class="w-2.5 h-2.5 rounded-full bg-[#00C2EE] animate-pulse"></span>
@@ -263,18 +263,18 @@ const SUBSYSTEM_CHAPTERS: SceneChapter[] = [
           </p>
         </div>
 
-        <!-- Filter tabs -->
-        <div class="flex flex-wrap items-center gap-2 p-1 rounded-xl bg-[#0B0D14] border border-white/10" id="project-filters">
-          <button type="button" data-filter="all" class="proj-filter-btn active px-3.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider bg-[#00C2EE] text-black font-semibold transition-all">
+        <!-- Filter tabs (Horizontally swipeable on mobile) -->
+        <div class="flex items-center gap-2 p-1.5 rounded-xl bg-[#0B0D14] border border-white/10 overflow-x-auto max-w-full pb-2 sm:pb-1.5" id="project-filters">
+          <button type="button" data-filter="all" class="proj-filter-btn active px-3.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider bg-[#00C2EE] text-black font-semibold transition-all whitespace-nowrap shrink-0">
             All Systems
           </button>
-          <button type="button" data-filter="rf" class="proj-filter-btn px-3.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider text-slate-400 hover:text-white transition-all">
+          <button type="button" data-filter="rf" class="proj-filter-btn px-3.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider text-slate-400 hover:text-white transition-all whitespace-nowrap shrink-0">
             RF / Wireless
           </button>
-          <button type="button" data-filter="embedded" class="proj-filter-btn px-3.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider text-slate-400 hover:text-white transition-all">
+          <button type="button" data-filter="embedded" class="proj-filter-btn px-3.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider text-slate-400 hover:text-white transition-all whitespace-nowrap shrink-0">
             Embedded
           </button>
-          <button type="button" data-filter="dsp" class="proj-filter-btn px-3.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider text-slate-400 hover:text-white transition-all">
+          <button type="button" data-filter="dsp" class="proj-filter-btn px-3.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider text-slate-400 hover:text-white transition-all whitespace-nowrap shrink-0">
             DSP &amp; Signal
           </button>
         </div>
@@ -284,7 +284,7 @@ const SUBSYSTEM_CHAPTERS: SceneChapter[] = [
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="projects-grid">
         {projects.map((p, index) => (
           <article
-            class="project-card p-8 rounded-2xl bg-[#07090E]/90 border border-white/10 hover:border-[#00C2EE]/60 transition-all duration-300 group relative overflow-hidden flex flex-col justify-between shadow-xl"
+            class="project-card p-5 sm:p-8 rounded-2xl bg-[#07090E]/90 border border-white/10 hover:border-[#00C2EE]/60 transition-all duration-300 group relative overflow-hidden flex flex-col justify-between shadow-xl"
             data-type={(p.project_type || '').toLowerCase()}
           >
             <!-- Ambient hover glow -->
@@ -302,11 +302,11 @@ const SUBSYSTEM_CHAPTERS: SceneChapter[] = [
                 )}
               </div>
 
-              <h3 class="text-2xl font-bold text-white mb-3 group-hover:text-[#00C2EE] transition-colors leading-snug">
+              <h3 class="text-xl sm:text-2xl font-bold text-white mb-3 group-hover:text-[#00C2EE] transition-colors leading-snug">
                 {p.title}
               </h3>
 
-              <p class="text-sm text-slate-400 font-light leading-relaxed mb-8">
+              <p class="text-sm text-slate-400 font-light leading-relaxed mb-6 sm:mb-8">
                 {p.summary}
               </p>
             </div>
@@ -330,8 +330,8 @@ const SUBSYSTEM_CHAPTERS: SceneChapter[] = [
     </section>
 
     <!-- 5. Ground Station Uplink & Transmission Console -->
-    <section id="uplink" class="min-h-screen flex flex-col justify-center px-6 max-w-5xl mx-auto py-28 relative">
-      <div class="mb-12 text-center">
+    <section id="uplink" class="min-h-screen flex flex-col justify-center px-4 sm:px-6 max-w-5xl mx-auto py-16 sm:py-28 relative">
+      <div class="mb-8 sm:mb-12 text-center">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-4 font-mono text-xs text-[#00C2EE]">
           <span class="w-2 h-2 rounded-full bg-[#00FF9C] animate-pulse"></span>
           <span>GROUND STATION TRANSMISSION PORTAL</span>
@@ -349,7 +349,7 @@ const SUBSYSTEM_CHAPTERS: SceneChapter[] = [
         id="uplink-form"
         method="post"
         action="/api/contact"
-        class="glass p-8 sm:p-12 rounded-3xl border border-white/15 space-y-6 shadow-[0_0_60px_rgba(0,0,0,0.8)] relative"
+        class="glass p-5 sm:p-12 rounded-2xl sm:rounded-3xl border border-white/15 space-y-5 sm:space-y-6 shadow-[0_0_60px_rgba(0,0,0,0.8)] relative"
       >
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
@@ -417,7 +417,7 @@ const SUBSYSTEM_CHAPTERS: SceneChapter[] = [
           <button
             type="submit"
             id="uplink-submit-btn"
-            class="button button-primary min-h-[48px] px-8 rounded-full font-mono text-xs uppercase tracking-[0.25em] font-bold"
+            class="button button-primary min-h-[48px] px-8 rounded-full font-mono text-xs uppercase tracking-[0.25em] font-bold w-full sm:w-auto"
           >
             Deploy Transmission ↗
           </button>
