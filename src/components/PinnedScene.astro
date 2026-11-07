@@ -46,7 +46,111 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
   style={`--pinned-height: ${100 + chapters.length * 110}dvh; --p: 0; --t: 0; --amb: ${initialAmb}; --amb2: ${initialAmb2};`}
   data-chapters={JSON.stringify(chapters.map((c) => ({ id: c.id, rgb: c.rgb, tag: c.stage.tag, status: c.stage.status })))}
 >
-  <div class="pinned-viewport isolate bg-[#05060A]">
+  <!-- Mobile Single-Line Vertical Flow (Clean, 100% Native Vertical Scroll, Zero Zooming) -->
+  <div class:list={['lg:hidden px-4 sm:px-6 pb-10 space-y-10 max-w-xl mx-auto', primary ? 'pt-24' : 'pt-10']}>
+    {chapters.map((chapter, i) => (
+      <article class="p-6 rounded-2xl bg-[#07090E]/90 border border-white/10 shadow-xl relative overflow-hidden flex flex-col gap-4">
+        <!-- Ambient subtle glow behind card -->
+        <div
+          aria-hidden="true"
+          class="pointer-events-none absolute -right-16 -top-16 w-44 h-44 rounded-full blur-3xl opacity-30"
+          style={`background: rgb(${chapter.rgb.join(' ')});`}
+        ></div>
+
+        <!-- Kicker -->
+        <div class="flex items-center gap-2.5 text-[10px] font-mono uppercase tracking-[0.3em] text-white/70">
+          <span class="tabular-nums font-bold text-[#00C2EE]">{chapter.index}</span>
+          <span aria-hidden="true" class="h-px w-6 bg-white/30"></span>
+          <span>{chapter.kicker}</span>
+        </div>
+
+        <!-- Headline -->
+        {primary && i === 0 ? (
+          <h1 class="text-3xl sm:text-4xl font-bold uppercase leading-[0.96] tracking-tight">
+            {chapter.lines.map((line, n) => (
+              <span
+                class="bloom block"
+                style={`--bloom: ${chapter.blooms[n]}; text-shadow: 0 0 20px ${chapter.blooms[n]}88;`}
+              >
+                {line}
+              </span>
+            ))}
+          </h1>
+        ) : (
+          <h2 class="text-2xl sm:text-3xl font-bold uppercase leading-[0.96] tracking-tight">
+            {chapter.lines.map((line, n) => (
+              <span
+                class="bloom block"
+                style={`--bloom: ${chapter.blooms[n]}; text-shadow: 0 0 20px ${chapter.blooms[n]}88;`}
+              >
+                {line}
+              </span>
+            ))}
+          </h2>
+        )}
+
+        <!-- Narrative -->
+        <p class="font-serif italic text-base leading-relaxed text-slate-300">
+          {chapter.body}
+        </p>
+
+        <!-- Static, Crisp Hardware Image (Zero zoom, Zero tilt) -->
+        <div class="relative aspect-[4/3] w-full rounded-xl overflow-hidden border border-white/15 bg-black shadow-lg">
+          <img
+            src={chapter.stage.src}
+            alt={chapter.stage.alt}
+            loading={primary && i === 0 ? 'eager' : 'lazy'}
+            class="w-full h-full object-cover"
+          />
+          <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+            <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-black/80 border border-white/20 font-mono text-[9px] uppercase tracking-wider text-white backdrop-blur-md">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#00FF9C]"></span>
+              <span>{chapter.stage.tag}</span>
+            </span>
+            <span class="px-2 py-0.5 rounded bg-[#00A6E8]/20 border border-[#00A6E8]/40 font-mono text-[9px] uppercase tracking-wider text-[#00A6E8] backdrop-blur-md font-bold">
+              {chapter.stage.status}
+            </span>
+          </div>
+        </div>
+
+        <!-- Action Links -->
+        <div class="flex flex-wrap items-center gap-3 pt-1">
+          {chapter.primary && (
+            <a
+              href={chapter.primary.href}
+              class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-xs font-mono uppercase tracking-[0.2em] text-white hover:bg-white/10 transition-colors min-h-[44px]"
+            >
+              <span>{chapter.primary.label}</span>
+              <span class="text-[#00C2EE]">→</span>
+            </a>
+          )}
+          {chapter.secondary && (
+            <a
+              href={chapter.secondary.href}
+              class="rounded-full px-4 py-2.5 text-xs font-mono uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors min-h-[44px] flex items-center"
+            >
+              {chapter.secondary.label}
+            </a>
+          )}
+        </div>
+
+        <!-- Hardware Specs Matrix Ticker -->
+        {chapter.stats && (
+          <dl class="grid grid-cols-3 gap-2 border-t border-white/10 pt-4 text-[9px] font-mono uppercase tracking-[0.2em] text-white/50">
+            {chapter.stats.map((s) => (
+              <div>
+                <dt class="text-slate-400">{s.label}</dt>
+                <dd class="mt-1 text-xs font-semibold text-white tracking-normal">{s.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+      </article>
+    ))}
+  </div>
+
+  <!-- Desktop Pinned Viewport (Active on screens >= 1024px) -->
+  <div class="pinned-viewport hidden lg:block isolate bg-[#05060A]">
     <!-- Ambient Dynamic Glows (Violet, Cyan, Rose) -->
     <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
       <div
@@ -67,22 +171,6 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
         style="background-image: linear-gradient(rgb(255 255 255 / 0.4) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / 0.4) 1px, transparent 1px); background-size: 56px 56px; mask-image: radial-gradient(70% 70% at 50% 50%, black, transparent 80%); -webkit-mask-image: radial-gradient(70% 70% at 50% 50%, black, transparent 80%); transform: translate3d(0, calc(var(--p) * -100px), 0);"
       ></div>
       <div class="absolute inset-0 bg-gradient-to-b from-[#05060A]/50 via-transparent to-[#05060A]/70"></div>
-    </div>
-
-    <!-- Mobile Chapter Tabs (Visible on < lg screens) -->
-    <div class="lg:hidden flex items-center justify-center gap-1.5 p-1 rounded-full bg-[#07090E]/90 border border-white/10 mx-auto mb-6 w-fit backdrop-blur-md z-30 relative max-w-[90vw] overflow-x-auto">
-      {chapters.map((c, i) => (
-        <button
-          type="button"
-          class:list={[
-            'mobile-chapter-tab px-3.5 py-2 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all min-h-[44px] whitespace-nowrap inline-flex items-center justify-center',
-            i === 0 ? 'bg-[#00C2EE] text-black font-bold active' : 'text-slate-400 hover:text-white',
-          ]}
-          data-tab-index={i}
-        >
-          {c.index} // {c.kicker.split('·')[0].replace(/^\d+\s*\/\/\s*/, '').trim()}
-        </button>
-      ))}
     </div>
 
     <!-- Chapter Content & 3D Stage -->
@@ -276,14 +364,10 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
   @media (max-width: 1023px) {
     .pinned-scene {
       height: auto !important;
-      min-height: 100dvh;
-      padding-top: 5.5rem;
-      padding-bottom: 4rem;
+      padding: 0;
     }
     .pinned-viewport {
-      position: relative;
-      height: auto;
-      overflow: visible;
+      display: none;
     }
   }
 </style>
@@ -308,6 +392,8 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
 
     const scenes = document.querySelectorAll<HTMLElement>('.pinned-scene');
     scenes.forEach((section) => {
+      const isMobile = () => window.innerWidth < 1024;
+      if (isMobile()) return; // 100% native vertical scroll on mobile, zero JS overhead
       const dataAttr = section.getAttribute('data-chapters');
       if (!dataAttr) return;
       const chapterData: Array<{ id: string; rgb: [number, number, number]; tag?: string; status?: string }> = JSON.parse(dataAttr);
@@ -325,8 +411,6 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
       let current = 0;
       let frame = 0;
       let activeIndex = 0;
-
-      const isMobile = () => window.innerWidth < 1024;
 
       const readTarget = () => {
         if (isMobile()) return activeIndex / last;
