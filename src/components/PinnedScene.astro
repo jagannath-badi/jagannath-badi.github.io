@@ -1,5 +1,5 @@
 ---
-// src/components/PinnedScene.astro — Cinematic Responsive Hardware Stage (Desktop Pinned + Mobile Fluid Tabbed)
+// src/components/PinnedScene.astro — Cinematic Responsive Hardware Stage (Desktop Pinned + Mobile Vertical Telemetry Stack)
 export interface SceneChapter {
   id: string;
   anchor?: string;
@@ -34,7 +34,6 @@ const {
 } = Astro.props;
 
 const last = chapters.length - 1;
-const heightStyle = `height: ${100 + chapters.length * 110}dvh;`;
 const initialAmb = chapters[0]?.rgb.join(' ') ?? '0 184 212';
 const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
 ---
@@ -46,7 +45,117 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
   style={`--pinned-height: ${100 + chapters.length * 110}dvh; --p: 0; --t: 0; --amb: ${initialAmb}; --amb2: ${initialAmb2};`}
   data-chapters={JSON.stringify(chapters.map((c) => ({ id: c.id, rgb: c.rgb, tag: c.stage.tag, status: c.stage.status })))}
 >
-  <div class="pinned-viewport isolate bg-[#05060A]">
+  <!-- Mobile Vertical Telemetry Stack (Visible only on < lg screens) -->
+  <div class:list={['lg:hidden px-4 sm:px-6 max-w-xl mx-auto space-y-8', primary ? 'pt-24 pb-12' : 'pt-16 pb-12']}>
+    {chapters.map((chapter, i) => (
+      <article
+        class="relative rounded-2xl border border-white/10 bg-[#07090E]/90 p-5 sm:p-6 backdrop-blur-md shadow-2xl overflow-hidden"
+        style={`border-color: rgb(${chapter.rgb.join(' ')} / 0.3);`}
+      >
+        <!-- Ambient glow backdrop for card -->
+        <div
+          aria-hidden="true"
+          class="pointer-events-none absolute -right-20 -top-20 w-48 h-48 rounded-full blur-3xl opacity-30"
+          style={`background: rgb(${chapter.rgb.join(' ')});`}
+        />
+
+        <!-- Kicker -->
+        <p class="mb-3 flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.3em] text-white/70">
+          <span class="tabular-nums font-bold text-white">{chapter.index}</span>
+          <span aria-hidden="true" class="h-px w-5 bg-white/40"></span>
+          <span>{chapter.kicker}</span>
+        </p>
+
+        <!-- Heading: Single h1 on mobile when primary && i === 0; h2 for others -->
+        {primary && i === 0 ? (
+          <h1 class="text-2xl sm:text-3xl font-bold uppercase leading-[0.95] tracking-tight mb-3 select-none">
+            {chapter.lines.map((line, n) => (
+              <span
+                class="bloom block"
+                style={`--bloom: ${chapter.blooms[n]}; text-shadow: 0 0 20px ${chapter.blooms[n]}88;`}
+              >
+                {line}
+              </span>
+            ))}
+          </h1>
+        ) : (
+          <h2 class="text-xl sm:text-2xl font-bold uppercase leading-[0.95] tracking-tight mb-3 select-none">
+            {chapter.lines.map((line, n) => (
+              <span
+                class="bloom block"
+                style={`--bloom: ${chapter.blooms[n]}; text-shadow: 0 0 20px ${chapter.blooms[n]}88;`}
+              >
+                {line}
+              </span>
+            ))}
+          </h2>
+        )}
+
+        <!-- Body -->
+        <p class="font-serif italic text-sm sm:text-base leading-relaxed text-slate-300 mb-4">
+          {chapter.body}
+        </p>
+
+        <!-- Image stage card with aspect-[16/10] (compact vertical height) -->
+        {stageOnMobile && (
+          <div class="relative w-full aspect-[16/10] rounded-xl overflow-hidden border border-white/10 mb-4 bg-black">
+            <img
+              src={chapter.stage.src}
+              alt={chapter.stage.alt}
+              loading={priority && i === 0 ? 'eager' : 'lazy'}
+              class="w-full h-full object-cover"
+            />
+            <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between z-10 pointer-events-none">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/80 border border-white/20 font-mono text-[9px] uppercase tracking-wider text-white backdrop-blur-md">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#00FF9C] animate-pulse"></span>
+                <span class="font-semibold text-slate-200">{chapter.stage.tag}</span>
+              </span>
+              <span class="px-2 py-0.5 rounded bg-[#00A6E8]/20 border border-[#00A6E8]/40 font-mono text-[8px] uppercase tracking-wider text-[#00A6E8] backdrop-blur-md font-bold">
+                {chapter.stage.status}
+              </span>
+            </div>
+          </div>
+        )}
+
+        <!-- Hardware Specs Matrix Ticker (if present) -->
+        {chapter.stats && (
+          <dl class="grid grid-cols-3 gap-2 border-t border-white/10 pt-3 mb-4 text-[9px] font-mono uppercase tracking-[0.15em] text-white/50">
+            {chapter.stats.map((s) => (
+              <div>
+                <dt class="text-slate-400">{s.label}</dt>
+                <dd class="mt-0.5 text-xs font-semibold tracking-normal text-white">{s.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
+        <!-- Actions -->
+        <div class="flex flex-wrap items-center gap-2.5 pt-1">
+          {chapter.primary && (
+            <a
+              href={chapter.primary.href}
+              class="group inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2.5 text-xs font-mono uppercase tracking-[0.15em] text-white transition-all hover:bg-white/10 min-h-[44px]"
+              style={`border-color: rgb(${chapter.rgb.join(' ')} / 0.8); box-shadow: 0 0 15px rgb(${chapter.rgb.join(' ')} / 0.2);`}
+            >
+              <span>{chapter.primary.label}</span>
+              <span class="transition-transform group-hover:translate-x-1" style={`color: rgb(${chapter.rgb.join(' ')});`}>→</span>
+            </a>
+          )}
+          {chapter.secondary && (
+            <a
+              href={chapter.secondary.href}
+              class="rounded-full px-3.5 py-2 text-xs font-mono uppercase tracking-[0.15em] text-white/60 hover:text-white transition-colors min-h-[44px] flex items-center"
+            >
+              {chapter.secondary.label}
+            </a>
+          )}
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <!-- Desktop Pinned Viewport (Visible strictly on lg+ screens) -->
+  <div class="pinned-viewport hidden lg:block isolate bg-[#05060A]">
     <!-- Ambient Dynamic Glows (Violet, Cyan, Rose) -->
     <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
       <div
@@ -69,25 +178,9 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
       <div class="absolute inset-0 bg-gradient-to-b from-[#05060A]/50 via-transparent to-[#05060A]/70"></div>
     </div>
 
-    <!-- Mobile Chapter Tabs (Visible on < lg screens) -->
-    <div class="lg:hidden flex items-center justify-center gap-1.5 p-1 rounded-full bg-[#07090E]/90 border border-white/10 mx-auto mb-6 w-fit backdrop-blur-md z-30 relative max-w-[90vw] overflow-x-auto">
-      {chapters.map((c, i) => (
-        <button
-          type="button"
-          class:list={[
-            'mobile-chapter-tab px-3.5 py-2 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all min-h-[44px] whitespace-nowrap inline-flex items-center justify-center',
-            i === 0 ? 'bg-[#00C2EE] text-black font-bold active' : 'text-slate-400 hover:text-white',
-          ]}
-          data-tab-index={i}
-        >
-          {c.index} // {c.kicker.split('·')[0].replace(/^\d+\s*\/\/\s*/, '').trim()}
-        </button>
-      ))}
-    </div>
-
     <!-- Chapter Content & 3D Stage -->
-    <div class="mx-auto flex flex-col lg:grid lg:grid-cols-2 h-full max-w-7xl content-center items-center gap-6 sm:gap-8 px-4 sm:px-6 md:px-12 lg:gap-16 lg:pb-16 lg:pt-16">
-      <!-- Left Column / Bottom on Mobile: Chapter Copies (Always 100% crisp without blur) -->
+    <div class="mx-auto grid grid-cols-2 h-full max-w-7xl content-center items-center gap-16 px-6 md:px-12 pb-16 pt-16">
+      <!-- Left Column: Chapter Copies -->
       <div class="grid min-w-0 w-full relative">
         {chapters.map((chapter, i) => {
           const isFirst = i === 0;
@@ -97,14 +190,18 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
               data-index={i}
               style={`opacity: ${isFirst ? '1' : '0'}; transform: translate3d(0, ${isFirst ? '0' : '44px'}, 0); pointer-events: ${isFirst ? 'auto' : 'none'}; visibility: ${isFirst ? 'visible' : 'hidden'};`}
             >
-              <p class="mb-2 sm:mb-4 flex items-center gap-2.5 sm:gap-3 text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.35em] sm:tracking-[0.45em] text-white/70 lg:mb-6">
+              <p class="mb-4 flex items-center gap-3 text-[11px] font-mono uppercase tracking-[0.45em] text-white/70 lg:mb-6">
                 <span class="tabular-nums font-bold text-white">{chapter.index}</span>
-                <span aria-hidden="true" class="h-px w-6 sm:w-8 bg-white/40"></span>
+                <span aria-hidden="true" class="h-px w-8 bg-white/40"></span>
                 <span>{chapter.kicker}</span>
               </p>
 
               {primary && i === 0 ? (
-                <h1 class="text-[clamp(2.2rem,7.5vw,4.5rem)] font-bold uppercase leading-[0.94] tracking-tight mb-3 sm:mb-4 select-none">
+                <div
+                  role="heading"
+                  aria-level="1"
+                  class="text-[clamp(2.2rem,7.5vw,4.5rem)] font-bold uppercase leading-[0.94] tracking-tight mb-4 select-none"
+                >
                   {chapter.lines.map((line, n) => (
                     <span
                       class="bloom block"
@@ -113,9 +210,9 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
                       {line}
                     </span>
                   ))}
-                </h1>
+                </div>
               ) : (
-                <h2 class="text-[clamp(2rem,5.5vw,4rem)] font-bold uppercase leading-[0.94] tracking-tight mb-3 sm:mb-4 select-none">
+                <h2 class="text-[clamp(2rem,5.5vw,4rem)] font-bold uppercase leading-[0.94] tracking-tight mb-4 select-none">
                   {chapter.lines.map((line, n) => (
                     <span
                       class="bloom block"
@@ -127,16 +224,16 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
                 </h2>
               )}
 
-              <p class="max-w-md font-serif italic text-base sm:text-2xl lg:text-3xl leading-snug text-slate-200/90 mb-4 sm:mb-6">
+              <p class="max-w-md font-serif italic text-2xl lg:text-3xl leading-snug text-slate-200/90 mb-6">
                 {chapter.body}
               </p>
 
               <!-- Actions with direct anchor targets -->
-              <div class="flex flex-wrap items-center gap-2.5 sm:gap-4 mt-3 sm:mt-6">
+              <div class="flex flex-wrap items-center gap-4 mt-6">
                 {chapter.primary && (
                   <a
                     href={chapter.primary.href}
-                    class="group inline-flex items-center gap-2.5 sm:gap-3 rounded-full border border-white/20 bg-white/5 px-5 sm:px-6 py-3 sm:py-3.5 text-xs font-mono uppercase tracking-[0.2em] sm:tracking-[0.25em] text-white transition-all hover:bg-white/10 hover:border-white/40 min-h-[44px]"
+                    class="group inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/5 px-6 py-3.5 text-xs font-mono uppercase tracking-[0.25em] text-white transition-all hover:bg-white/10 hover:border-white/40 min-h-[44px]"
                     style="border-color: rgb(var(--amb) / 0.8); box-shadow: 0 0 25px rgb(var(--amb) / 0.3);"
                   >
                     <span>{chapter.primary.label}</span>
@@ -146,7 +243,7 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
                 {chapter.secondary && (
                   <a
                     href={chapter.secondary.href}
-                    class="rounded-full px-4 sm:px-5 py-2.5 sm:py-3 text-xs font-mono uppercase tracking-[0.2em] sm:tracking-[0.25em] text-white/60 transition-colors hover:text-white min-h-[44px] flex items-center"
+                    class="rounded-full px-5 py-3 text-xs font-mono uppercase tracking-[0.25em] text-white/60 transition-colors hover:text-white min-h-[44px] flex items-center"
                   >
                     {chapter.secondary.label}
                   </a>
@@ -155,11 +252,11 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
 
               <!-- Hardware Specs Matrix Ticker -->
               {chapter.stats && (
-                <dl class="mt-6 sm:mt-8 grid max-w-md grid-cols-3 gap-2 sm:gap-4 border-t border-white/10 pt-4 sm:pt-5 text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.2em] sm:tracking-[0.25em] text-white/50">
+                <dl class="mt-8 grid max-w-md grid-cols-3 gap-4 border-t border-white/10 pt-5 text-[10px] font-mono uppercase tracking-[0.25em] text-white/50">
                   {chapter.stats.map((s) => (
                     <div>
                       <dt class="text-slate-400">{s.label}</dt>
-                      <dd class="mt-1 text-xs sm:text-base font-semibold tracking-normal text-white">{s.value}</dd>
+                      <dd class="mt-1 text-base font-semibold tracking-normal text-white">{s.value}</dd>
                     </div>
                   ))}
                 </dl>
@@ -169,8 +266,8 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
         })}
       </div>
 
-      <!-- Right Column / Top on Mobile: 3D Perspective Stage Frame -->
-      <div class={`stage-container relative mx-auto aspect-[4/5] w-[min(72vw,17rem)] lg:w-[min(100%,calc(68dvh_*_0.8),32rem)] ${stageOnMobile ? '' : 'hidden lg:block'}`}>
+      <!-- Right Column: 3D Perspective Stage Frame -->
+      <div class="stage-container relative mx-auto aspect-[4/5] w-[min(100%,calc(68dvh_*_0.8),32rem)]">
         <!-- Ambient Bloom Behind Frame -->
         <div
           aria-hidden="true"
@@ -227,7 +324,7 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
     </div>
 
     <!-- Chapter Rail Navigation at Bottom (Desktop strictly) -->
-    <nav class="hidden lg:flex absolute bottom-6 inset-x-0 justify-center items-center gap-3 z-30 pointer-events-auto">
+    <nav class="flex absolute bottom-6 inset-x-0 justify-center items-center gap-3 z-30 pointer-events-auto">
       {chapters.map((c, i) => (
         <button
           type="button"
@@ -270,16 +367,9 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
 
   @media (max-width: 1023px) {
     .pinned-scene {
-      height: calc(100vh + 160vh);
-      height: calc(100svh + 160svh) !important;
+      height: auto !important;
       position: relative;
-    }
-    .pinned-viewport {
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      height: 100svh;
-      overflow: hidden;
+      overflow-x: clip;
     }
   }
 </style>
@@ -304,6 +394,7 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
 
     const scenes = document.querySelectorAll<HTMLElement>('.pinned-scene');
     scenes.forEach((section) => {
+      const isMobile = () => window.innerWidth < 1024;
       const dataAttr = section.getAttribute('data-chapters');
       if (!dataAttr) return;
       const chapterData: Array<{ id: string; rgb: [number, number, number]; tag?: string; status?: string }> = JSON.parse(dataAttr);
@@ -313,7 +404,6 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
 
       const copies = section.querySelectorAll<HTMLElement>('.chapter-copy');
       const dots = section.querySelectorAll<HTMLElement>('.chapter-rail-dot');
-      const mobileTabs = section.querySelectorAll<HTMLElement>('.mobile-chapter-tab');
       const tagEl = section.querySelector<HTMLElement>('.stage-active-tag');
       const statusEl = section.querySelector<HTMLElement>('.stage-active-status');
 
@@ -322,15 +412,15 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
       let frame = 0;
       let activeIndex = 0;
 
-      const isMobile = () => window.innerWidth < 1024;
-
       const readTarget = () => {
+        if (isMobile()) return 0;
         const travel = section.offsetHeight - window.innerHeight;
         if (travel <= 0) return 0;
         return clamp(-section.getBoundingClientRect().top / travel);
       };
 
       const paint = (p: number) => {
+        if (isMobile()) return;
         const t = p * last;
         const w = chapterData.map((_, i) => 1 - smoothstep(0.25, 0.75, Math.abs(t - i)));
         const sum = w.reduce((a, b) => a + b, 0) || 1;
@@ -384,21 +474,11 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
               }
             }
           });
-
-          // Mobile chapter tabs
-          mobileTabs.forEach((tab, idx) => {
-            if (idx === next) {
-              tab.classList.add('bg-[#00C2EE]', 'text-black', 'font-bold', 'active');
-              tab.classList.remove('text-slate-400');
-            } else {
-              tab.classList.remove('bg-[#00C2EE]', 'text-black', 'font-bold', 'active');
-              tab.classList.add('text-slate-400');
-            }
-          });
         }
       };
 
       const tick = () => {
+        if (isMobile()) return;
         current += (target - current) * 0.15;
         if (Math.abs(target - current) < 0.0004) current = target;
         paint(current);
@@ -406,6 +486,7 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
       };
 
       const schedule = () => {
+        if (isMobile()) return;
         const next = readTarget();
         if (next === target && !frame) return;
         target = next;
@@ -417,65 +498,6 @@ const initialAmb2 = (chapters[1] ?? chapters[0])?.rgb.join(' ') ?? '255 43 214';
 
       window.addEventListener('scroll', schedule, { passive: true });
       window.addEventListener('resize', schedule, { passive: true });
-
-      // Mobile chapter tab tap handler with smooth glide
-      mobileTabs.forEach((tab) => {
-        tab.addEventListener('click', () => {
-          const targetIndex = Number(tab.getAttribute('data-tab-index') || 0);
-          target = targetIndex / last;
-          if (!frame) frame = requestAnimationFrame(tick);
-          const travel = section.offsetHeight - window.innerHeight;
-          if (travel > 0) {
-            const top = section.getBoundingClientRect().top + window.scrollY;
-            const dest = top + travel * target;
-            const globalLenis = (window as any).__lenis;
-            if (globalLenis) {
-              globalLenis.scrollTo(dest, { duration: 0.8 });
-            } else {
-              window.scrollTo({ top: dest, behavior: 'smooth' });
-            }
-          }
-        });
-      });
-
-      // Touch swipe gestures for mobile
-      let touchStartX = 0;
-      let touchStartY = 0;
-      section.addEventListener('touchstart', (e) => {
-        if (!isMobile()) return;
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY;
-      }, { passive: true });
-
-      section.addEventListener('touchend', (e) => {
-        if (!isMobile()) return;
-        const diffX = e.changedTouches[0].screenX - touchStartX;
-        const diffY = e.changedTouches[0].screenY - touchStartY;
-        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 40) {
-          const travel = section.offsetHeight - window.innerHeight;
-          const top = section.getBoundingClientRect().top + window.scrollY;
-          const globalLenis = (window as any).__lenis;
-          if (diffX < 0 && activeIndex < last) {
-            const nextIndex = activeIndex + 1;
-            target = nextIndex / last;
-            if (!frame) frame = requestAnimationFrame(tick);
-            if (travel > 0) {
-              const dest = top + travel * target;
-              if (globalLenis) globalLenis.scrollTo(dest, { duration: 0.8 });
-              else window.scrollTo({ top: dest, behavior: 'smooth' });
-            }
-          } else if (diffX > 0 && activeIndex > 0) {
-            const prevIndex = activeIndex - 1;
-            target = prevIndex / last;
-            if (!frame) frame = requestAnimationFrame(tick);
-            if (travel > 0) {
-              const dest = top + travel * target;
-              if (globalLenis) globalLenis.scrollTo(dest, { duration: 0.8 });
-              else window.scrollTo({ top: dest, behavior: 'smooth' });
-            }
-          }
-        }
-      }, { passive: true });
 
       // Desktop dot click handler for smooth glide
       dots.forEach((dot) => {

@@ -2,7 +2,7 @@
 // src/components/OscilloscopeWorkbench.astro — Real-Time Signal Telemetry & DSP Oscilloscope Workbench
 ---
 
-<section id="telemetry-workbench" class="py-16 sm:py-24 px-4 sm:px-6 max-w-7xl mx-auto border-t border-white/10 relative">
+<section id="telemetry-workbench" class="py-16 sm:py-24 px-4 sm:px-6 max-w-7xl mx-auto border-t border-white/10 relative overflow-hidden">
   <!-- Subtle ambient glow -->
   <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-[#8B3DFF]/10 rounded-full blur-[140px] pointer-events-none -z-10"></div>
 
@@ -20,19 +20,19 @@
       </p>
     </div>
 
-    <!-- Active telemetry badge (Responsive 3-col on mobile) -->
-    <div class="grid grid-cols-3 gap-2 p-3 text-center sm:flex sm:items-center sm:gap-4 sm:px-5 sm:py-3 rounded-xl bg-[#0B0D14]/80 border border-white/10 backdrop-blur-md font-mono text-xs w-full sm:w-auto">
-      <div>
+    <!-- Active telemetry badge -->
+    <div class="grid grid-cols-3 divide-x divide-white/10 p-2.5 sm:p-3 text-center sm:flex sm:items-center sm:gap-0 rounded-xl bg-[#0B0D14]/80 border border-white/10 backdrop-blur-md font-mono text-xs w-full sm:w-auto shrink-0 shadow-lg">
+      <div class="px-2 sm:px-4">
         <span class="text-slate-500 block text-[9px] uppercase tracking-wider">SAMPLING</span>
-        <span class="text-[#00C2EE] font-bold text-xs sm:text-sm">192 kSPS</span>
+        <span class="text-[#00C2EE] font-bold text-xs sm:text-sm whitespace-nowrap">192 kSPS</span>
       </div>
-      <div class="border-x border-white/10 sm:border-x-0 sm:border-l sm:h-6 sm:w-px sm:bg-white/10">
+      <div class="px-2 sm:px-4">
         <span class="text-slate-500 block text-[9px] uppercase tracking-wider">IMPEDANCE</span>
-        <span class="text-[#00FF9C] font-bold text-xs sm:text-sm">50.0 Ω</span>
+        <span class="text-[#00FF9C] font-bold text-xs sm:text-sm whitespace-nowrap">50.0 Ω</span>
       </div>
-      <div>
+      <div class="px-2 sm:px-4">
         <span class="text-slate-500 block text-[9px] uppercase tracking-wider">SNR</span>
-        <span class="text-[#A47BFF] font-bold text-xs sm:text-sm">112 dB</span>
+        <span class="text-[#A47BFF] font-bold text-xs sm:text-sm whitespace-nowrap">112 dB</span>
       </div>
     </div>
   </div>
