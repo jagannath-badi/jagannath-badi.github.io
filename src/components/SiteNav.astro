@@ -52,10 +52,15 @@ const links = [
       aria-expanded="false"
       aria-controls="mobile-nav-drawer"
       aria-label="Toggle navigation menu"
-      class="md:hidden inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-full border border-white/15 bg-white/5 text-[10px] font-mono uppercase tracking-widest text-[#00C2EE] hover:bg-white/10 active:scale-95 transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] min-h-[44px] min-w-[44px]"
+      class="md:hidden inline-flex items-center justify-center p-2.5 rounded-full border border-white/15 bg-white/5 text-[#00C2EE] hover:bg-white/10 active:scale-95 transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] min-h-[44px] min-w-[44px]"
     >
-      <span class="w-1.5 h-1.5 rounded-full bg-[#00C2EE] animate-pulse"></span>
-      <span id="nav-toggle-text">MENU</span>
+      <svg id="nav-icon-open" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+      <svg id="nav-icon-close" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 18L18 6M6 6l12 12" />
+      </svg>
+      <span class="sr-only">Toggle navigation menu</span>
     </button>
   </nav>
 </header>
@@ -123,6 +128,8 @@ const links = [
     const closeBtn = document.querySelector<HTMLButtonElement>('#mobile-nav-close');
     const drawer = document.querySelector<HTMLElement>('#mobile-nav-drawer');
     const links = document.querySelectorAll<HTMLAnchorElement>('.mobile-nav-link');
+    const iconOpen = toggleBtn?.querySelector<SVGElement>('#nav-icon-open');
+    const iconClose = toggleBtn?.querySelector<SVGElement>('#nav-icon-close');
 
     if (!toggleBtn || !drawer) return;
 
@@ -130,6 +137,9 @@ const links = [
       drawer.setAttribute('data-open', 'true');
       drawer.setAttribute('aria-hidden', 'false');
       toggleBtn.setAttribute('aria-expanded', 'true');
+      toggleBtn.setAttribute('aria-label', 'Close navigation menu');
+      iconOpen?.classList.add('hidden');
+      iconClose?.classList.remove('hidden');
       document.body.style.overflow = 'hidden';
       (window as any).__lenis?.stop();
     };
@@ -138,6 +148,9 @@ const links = [
       drawer.removeAttribute('data-open');
       drawer.setAttribute('aria-hidden', 'true');
       toggleBtn.setAttribute('aria-expanded', 'false');
+      toggleBtn.setAttribute('aria-label', 'Toggle navigation menu');
+      iconOpen?.classList.remove('hidden');
+      iconClose?.classList.add('hidden');
       document.body.style.overflow = '';
       (window as any).__lenis?.start();
     };
