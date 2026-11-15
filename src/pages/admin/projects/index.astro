@@ -99,8 +99,8 @@ const errorMessage = error
 		)}
 
 		<!-- Filter Tabs & Telemetry Strip -->
-		<div class="inventory-controls flex flex-wrap items-center justify-between gap-4 mb-6">
-			<div class="flex items-center gap-3 w-full sm:w-auto">
+		<div class="inventory-controls flex flex-wrap items-center justify-between gap-4 mb-6 min-w-0 w-full">
+			<div class="flex items-center gap-3 w-full sm:w-auto min-w-0">
 				<input
 					type="text"
 					id="registry-search"
@@ -109,30 +109,30 @@ const errorMessage = error
 					aria-label="Filter systems by title or slug"
 				/>
 			</div>
-			<nav class="filter-tabs flex items-center gap-1.5 bg-[#0B0D14] border border-white/10 p-1.5 rounded-xl max-w-full overflow-x-auto" aria-label="Filter project records">
+			<nav class="filter-tabs flex items-center gap-1.5 bg-[#0B0D14] border border-white/10 p-1.5 rounded-xl w-full sm:w-auto min-w-0 max-w-full overflow-x-auto" aria-label="Filter project records">
 				<a
-					class:list={['filter-tab px-3 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider transition-all', currentFilter === 'all' ? 'bg-[#00C2EE] text-black font-semibold' : 'text-slate-400 hover:text-white']}
+					class:list={['filter-tab shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider transition-all', currentFilter === 'all' ? 'bg-[#00C2EE] text-black font-semibold' : 'text-slate-400 hover:text-white']}
 					href="/admin/projects?filter=all"
 				>
 					<span>All Systems</span>
 					<span class="tab-count ml-1.5 opacity-80">({totalCount})</span>
 				</a>
 				<a
-					class:list={['filter-tab px-3 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider transition-all', currentFilter === 'published' ? 'bg-[#00C2EE] text-black font-semibold' : 'text-slate-400 hover:text-white']}
+					class:list={['filter-tab shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider transition-all', currentFilter === 'published' ? 'bg-[#00C2EE] text-black font-semibold' : 'text-slate-400 hover:text-white']}
 					href="/admin/projects?filter=published"
 				>
 					<span>Published</span>
 					<span class="tab-count ml-1.5 opacity-80">({publishedCount})</span>
 				</a>
 				<a
-					class:list={['filter-tab px-3 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider transition-all', currentFilter === 'draft' ? 'bg-[#00C2EE] text-black font-semibold' : 'text-slate-400 hover:text-white']}
+					class:list={['filter-tab shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider transition-all', currentFilter === 'draft' ? 'bg-[#00C2EE] text-black font-semibold' : 'text-slate-400 hover:text-white']}
 					href="/admin/projects?filter=draft"
 				>
 					<span>Drafts</span>
 					<span class="tab-count ml-1.5 opacity-80">({draftCount})</span>
 				</a>
 				<a
-					class:list={['filter-tab px-3 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider transition-all', currentFilter === 'featured' ? 'bg-[#00C2EE] text-black font-semibold' : 'text-slate-400 hover:text-white']}
+					class:list={['filter-tab shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider transition-all', currentFilter === 'featured' ? 'bg-[#00C2EE] text-black font-semibold' : 'text-slate-400 hover:text-white']}
 					href="/admin/projects?filter=featured"
 				>
 					<span>Featured</span>
@@ -221,11 +221,11 @@ const errorMessage = error
 				</table>
 			</section>
 		) : (
-			<section class="empty-state admin-well p-10 rounded-sm border border-dashed border-white/[0.1] text-center">
+			<section class="empty-state admin-well p-6 sm:p-10 rounded-sm border border-dashed border-white/[0.1] text-center min-w-0">
 				<div class="empty-badge font-mono text-xs text-[#E2C974] mb-2">REGISTRY // CLEAN STATE</div>
-				<h2 class="text-xl font-semibold text-[#F4F4F6] mb-2">No projects match filter: "{currentFilter}"</h2>
+				<h2 class="text-xl font-semibold text-[#F4F4F6] mb-2 break-words">No projects match filter: "{currentFilter}"</h2>
 				<p class="text-sm text-[#A1A1AA] max-w-md mx-auto mb-6">There are currently zero systems matching this criteria in the database.</p>
-				<div class="empty-actions flex justify-center gap-3">
+				<div class="empty-actions flex flex-wrap justify-center gap-3">
 					<a class="button button-secondary" href="/admin/projects?filter=all">Show All Records</a>
 					<a class="button button-primary" href="/admin/projects/new">+ Create System Record</a>
 				</div>
@@ -241,6 +241,14 @@ const errorMessage = error
 		padding-block: 3.5rem 6rem;
 		display: grid;
 		gap: 2rem;
+		min-width: 0;
+	}
+
+	@media (max-width: 640px) {
+		.admin-shell {
+			width: min(1200px, calc(100% - 1.5rem));
+			padding-block: 2rem 4rem;
+		}
 	}
 
 	.admin-header {
@@ -365,6 +373,7 @@ const errorMessage = error
 		overflow-x: auto;
 		-webkit-overflow-scrolling: touch;
 		max-width: 100%;
+		min-width: 0;
 	}
 
 	.filter-tab {
@@ -379,6 +388,8 @@ const errorMessage = error
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
 		transition: color 180ms ease, background 180ms ease;
+		flex-shrink: 0;
+		white-space: nowrap;
 	}
 
 	.filter-tab:hover {
@@ -634,6 +645,18 @@ const errorMessage = error
 	}
 
 	@media (max-width: 680px) {
+		.empty-state {
+			padding: 2rem 1rem;
+		}
+		.empty-actions {
+			flex-direction: column;
+			align-items: stretch;
+		}
+		.empty-actions > * {
+			width: 100%;
+			text-align: center;
+			justify-content: center;
+		}
 		.admin-header {
 			flex-direction: column;
 			align-items: stretch;
