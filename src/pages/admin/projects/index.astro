@@ -100,16 +100,16 @@ const errorMessage = error
 
 		<!-- Filter Tabs & Telemetry Strip -->
 		<div class="inventory-controls flex flex-wrap items-center justify-between gap-4 mb-6">
-			<div class="flex items-center gap-3">
+			<div class="flex items-center gap-3 w-full sm:w-auto">
 				<input
 					type="text"
 					id="registry-search"
-					class="text-xs px-3.5 py-2 rounded-xl w-64 bg-[#07090E] border border-white/10 text-white focus:border-[#00C2EE] focus-visible:ring-2 focus-visible:ring-[#00C2EE]/40 focus:outline-none transition-all placeholder:text-slate-600"
+					class="text-xs px-3.5 py-2 rounded-xl w-full sm:w-64 min-h-[44px] bg-[#07090E] border border-white/10 text-white focus:border-[#00C2EE] focus-visible:ring-2 focus-visible:ring-[#00C2EE]/40 focus:outline-none transition-all placeholder:text-slate-600"
 					placeholder="Filter by title or slug…"
 					aria-label="Filter systems by title or slug"
 				/>
 			</div>
-			<nav class="filter-tabs flex items-center gap-1.5 bg-[#0B0D14] border border-white/10 p-1.5 rounded-xl" aria-label="Filter project records">
+			<nav class="filter-tabs flex items-center gap-1.5 bg-[#0B0D14] border border-white/10 p-1.5 rounded-xl max-w-full overflow-x-auto" aria-label="Filter project records">
 				<a
 					class:list={['filter-tab px-3 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider transition-all', currentFilter === 'all' ? 'bg-[#00C2EE] text-black font-semibold' : 'text-slate-400 hover:text-white']}
 					href="/admin/projects?filter=all"
@@ -362,6 +362,9 @@ const errorMessage = error
 		padding: 0.35rem;
 		border: 1px solid var(--line-subtle);
 		border-radius: 999px;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		max-width: 100%;
 	}
 
 	.filter-tab {
@@ -541,7 +544,9 @@ const errorMessage = error
 	.row-btn {
 		font-size: 0.65rem;
 		padding: 0.5rem 0.8rem;
-		min-height: 2.2rem;
+		min-height: 44px;
+		display: inline-flex;
+		align-items: center;
 		white-space: nowrap;
 	}
 
@@ -563,6 +568,8 @@ const errorMessage = error
 		display: inline-flex;
 		align-items: center;
 		gap: 0.4rem;
+		min-height: 44px;
+		padding: 0.5rem 0.85rem;
 		transition: transform 120ms ease, opacity 150ms ease;
 		border: 1px solid var(--line-subtle);
 		background: transparent;

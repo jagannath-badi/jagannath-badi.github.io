@@ -89,7 +89,7 @@ const errorMessage = error
 
 		<!-- Filter Tabs & Telemetry Strip -->
 		<div class="inventory-controls flex flex-wrap items-center justify-between gap-4 mb-6">
-			<nav class="filter-tabs flex items-center gap-1.5 bg-[#0B0D14] border border-white/10 p-1.5 rounded-xl" aria-label="Filter contact messages">
+			<nav class="filter-tabs flex items-center gap-1.5 bg-[#0B0D14] border border-white/10 p-1.5 rounded-xl max-w-full overflow-x-auto" aria-label="Filter contact messages">
 				<a
 					class:list={['filter-tab px-3 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider transition-all', currentFilter === 'all' ? 'bg-[#00C2EE] text-black font-semibold' : 'text-slate-400 hover:text-white']}
 					href="/admin/messages?filter=all"
@@ -327,6 +327,9 @@ const errorMessage = error
 		padding: 0.35rem;
 		border: 1px solid var(--line-subtle);
 		border-radius: 999px;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		max-width: 100%;
 	}
 
 	.filter-tab {
@@ -527,7 +530,9 @@ const errorMessage = error
 	.row-btn {
 		font-size: 0.65rem;
 		padding: 0.45rem 0.85rem;
-		min-height: 2.1rem;
+		min-height: 44px;
+		display: inline-flex;
+		align-items: center;
 		white-space: nowrap;
 	}
 

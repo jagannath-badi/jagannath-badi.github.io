@@ -54,8 +54,8 @@ const operatorEmail = authorization.user.email ?? 'Verified Operator';
 
 	<main class="dashboard-shell relative" id="main-content">
 		<!-- Header & Operator Telemetry Bar -->
-		<header class="dashboard-header border-b border-white/[0.08] pb-6 mb-8 flex flex-wrap items-end justify-between gap-4">
-			<div class="header-identity">
+		<header class="dashboard-header border-b border-white/[0.08] pb-6 mb-8 flex flex-wrap items-end justify-between gap-4 min-w-0">
+			<div class="header-identity min-w-0 max-w-full">
 				<div class="identity-badge flex items-center gap-2 font-mono text-xs text-[#00C2EE] mb-2">
 					<span class="inline-block w-2 h-2 rounded-full bg-[#00FF9C] animate-pulse" aria-hidden="true"></span>
 					<span class="bg-[#00C2EE]/10 border border-[#00C2EE]/30 px-2 py-0.5 rounded-xs font-semibold">SYS_ADMIN // MISSION CONTROL</span>
@@ -63,7 +63,7 @@ const operatorEmail = authorization.user.email ?? 'Verified Operator';
 				<h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-1">
 					Operational <span class="font-serif italic font-normal text-[#A47BFF]">Workspace.</span>
 				</h1>
-				<p class="operator-meta text-xs font-mono text-slate-400">Active operator node: <code class="text-[#00C2EE] bg-[#00C2EE]/10 px-1.5 py-0.5 rounded-xs border border-[#00C2EE]/25">{operatorEmail}</code></p>
+				<p class="operator-meta text-xs font-mono text-slate-400 break-words">Active operator node: <code class="text-[#00C2EE] bg-[#00C2EE]/10 px-1.5 py-0.5 rounded-xs border border-[#00C2EE]/25 break-all inline-block">{operatorEmail}</code></p>
 			</div>
 
 			<div class="header-actions flex flex-wrap items-center gap-3">
@@ -102,7 +102,7 @@ const operatorEmail = authorization.user.email ?? 'Verified Operator';
 					<span class="text-[#00C2EE] font-bold">01</span>
 				</div>
 				<div class="text-3xl font-mono font-bold text-white my-1">{totalProjects}</div>
-				<div class="text-xs font-mono text-slate-400 mt-2 border-t border-white/[0.06] pt-2 flex justify-between">
+				<div class="text-xs font-mono text-slate-400 mt-2 border-t border-white/[0.06] pt-2 flex flex-wrap justify-between gap-1">
 					<span>LIVE: <strong class="text-[#00FF9C]">{publishedProjects}</strong></span>
 					<span>DRAFTS: <strong class="text-[#A47BFF]">{draftProjects}</strong></span>
 				</div>
@@ -114,7 +114,7 @@ const operatorEmail = authorization.user.email ?? 'Verified Operator';
 					<span class="text-[#A47BFF] font-bold">02</span>
 				</div>
 				<div class="text-3xl font-mono font-bold text-white my-1">{totalMessages}</div>
-				<div class="text-xs font-mono text-slate-400 mt-2 border-t border-white/[0.06] pt-2 flex justify-between">
+				<div class="text-xs font-mono text-slate-400 mt-2 border-t border-white/[0.06] pt-2 flex flex-wrap justify-between gap-1">
 					<span>UNREAD: <strong class="text-[#00C2EE]">{unreadMessages}</strong></span>
 					<span>PROCESSED: <strong class="text-slate-400">{totalMessages - unreadMessages}</strong></span>
 				</div>
@@ -141,7 +141,7 @@ const operatorEmail = authorization.user.email ?? 'Verified Operator';
 			<div class="pipeline-flow grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
 				<div class="pipeline-stage admin-well p-4 rounded-xl border border-white/[0.08] flex flex-col justify-between hover:border-[#A47BFF]/40 transition-colors">
 					<div>
-						<div class="flex items-center justify-between gap-2 mb-2">
+						<div class="flex flex-wrap items-center justify-between gap-2 mb-2">
 							<span class="stage-badge font-mono text-xs text-[#A47BFF] font-semibold tracking-wider">STAGE 01 // DRAFT SPECIFICATION</span>
 							<span class="font-mono text-xs text-[#A47BFF] bg-[#A47BFF]/10 px-2 py-0.5 rounded-full border border-[#A47BFF]/25 whitespace-nowrap shrink-0">{draftProjects} RECORD{draftProjects === 1 ? '' : 'S'}</span>
 						</div>
@@ -150,7 +150,7 @@ const operatorEmail = authorization.user.email ?? 'Verified Operator';
 				</div>
 				<div class="pipeline-stage admin-well p-4 rounded-xl border border-white/[0.08] flex flex-col justify-between hover:border-[#00FF9C]/40 transition-colors">
 					<div>
-						<div class="flex items-center justify-between gap-2 mb-2">
+						<div class="flex flex-wrap items-center justify-between gap-2 mb-2">
 							<span class="stage-badge font-mono text-xs text-[#00FF9C] font-semibold tracking-wider">STAGE 02 // PUBLISHED LIVE</span>
 							<span class="font-mono text-xs text-[#00FF9C] bg-[#00FF9C]/10 px-2 py-0.5 rounded-full border border-[#00FF9C]/25 whitespace-nowrap shrink-0">{publishedProjects} RECORD{publishedProjects === 1 ? '' : 'S'}</span>
 						</div>
@@ -164,7 +164,7 @@ const operatorEmail = authorization.user.email ?? 'Verified Operator';
 		<div class="operations-grid grid grid-cols-1 lg:grid-cols-2 gap-6">
 			<!-- Recent Projects Column -->
 			<section class="operations-panel admin-panel p-6 rounded-2xl" aria-labelledby="recent-projects-title">
-				<div class="panel-header flex items-center justify-between border-b border-white/[0.08] pb-3 mb-4">
+				<div class="panel-header flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3 mb-4">
 					<div>
 						<h2 id="recent-projects-title" class="text-lg font-bold text-white mb-0.5">Recent System Records</h2>
 						<p class="panel-sub text-xs font-mono text-slate-400">Latest systems authored in the workspace</p>
@@ -217,7 +217,7 @@ const operatorEmail = authorization.user.email ?? 'Verified Operator';
 
 			<!-- Recent Inquiries Column -->
 			<section class="operations-panel admin-panel p-6 rounded-2xl" aria-labelledby="recent-messages-title">
-				<div class="panel-header flex items-center justify-between border-b border-white/[0.08] pb-3 mb-4">
+				<div class="panel-header flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3 mb-4">
 					<div>
 						<h2 id="recent-messages-title" class="text-lg font-bold text-white mb-0.5">Inbound Inquiries</h2>
 						<p class="panel-sub text-xs font-mono text-slate-400">Transmissions submitted via contact form</p>
@@ -229,19 +229,19 @@ const operatorEmail = authorization.user.email ?? 'Verified Operator';
 					<div class="messages-stack space-y-3">
 						{recentMessages.map((msg) => (
 							<article class:list={['msg-preview-card admin-well p-3.5 rounded-xl border border-white/[0.06] transition-all hover:border-white/20', !msg.is_read ? 'is-unread border-[#00C2EE]/40 bg-[#00C2EE]/[0.03]' : '']}>
-								<div class="msg-preview-top flex items-center justify-between gap-2 mb-2">
-									<div class="msg-sender-block flex items-center gap-2">
+								<div class="msg-preview-top flex flex-wrap items-center justify-between gap-2 mb-2">
+									<div class="msg-sender-block flex flex-wrap items-center gap-2 min-w-0">
 										<span class:list={['unread-dot w-2 h-2 rounded-full', !msg.is_read ? 'bg-[#00C2EE] animate-pulse' : 'bg-slate-600']} aria-hidden="true"></span>
 										<span class="msg-sender-name font-semibold text-xs text-white">{msg.name}</span>
-										<span class="msg-sender-email font-mono text-[11px] text-slate-400">({msg.email})</span>
+										<span class="msg-sender-email font-mono text-[11px] text-slate-400 break-all">({msg.email})</span>
 									</div>
-									<time class="msg-date font-mono text-[10px] text-slate-400" datetime={msg.created_at}>
+									<time class="msg-date font-mono text-[10px] text-slate-400 whitespace-nowrap" datetime={msg.created_at}>
 										{new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(msg.created_at))}
 									</time>
 								</div>
-								<div class="msg-subject-row flex items-center justify-between gap-3">
-									<span class="msg-subject text-xs text-slate-300 truncate">{msg.subject}</span>
-									<span class:list={['badge font-mono text-[10px] uppercase px-2 py-0.5 rounded-full', !msg.is_read ? 'text-[#00C2EE] bg-[#00C2EE]/10 border border-[#00C2EE]/30 font-semibold' : 'text-slate-400 bg-white/[0.03] border border-white/[0.06]']}>
+								<div class="msg-subject-row flex items-center justify-between gap-3 min-w-0">
+									<span class="msg-subject text-xs text-slate-300 truncate min-w-0 flex-1">{msg.subject}</span>
+									<span class:list={['badge font-mono text-[10px] uppercase px-2 py-0.5 rounded-full shrink-0', !msg.is_read ? 'text-[#00C2EE] bg-[#00C2EE]/10 border border-[#00C2EE]/30 font-semibold' : 'text-slate-400 bg-white/[0.03] border border-white/[0.06]']}>
 										{!msg.is_read ? '● UNREAD' : '○ READ'}
 									</span>
 								</div>
@@ -267,6 +267,14 @@ const operatorEmail = authorization.user.email ?? 'Verified Operator';
 		padding-block: 3.5rem 6rem;
 		display: grid;
 		gap: 2.25rem;
+		min-width: 0;
+	}
+
+	@media (max-width: 640px) {
+		.dashboard-shell {
+			width: min(1200px, calc(100% - 1.5rem));
+			padding-block: 2rem 4rem;
+		}
 	}
 
 	.dashboard-header {

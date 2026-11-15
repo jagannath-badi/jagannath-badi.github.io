@@ -1054,18 +1054,27 @@ const serializedDoc = JSON.stringify(initialDoc);
 		.form-commands {
 			flex-direction: column-reverse;
 			align-items: stretch;
+			padding: 0.75rem 1rem;
+			gap: 0.65rem;
 		}
 
 		.commands-left {
-			flex-direction: column;
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+			gap: 0.5rem;
 		}
 
 		.commands-left > * {
 			width: 100%;
+			text-align: center;
+			justify-content: center;
+			padding: 0.5rem 0.65rem;
+			font-size: 0.72rem;
 		}
 
 		#save-btn {
 			width: 100%;
+			padding: 0.65rem 1rem;
 		}
 	}
 </style>
