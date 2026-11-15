@@ -17,6 +17,16 @@
 
 :root {
   color-scheme: dark;
+  --ease-spring-snappy: linear(
+    0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 16.7%, 1.017 19.5%,
+    1.053 22.4%, 1.061 24.3%, 1.056 26.3%, 1.017 33.3%, 0.995 38.3%,
+    0.991 43.1%, 1.001 54.9%, 1
+  );
+  --ease-spring-float: linear(
+    0, 0.004, 0.016 1.8%, 0.065 3.8%, 0.26 8.5%, 0.552 14.8%, 0.74 19.3%,
+    0.875 23.9%, 0.96 28.7%, 1.008 33.7%, 1.03 38.5%, 1.036 43.3%,
+    1.026 50.5%, 1.007 60.1%, 0.998 71.3%, 1
+  );
   --line-subtle: rgba(255, 255, 255, 0.08);
   --line-strong: rgba(255, 255, 255, 0.16);
   --text-primary: #F8FAFC;
@@ -84,10 +94,11 @@ body {
 }
 
 .glass {
-  background: rgba(11, 13, 20, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(11, 13, 20, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 @keyframes led-pulse {
@@ -105,6 +116,29 @@ body {
   margin-inline: auto;
 }
 
+/* Universal Interactive Spring Physics (transforms only — zero sizing/padding impact) */
+button:not(:disabled),
+a[class*="rounded-full"],
+a[class*="rounded-xl"] {
+  transition: transform 0.45s var(--ease-spring-snappy), box-shadow 0.3s ease;
+  will-change: transform;
+}
+
+button:not(:disabled):hover,
+a[class*="rounded-full"]:hover,
+a[class*="rounded-xl"]:hover,
+.button:hover {
+  transform: translateY(-2px);
+}
+
+button:not(:disabled):active,
+a[class*="rounded-full"]:active,
+a[class*="rounded-xl"]:active,
+.button:active {
+  transform: translateY(0) scale(0.95) !important;
+  transition-duration: 0.12s;
+}
+
 .button {
   display: inline-flex;
   align-items: center;
@@ -118,31 +152,38 @@ body {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   border-radius: var(--radius-md);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.45s var(--ease-spring-snappy), box-shadow 0.3s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   text-decoration: none;
   cursor: pointer;
+  will-change: transform;
 }
 
 .button-primary {
   background-color: #00A6E8;
   color: #05060A;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 .button-primary:hover {
   background-color: #00C2EE;
-  box-shadow: 0 0 25px rgba(0, 194, 238, 0.6);
-  transform: translateY(-1px);
+  background-image: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.3), transparent 70%);
+  box-shadow: 0 0 30px rgba(0, 194, 238, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
 }
 
 .button-secondary {
   background-color: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--line-strong);
   color: #F8FAFC;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 .button-secondary:hover {
   border-color: #A47BFF;
   color: #A47BFF;
-  box-shadow: 0 0 20px rgba(164, 123, 255, 0.25);
-  transform: translateY(-1px);
+  background-image: radial-gradient(circle at 50% 0%, rgba(164, 123, 255, 0.18), transparent 70%);
+  box-shadow: 0 0 25px rgba(164, 123, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transform: translateY(-2px);
 }
 
 .button-muted {
@@ -153,6 +194,7 @@ body {
 .button-muted:hover {
   border-color: var(--line-strong);
   color: var(--text-primary);
+  transform: translateY(-2px);
 }
 
 /* Typography & Monograph helpers */
@@ -176,19 +218,20 @@ body {
 }
 
 .admin-panel {
-  background: rgba(8, 10, 16, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background: rgba(8, 10, 16, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: border-color 0.3s ease, box-shadow 0.35s ease, transform 0.45s var(--ease-spring-snappy);
 }
 
 .admin-well {
-  background: rgba(14, 18, 28, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(14, 18, 28, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .notice {
@@ -224,7 +267,64 @@ body {
   transform: scaleX(0);
 }
 
+/* Astro View Transitions Spring Physics */
+::view-transition-old(root) {
+  animation: 0.28s var(--ease-spring-float) both page-fade-out;
+}
+::view-transition-new(root) {
+  animation: 0.38s var(--ease-spring-snappy) both page-fade-in;
+}
+
+@keyframes page-fade-out {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.995); }
+}
+
+@keyframes page-fade-in {
+  from { opacity: 0; transform: scale(1.005); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .led { animation: none; }
   html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+  button,
+  button:hover,
+  button:active,
+  a[class*="rounded-full"],
+  a[class*="rounded-full"]:hover,
+  a[class*="rounded-full"]:active,
+  a[class*="rounded-xl"],
+  a[class*="rounded-xl"]:hover,
+  a[class*="rounded-xl"]:active,
+  .button,
+  .button:hover,
+  .button:active,
+  .filter-tab,
+  .filter-tab:hover,
+  .filter-tab:active,
+  .row-btn,
+  .row-btn:hover,
+  .row-btn:active,
+  .badge-toggle-btn,
+  .badge-toggle-btn:hover,
+  .badge-toggle-btn:active,
+  .metric-card,
+  .metric-card:hover,
+  .message-card,
+  .message-card:hover,
+  .project-card,
+  .project-card:hover {
+    transform: none !important;
+  }
 }

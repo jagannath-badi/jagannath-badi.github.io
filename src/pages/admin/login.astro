@@ -98,10 +98,13 @@ const errorMessage =
 	.auth-card {
 		width: min(100%, 28rem);
 		padding: 2.25rem 2rem;
-		border: 1px solid var(--line-subtle);
+		border: 1px solid rgba(255, 255, 255, 0.15);
 		border-radius: var(--radius-lg);
-		background: linear-gradient(165deg, rgba(255, 255, 255, 0.035), rgba(12, 12, 14, 0.85));
-		box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+		background: linear-gradient(165deg, rgba(255, 255, 255, 0.05), rgba(12, 12, 14, 0.68));
+		backdrop-filter: blur(24px) saturate(180%);
+		-webkit-backdrop-filter: blur(24px) saturate(180%);
+		box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+		transition: border-color 0.3s ease, box-shadow 0.35s ease;
 	}
 
 	.auth-header {
@@ -225,9 +228,9 @@ const errorMessage =
 	}
 
 	input:focus {
-		border-color: var(--text-primary);
-		background: rgba(22, 22, 26, 0.95);
-		box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+		border-color: #38bdf8;
+		background: rgba(13, 16, 23, 0.95);
+		box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 		outline: none;
 	}
 

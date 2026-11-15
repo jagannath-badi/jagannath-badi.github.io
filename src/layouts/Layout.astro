@@ -83,6 +83,9 @@ const {
     // Disable lag smoothing to prevent sudden jumps
     gsap.ticker.lagSmoothing(0);
 
+    // Refresh ScrollTrigger calculations on the new page layout
+    ScrollTrigger.refresh();
+
     // Global internal anchor click interceptor for Lenis smooth navigation
     document.addEventListener('click', (e) => {
       const anchor = (e.target as HTMLElement)?.closest('a');

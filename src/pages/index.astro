@@ -264,7 +264,7 @@ const SUBSYSTEM_CHAPTERS: SceneChapter[] = [
         </div>
 
         <!-- Filter tabs (Horizontally swipeable on mobile) -->
-        <div class="flex items-center gap-2 p-1.5 rounded-xl bg-[#0B0D14] border border-white/10 overflow-x-auto max-w-full pb-2 sm:pb-1.5" id="project-filters">
+        <div class="flex items-center gap-2 p-1.5 rounded-xl bg-[#0B0D14]/70 border border-white/15 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] overflow-x-auto max-w-full pb-2 sm:pb-1.5" id="project-filters">
           <button type="button" data-filter="all" class="proj-filter-btn active px-3.5 py-2 rounded-lg font-mono text-xs uppercase tracking-wider bg-[#00C2EE] text-black font-semibold transition-all whitespace-nowrap shrink-0 min-h-[44px] inline-flex items-center justify-center">
             All Systems
           </button>
@@ -284,7 +284,7 @@ const SUBSYSTEM_CHAPTERS: SceneChapter[] = [
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="projects-grid">
         {projects.map((p, index) => (
           <article
-            class="project-card p-5 sm:p-8 rounded-2xl bg-[#07090E]/90 border border-white/10 hover:border-[#00C2EE]/60 transition-all duration-300 group relative overflow-hidden flex flex-col justify-between shadow-xl"
+            class="project-card p-5 sm:p-8 rounded-2xl bg-[#07090E]/60 border border-white/10 hover:border-[#00C2EE]/60 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300 group relative overflow-hidden flex flex-col justify-between"
             data-type={(p.project_type || '').toLowerCase()}
           >
             <!-- Ambient hover glow -->

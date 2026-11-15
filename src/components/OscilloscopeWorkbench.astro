@@ -21,7 +21,7 @@
     </div>
 
     <!-- Active telemetry badge -->
-    <div class="grid grid-cols-3 divide-x divide-white/10 p-2.5 sm:p-3 text-center sm:flex sm:items-center sm:gap-0 rounded-xl bg-[#0B0D14]/80 border border-white/10 backdrop-blur-md font-mono text-xs w-full sm:w-auto shrink-0 shadow-lg">
+    <div class="grid grid-cols-3 divide-x divide-white/10 p-2.5 sm:p-3 text-center sm:flex sm:items-center sm:gap-0 rounded-xl bg-[#0B0D14]/65 border border-white/15 backdrop-blur-2xl font-mono text-xs w-full sm:w-auto shrink-0 shadow-[0_10px_30px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.18)]">
       <div class="px-2 sm:px-4">
         <span class="text-slate-500 block text-[9px] uppercase tracking-wider">SAMPLING</span>
         <span class="text-[#00C2EE] font-bold text-xs sm:text-sm whitespace-nowrap">192 kSPS</span>
@@ -38,7 +38,7 @@
   </div>
 
   <!-- Oscilloscope Console Wrapper -->
-  <div class="rounded-2xl border border-white/15 bg-[#07090F] p-4 sm:p-6 shadow-[0_0_50px_rgba(0,0,0,0.8)] relative overflow-hidden">
+  <div class="rounded-2xl border border-white/15 bg-[#07090F]/75 backdrop-blur-2xl p-4 sm:p-6 shadow-[0_0_50px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.18)] hover:border-white/25 transition-all duration-300 relative overflow-hidden">
     <!-- Top Scope Chrome -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/10 pb-4 mb-4 sm:mb-5 gap-3">
       <div class="flex items-center justify-between sm:justify-start gap-3 font-mono text-xs">
@@ -50,7 +50,7 @@
       </div>
 
       <!-- Waveform selector buttons (Full width 4-col grid on mobile) -->
-      <div class="grid grid-cols-4 sm:flex items-center gap-1.5 p-1 rounded-lg bg-black/60 border border-white/10 w-full sm:w-auto" id="wave-selector">
+      <div class="grid grid-cols-4 sm:flex items-center gap-1.5 p-1 rounded-lg bg-black/50 backdrop-blur-xl border border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] w-full sm:w-auto" id="wave-selector">
         <button type="button" data-wave="sine" class="wave-btn active px-2 sm:px-3 py-2 rounded-md font-mono text-[10px] sm:text-[11px] uppercase tracking-wider bg-[#00C2EE] text-black font-bold transition-all text-center min-h-[44px] flex items-center justify-center">
           Sine
         </button>

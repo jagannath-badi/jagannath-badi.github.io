@@ -387,13 +387,19 @@ const errorMessage = error
 		font-size: 0.65rem;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
-		transition: color 180ms ease, background 180ms ease;
+		transition: color 180ms ease, background 180ms ease, transform 0.45s var(--ease-spring-snappy);
 		flex-shrink: 0;
 		white-space: nowrap;
 	}
 
 	.filter-tab:hover {
 		color: var(--text-primary);
+		transform: translateY(-1px);
+	}
+
+	.filter-tab:active {
+		transform: scale(0.97);
+		transition-duration: 0.12s;
 	}
 
 	.filter-tab.is-active {
@@ -559,6 +565,16 @@ const errorMessage = error
 		display: inline-flex;
 		align-items: center;
 		white-space: nowrap;
+		transition: transform 0.45s var(--ease-spring-snappy), border-color 0.2s ease, background 0.2s ease, box-shadow 0.25s ease;
+	}
+
+	.row-btn:hover {
+		transform: translateY(-1px);
+	}
+
+	.row-btn:active {
+		transform: scale(0.97);
+		transition-duration: 0.12s;
 	}
 
 	.preview-btn {
@@ -581,7 +597,7 @@ const errorMessage = error
 		gap: 0.4rem;
 		min-height: 44px;
 		padding: 0.5rem 0.85rem;
-		transition: transform 120ms ease, opacity 150ms ease;
+		transition: transform 0.45s var(--ease-spring-snappy), opacity 150ms ease, border-color 0.2s ease;
 		border: 1px solid var(--line-subtle);
 		background: transparent;
 	}
@@ -589,6 +605,11 @@ const errorMessage = error
 	.badge-toggle-btn:hover {
 		transform: translateY(-1px);
 		opacity: 0.9;
+	}
+
+	.badge-toggle-btn:active {
+		transform: scale(0.97);
+		transition-duration: 0.12s;
 	}
 
 	.toggle-hint {
