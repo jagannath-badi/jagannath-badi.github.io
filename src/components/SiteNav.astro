@@ -80,10 +80,13 @@ const links = [
       <button
         type="button"
         id="mobile-nav-close"
-        aria-label="Close menu"
-        class="font-mono text-xs text-slate-400 hover:text-white px-3 py-2 rounded-lg border border-white/10 bg-white/5 min-h-[44px]"
+        aria-label="Close navigation menu"
+        class="inline-flex items-center justify-center text-slate-400 hover:text-white p-2.5 rounded-lg border border-white/10 bg-white/5 min-h-[44px] min-w-[44px] transition-colors"
       >
-        ✕ CLOSE
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        <span class="sr-only">Close navigation menu</span>
       </button>
     </div>
 
